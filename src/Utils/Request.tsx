@@ -1,0 +1,22 @@
+const request = async (url: string, data: Object, callback: (response: any) => void) => {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }
+  const res = await fetch(url, requestOptions)
+  switch (res.status) {
+    case 401:
+      //addWindow(LoginWindow, {lastRequest: {url: url, data: data, callback: callback}})
+      break;
+
+    case 200:
+      callback(await res.json())
+      break;
+    
+    default:
+      alert("ERROR")
+  }
+};
+
+export default request;

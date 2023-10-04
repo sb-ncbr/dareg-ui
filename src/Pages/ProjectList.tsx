@@ -1,0 +1,114 @@
+import { Box, Button, Checkbox, Dialog, DialogContent, Stack, TextField, Typography } from '@mui/material';
+import React, { FC, useEffect, useRef, useState } from 'react';
+import TopBar from '../Components/TopBar';
+import ListCard from '../Components/ListCard';
+import ListLink from '../Components/ListLink';
+import ProjectsSchemeCard from '../Components/ProjectsSchemeCard';
+import request from '../Utils/Request';
+
+//interface projectsProps {width: number}
+//const Projects: FC<projectsProps> = (props): JSX.Element => {
+
+const ProjectsList = () => {
+  const [cardOpen, setCardOpen] = useState(false)
+  const [newOpen, setNewOpen] = useState(false)
+
+  const [newProjName, setNewProjName] = useState("")
+  const [newProjDescr, setNewProjDescr] = useState("")
+
+  const [currentNode, setCurrentNode] = useState
+    <{ id: string, name: string, descr: string } | any>
+    ({ id: "", name: "", descr: "" })
+
+  const openSchemeCard = (id: string) => {
+    request("/view_node", {
+      id: id
+    }, (response) => {
+      setCurrentNode(response)
+      setCardOpen(true)
+    })
+  }
+
+  const [projList, setProjList] = useState<any>([])
+  const didRun = useRef(false)
+  useEffect(() => {
+    if (didRun.current === false)
+      request("/get_nodes", {
+        upper: null
+      }, (response) => {
+        setProjList(response)
+      })
+    didRun.current = true
+  }, [])
+
+  return (
+    <Box display="flex" maxHeight="100vh">
+      <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ filter: cardOpen || newOpen ? "blur(3px)" : "", overflowY: "scroll" }}>
+        {projList.map((item: { id: string; name: string; description: string; }) => (
+          <ListLink
+            name={item.name}
+            username={"username"}
+            date={"item.date"}
+            disabled={cardOpen || newOpen}
+            onClick={() => { setCardOpen(true); openSchemeCard(item.id) }}
+          />
+        ))}
+      </Box>
+      <Box position="fixed" width={870} maxHeight="100vh" sx={{ overflowY: "auto", scrollbarGutter: "stable" }}>
+        <TopBar newOpen={() => setNewOpen(true)} projectView={true} />
+        <Box display={cardOpen ? "block" : "none"} >
+          <ListCard
+            closeSelf={() => setCardOpen(false)}
+            current={currentNode}
+          />
+        </Box>
+      </Box>
+      <Dialog fullWidth open={newOpen} onClose={() => setNewOpen(false)}>
+        <DialogContent>
+          <Typography variant="h5" sx={{ mb: 1 }}>Vytvořit nový projekt</Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Název"
+            fullWidth
+            variant="outlined"
+            value={newProjName}
+            onChange={(e) => setNewProjName(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Popis"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows="3"
+            sx={{ mb: 2 }}
+            value={newProjDescr}
+            onChange={(e) => setNewProjDescr(e.target.value)}
+          />
+          <Stack direction="row" justifyContent="flex-end" mt={2}>
+            <Button onClick={() => setNewOpen(false)}>Zrušit</Button>
+            <Button
+              sx={{ ml: 2 }}
+              variant='contained'
+              onClick={() => {
+                request("/new_node", {
+                  name: newProjName,
+                  descr: newProjDescr,
+                  upper: null
+                }, () => {
+                  setNewOpen(false)
+                })
+              }}
+            >
+              Pokračovat
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
+}
+
+export default ProjectsList;
+
