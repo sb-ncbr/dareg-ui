@@ -87,7 +87,7 @@ build_image-be:
   script:
     - mkdir $CI_PROJECT_DIR/manifests/prepared
     - cd $CI_PROJECT_DIR/manifests
-    - for f in *.yaml; do envsubst < $f > prepared/$f; done
+    - for f in *.{$APP_COMPONENT}.yaml; do envsubst < $f > prepared/$f; done
     - ls -la prepared/ || true
     - cat prepared/*.yaml || true
     - kubectl apply -f prepared/ --recursive -n ${K8S_NAMESPACE}
@@ -101,11 +101,12 @@ review:
   <<: *deploy
   stage: review
   variables:
+    APP_COMPONENT: web
     APP: review-$CI_COMMIT_REF_SLUG
-    APP_HOST: $CI_COMMIT_REF_SLUG.rev.${DEPLOYMENT_TLD}
+    APP_HOST: $CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
   environment:
     name: review/$CI_COMMIT_REF_SLUG
-    url: https://$CI_COMMIT_REF_SLUG.rev.${DEPLOYMENT_TLD}
+    url: https://$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
     on_stop: stop-review
   only:
     - branches
@@ -116,11 +117,12 @@ review-be:
   <<: *deploy
   stage: review
   variables:
+    APP_COMPONENT: server
     APP: review-api-$CI_COMMIT_REF_SLUG
-    APP_HOST: $CI_COMMIT_REF_SLUG.api.${DEPLOYMENT_TLD}
+    APP_HOST: api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
   environment:
     name: review/$CI_COMMIT_REF_SLUG
-    url: https://$CI_COMMIT_REF_SLUG.api.${DEPLOYMENT_TLD}
+    url: https://api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
     on_stop: stop-review
   only:
     - branches
@@ -144,10 +146,10 @@ staging-be:
   stage: staging
   variables:
     APP: staging-api
-    APP_HOST: api-stage.${DEPLOYMENT_TLD}
+    APP_HOST: api.stage.${DEPLOYMENT_TLD}
   environment:
     name: staging
-    url: https://api-stage.${DEPLOYMENT_TLD}
+    url: https://api.stage.${DEPLOYMENT_TLD}
   only:
     - master
 
