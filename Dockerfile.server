@@ -4,11 +4,11 @@ RUN adduser -D 1000 -u 1000
 
 WORKDIR /app
 
-# RUN mkdir ./schemas && chown -R 1000:1000 ./schemas
-# RUN mkdir ./temp-files && chown -R 1000:1000 ./temp-files
-# RUN mkdir ./conf && chown -R 1000:1000 ./conf
+RUN mkdir ./scheme && chown -R 1000:1000 ./scheme
+RUN mkdir ./ui-scheme && chown -R 1000:1000 ./ui-scheme
+RUN mkdir ./conf && chown -R 1000:1000 ./conf
 
-COPY --chown=1000:1000 backend/requirements.txt backend/app.py backend/makedb.py backend/scheme/ backend/ui_scheme/ ./
+COPY --chown=1000:1000 backend/requirements.txt backend/app.py backend/makedb.py ./
 
 RUN pip install -r requirements.txt && python3 makedb.py
 
