@@ -65,18 +65,18 @@ build_image-fe:
     - docker push $DOCKER_IMAGE_NAME_FE:$CI_COMMIT_SHORT_SHA
   needs: ["build_app"]
 
-# build_image-be:
-#   stage: publish
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   before_script:
-#     - docker login -u $HUB_REGISTRY_USER -p $HARBOR_PASSWORD $HARBOR_URL
-#     - ls -la
-#   script:
-#     - docker build --tag $DOCKER_IMAGE_NAME_FE:$CI_COMMIT_SHORT_SHA -f $CI_PROJECT_DIR/Dockerfile .
-#     - docker push $DOCKER_IMAGE_NAME_FE:$CI_COMMIT_SHORT_SHA
-#   needs: ["build_app"]
+build_image-be:
+  stage: publish
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $HUB_REGISTRY_USER -p $HARBOR_PASSWORD $HARBOR_URL
+    - ls -la
+  script:
+    - docker build --tag $DOCKER_IMAGE_NAME_BE:$CI_COMMIT_SHORT_SHA -f $CI_PROJECT_DIR/Dockerfile.server .
+    - docker push $DOCKER_IMAGE_NAME_BE:$CI_COMMIT_SHORT_SHA
+  # needs: ["build_app"]
 
 .deploy: &deploy
   image:
@@ -112,6 +112,21 @@ review:
   except:
     - master
 
+review-be:
+  <<: *deploy
+  stage: review
+  variables:
+    APP: review-api-$CI_COMMIT_REF_SLUG
+    APP_HOST: $CI_COMMIT_REF_SLUG.api.${DEPLOYMENT_TLD}
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://$CI_COMMIT_REF_SLUG.api.${DEPLOYMENT_TLD}
+    on_stop: stop-review
+  only:
+    - branches
+  except:
+    - master
+
 staging:
   <<: *deploy
   stage: staging
@@ -124,6 +139,18 @@ staging:
   only:
     - master
 
+staging-be:
+  <<: *deploy
+  stage: staging
+  variables:
+    APP: staging-api
+    APP_HOST: api-stage.${DEPLOYMENT_TLD}
+  environment:
+    name: staging
+    url: https://api-stage.${DEPLOYMENT_TLD}
+  only:
+    - master
+
 production:
   <<: *deploy
   stage: production
@@ -133,7 +160,20 @@ production:
   when: manual
   environment:
     name: production
-    url: http://${DEPLOYMENT_TLD}
+    url: https://${DEPLOYMENT_TLD}
+  only:
+    - master
+
+production-be:
+  <<: *deploy
+  stage: production
+  variables:
+    APP: production-api
+    APP_HOST: "api.${DEPLOYMENT_TLD}"
+  when: manual
+  environment:
+    name: production
+    url: "https://api.${DEPLOYMENT_TLD}"
   only:
     - master
 
