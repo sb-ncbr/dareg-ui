@@ -85,16 +85,16 @@ build_image-be:
   before_script:
     - kubectl config use-context $(kubectl config get-contexts -o=name | grep ${K8S_AGENT_NAME})
   script:
-    - mkdir $CI_PROJECT_DIR/manifests/prepared
+    - mkdir -p $CI_PROJECT_DIR/manifests/prepared/$APP_COMPONENT || true
     - cd $CI_PROJECT_DIR/manifests
-    - for f in *.$APP_COMPONENT.yaml; do envsubst < $f > prepared/$f; done
-    - ls -la prepared/ || true
-    - cat prepared/*.yaml || true
-    - kubectl apply -f prepared/ --recursive -n ${K8S_NAMESPACE}
+    - for f in *.$APP_COMPONENT.yaml; do envsubst < $f > prepared/$APP_COMPONENT/$f; done
+    - ls -la prepared/$APP_COMPONENT || true
+    - cat prepared/$APP_COMPONENT/*.yaml || true
+    - kubectl apply -f prepared/$APP_COMPONENT --recursive -n ${K8S_NAMESPACE}
   artifacts:
     name: deployments-$CI_COMMIT_REF_SLUG
     paths:
-      - $CI_PROJECT_DIR/manifests/prepared/
+      - $CI_PROJECT_DIR/manifests/prepared/$APP_COMPONENT
     expire_in: 1 week
 
 review:

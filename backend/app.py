@@ -2,10 +2,13 @@ from flask import *
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 from functools import wraps
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SECRET_KEY'] = "kjigjeriogerigsiejgiosjergj7Z37843"
+
+CORS(app)
 
 db = SQLAlchemy(app)
 
