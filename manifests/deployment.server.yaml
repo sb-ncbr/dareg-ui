@@ -9,11 +9,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      role: ps-backend-${APP}
+      role: dareg-backend-${APP}
   template:
     metadata:
       labels:
-        role: ps-backend-${APP}
+        role: dareg-backend-${APP}
     spec:
       imagePullSecrets:
       - name: gitlab-coffee-auth
@@ -54,13 +54,13 @@ metadata:
   name: dareg-backend-svc-${APP}
 spec:
   selector:
-    role: ps-backend-${APP}
+    role: dareg-backend-${APP}
   type: ClusterIP
   ports:
   - name: default
-    port: 8081
+    port: 5000
     protocol: TCP
-    targetPort: 8081
+    targetPort: 5000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
