@@ -42,7 +42,7 @@ cache:
 build_app:
   stage: build
   before_script:
-    - npm ci --cache .npm --prefer-offline
+    - npm i --cache .npm --prefer-offline
   script:
     - unset CI #This will need to be fixed + add test beforehand
     - npm run build
