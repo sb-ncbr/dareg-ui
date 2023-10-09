@@ -2,10 +2,13 @@ from flask import *
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 from functools import wraps
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SECRET_KEY'] = "kjigjeriogerigsiejgiosjergj7Z37843"
+app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
 
 db = SQLAlchemy(app)
 
@@ -42,7 +45,7 @@ class Form(db.Model):
     used_template = db.Column(db.String(20), db.ForeignKey('template.id'))
 
 @request_format(["name", "descr"])
-@app.route('/new_template', methods=["POST"])
+@app.route('/api/new_template', methods=["POST"])
 def new_template():
     name = request.json["name"]
     descr = request.json["descr"]
@@ -54,7 +57,7 @@ def new_template():
     return {"id": new_templ.id}, 200
 
 @request_format(["name", "descr", "upper", "default_template"])
-@app.route('/new_node', methods=["POST"])
+@app.route('/api/new_node', methods=["POST"])
 def new_node():
     name = request.json["name"]
     descr = request.json["descr"]
@@ -67,14 +70,14 @@ def new_node():
 
     return {"id": new_node.id}, 200
 
-@app.route('/get_templates', methods=["POST"])
+@app.route('/api/get_templates', methods=["POST"])
 def get_templates():
     get_temp = [{"id": x.id, "name": x.name, "descr": x.description} for x in Template.query.all()]
 
     return get_temp, 200
 
 @request_format(["upper"])
-@app.route('/get_nodes', methods=["POST"])
+@app.route('/api/get_nodes', methods=["POST"])
 def get_nodes():
     upper = request.json["upper"]
 
@@ -83,7 +86,7 @@ def get_nodes():
     return get_proj, 200
 
 @request_format(["id"])
-@app.route('/view_template', methods=["POST"])
+@app.route('/api/view_template', methods=["POST"])
 def view_template():
     id = request.json["id"]
     temp = Template.query.filter_by(id=id).first()
@@ -103,7 +106,7 @@ def view_template():
     return temp_data, 200
 
 @request_format(["id"])
-@app.route('/view_node', methods=["POST"])
+@app.route('/api/view_node', methods=["POST"])
 def view_node():
     id = request.json["id"]
     node = Node.query.filter_by(id=id).first()
@@ -112,7 +115,7 @@ def view_node():
     return node_data, 200
 
 @request_format(["id"])
-@app.route('/get_scheme_form', methods=["POST"])
+@app.route('/api/get_scheme_form', methods=["POST"])
 def get_scheme_form():
     id = request.json["id"]
     temp = Template.query.filter_by(id=id).first()
@@ -122,7 +125,7 @@ def get_scheme_form():
         return {"scheme": "{}", "ui_scheme": "{}"}, 200
 
 @request_format(["id", "scheme", "ui_scheme"])
-@app.route('/save_scheme_form', methods=["POST"])
+@app.route('/api/save_scheme_form', methods=["POST"])
 def save_scheme_form():
     id = request.json["id"]
     scheme = request.json["scheme"]
@@ -140,7 +143,7 @@ def save_scheme_form():
     return {}, 200
 
 @request_format(["id", "used_template", "data"])
-@app.route('/save_form_data', methods=["POST"])
+@app.route('/api/save_form_data', methods=["POST"])
 def save_form_data():
     id = request.json["id"]
     used_template = request.json["used_template"]
@@ -159,7 +162,7 @@ def save_form_data():
     return {}, 200
 
 @request_format(["id"])
-@app.route('/view_form', methods=["POST"])
+@app.route('/api/view_form', methods=["POST"])
 def view_form():
     id = request.json["id"]
     node = Node.query.filter_by(id=id).first()
