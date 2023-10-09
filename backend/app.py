@@ -87,6 +87,9 @@ def get_nodes():
 def view_template():
     id = request.json["id"]
     temp = Template.query.filter_by(id=id).first()
+    if not temp:
+        node = Node.query.filter_by(id=id).first()
+        temp = Template.query.filter_by(id=node.default_template).first()
     if temp.scheme_available:
         with open(f"scheme/{temp.id}", "r") as file:
             scheme = file.read()

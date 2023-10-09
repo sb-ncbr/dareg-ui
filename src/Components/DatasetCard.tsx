@@ -16,18 +16,11 @@ import CardButton from './CardButton';
 import CardHeader from './CardHeader';
 import TemplateSelect from './TemplateSelect';
 import FormsWrapped from './FormsWrapped';
+import request from '../Utils/Request';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const DatasetCard = (props: {
-  closeSelf: () => void,
-  currentDataset: {name: string, descr: string, scheme: string, ui_scheme: string, data: string}
-}) => {
+const DatasetCard = () => {
   const [editingForm, setEditingForm] = useState(false)
-
-  const [value, setValue] = React.useState(0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
 
   const { t } = useTranslation()
 
@@ -40,17 +33,28 @@ const DatasetCard = (props: {
     catch {  }
   }  
 
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<any>({});
+  
+  const params = useParams();
+  const [currentDataset, setCurrentDataset] = useState({name: "", descr: "", scheme: "{}", ui_scheme: "{}", data: "{}"})
 
   useEffect(() => {
-    setData(loadJSON(props.currentDataset.data))
-  }, [props.currentDataset])
+    request("/view_form", {
+      id: params.datasetId
+    }, (response) => {
+      setCurrentDataset(response)
+      setData(loadJSON(response.data))
+    })
+
+  }, [])
+
+  const navigate = useNavigate()
 
   return (
     <ListCardBase>
-      <CardHeader settingsButtonText="Nastavení datasetu" openSettings={() => {}} closeSelf={props.closeSelf} disableDuplicate path={[]} current={props.currentDataset.name} descr={props.currentDataset.descr} />
+      <CardHeader settingsButtonText="Nastavení datasetu" openSettings={() => {}} closeSelf={() => navigate(`/projects/${params.projId}`)} disableDuplicate path={[]} current={currentDataset.name} descr={currentDataset.descr} />
       <Paper variant="outlined" sx={{ mt: 3, p: 3, pt: 2 }}>
-        <FormsWrapped data={data} setData={setData} schema={props.currentDataset.scheme} uischema={props.currentDataset.ui_scheme} />
+        <FormsWrapped data={data} setData={setData} schema={currentDataset.scheme} uischema={currentDataset.ui_scheme} />
       </Paper>
       <Box mt={2} display="flex" justifyContent="flex-end">
         {editingForm
@@ -73,7 +77,7 @@ const DatasetCard = (props: {
             const blob = new Blob([JSON.stringify(data)], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.download = `${props.currentDataset.name}.txt`;
+            link.download = `${currentDataset.name}.txt`;
             link.href = url;
             link.click();
           }}

@@ -1,7 +1,7 @@
 import { Box, CssBaseline, Divider, List, Stack, ThemeProvider, Typography, createTheme, useMediaQuery } from '@mui/material';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import LeftBar from './LeftBar';
-import { Outlet, useOutletContext, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Settings from '../Pages/Settings';
 import ProjectsList from '../Pages/ProjectList';
 import TemplateList from '../Pages/TemplateList';
@@ -12,13 +12,9 @@ import TemplateList from '../Pages/TemplateList';
   {name: "settings", component: Settings, args: {}}
 ]*/
 
-const Layout = (props: {section: string}) => {
-  const [section, setSection] = useState(props.section)
-  const clickSection = (section: string) => {
-    setSection(section)
-    window.history.replaceState(null, "Ceitec", `/${section}`)
-    //window.scrollTo(0, 1000);
-  }
+const Layout = () => {
+
+  const navigate = useNavigate()
 
   const leftBarBox = useRef<any>(null)
   const [leftBarWidth, setLeftBarWidth] = useState(0)
@@ -26,45 +22,21 @@ const Layout = (props: {section: string}) => {
     setLeftBarWidth(leftBarBox.current.offsetWidth)
   } ,[])
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-  const [selectedTheme, setSelectedTheme] = useState<"dark"|"light"|"system">("system")
-  const darkTheme = createTheme({
-    palette: {
-      mode: selectedTheme==="system" ? (prefersDarkMode ? "dark" : "light") : selectedTheme
-    }
-  })
-
   const params = useParams();
   console.log(params)
 
   return (
-    <Box>
-      <CssBaseline/>
-      <ThemeProvider theme={darkTheme}>
-        <Box bgcolor={"background.default"} color={"text.primary"}>
-          <Box position="fixed" ref={leftBarBox}>
-            <LeftBar section={section} setSection={clickSection} />
-          </Box>
-          <Stack direction="row" justifyContent="center" height="100vh">
-            <Box minWidth={leftBarWidth+1}/>
-            <Box width={900}>
-              <Box sx={{display: section==="projects" ? "block" : "none"}}>
-                <ProjectsList/>
-              </Box>
-              <Box sx={{display: section==="templates" ? "block" : "none"}}>
-                <TemplateList/>
-              </Box>
-              <Box sx={{display: section==="account" ? "block" : "none"}}>
-                <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
-              </Box>
-              <Box sx={{display: section==="settings" ? "block" : "none"}}>
-                <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
-              </Box>
-            </Box>
-          </Stack>
+    <Box bgcolor={"background.default"} color={"text.primary"}>
+      <Box position="fixed" ref={leftBarBox}>
+        <LeftBar setSection={(to: string) => navigate(`/${to}`)} />
+      </Box>
+      <Stack direction="row" justifyContent="center" height="100vh">
+        <Box minWidth={leftBarWidth+1}/>
+        <Box width={900}>
+          <Outlet/>
         </Box>
-      </ThemeProvider>
-    </Box>  
+      </Stack>
+    </Box>
   );
 }
 

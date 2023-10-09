@@ -6,6 +6,7 @@ import ListLink from '../Components/ListLink';
 import DatasetCard from '../Components/DatasetCard';
 import request from '../Utils/Request';
 import TemplateSelect from '../Components/TemplateSelect';
+import { useNavigate } from 'react-router-dom';
 
 //interface projectsProps {width: number}
 //const Projects: FC<projectsProps> = (props): JSX.Element => {
@@ -46,6 +47,8 @@ const ProjectsList = () => {
   const [datasetCardOpen, setDatasetCardOpen] = useState(false)
   const [currentDataset, setCurrentDataset] = useState({name: "", descr: "", scheme: "{}", ui_scheme: "{}", data: "{}"})
 
+  const navigate = useNavigate()
+
   return (
     <Box display="flex" maxHeight="100vh">
       <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ filter: cardOpen || newOpen ? "" : "", overflowY: "scroll" }}>
@@ -55,31 +58,13 @@ const ProjectsList = () => {
             username={"username"}
             date={"item.date"}
             disabled={cardOpen || newOpen}
-            onClick={() => { setCardOpen(true); openSchemeCard(item.id) }}
+            onClick={() => navigate(`/projects/${item.id}`)}
           />
         ))}
       </Box>
       <Box position="fixed" width={870} maxHeight="100vh" sx={{ overflowY: "auto", scrollbarGutter: "stable" }}>
         <Box display={cardOpen || datasetCardOpen ? "none" : "block"}>
           <TopBar newOpen={() => setNewOpen(true)} projectView={true} />
-        </Box>
-        <Box display={cardOpen ? "block" : "none"} >
-          <ListCard
-            closeSelf={() => setCardOpen(false)}
-            current={currentNode}
-            clickRow={(id) => {
-              request("/view_form", {
-                id: id
-              }, (response) => {
-                setCurrentDataset(response)
-                setCardOpen(false)
-                setDatasetCardOpen(true)
-              })        
-            }}
-          />
-        </Box>
-        <Box display={datasetCardOpen ? "block" : "none"} >
-          <DatasetCard currentDataset={currentDataset} closeSelf={() => {setDatasetCardOpen(false); setCardOpen(true)}}/>
         </Box>
       </Box>
       <Dialog fullWidth open={newOpen} onClose={() => setNewOpen(false)}>

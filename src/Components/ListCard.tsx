@@ -17,12 +17,9 @@ import CardTable from './CardTable';
 import FormsWrapped from './FormsWrapped';
 import NewDataset from './NewDataset';
 import request from '../Utils/Request';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 
-const ListCard = (props: {
-  closeSelf: () => void,
-  current: { id: string, name: string, descr: string, defaultTemplateID: string },
-  clickRow: (id: string) => void
-}) => {
+const ListCard = () => {
 
   const [value, setValue] = React.useState(0);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -31,13 +28,20 @@ const ListCard = (props: {
 
   const [nodeList, setNodeList] = useState<any>([])
 
+  const params = useParams();
   useEffect(() => {
     request("/get_nodes", {
-      upper: props.current.id
+      upper: params.projId
     }, (response) => {
       setNodeList(response)
     })
-  }, [props.current])
+    request("/view_node", {
+      id: params.projId
+    }, (response) => {
+      setCurrent(response)
+    })
+    console.log(current)
+  }, [])
 
   const { t } = useTranslation()
 
@@ -46,28 +50,29 @@ const ListCard = (props: {
   const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false)
 
+  const navigate = useNavigate()
+  const [current, setCurrent] = useState<{ id: string, name: string, descr: string, defaultTemplateID: string }>({ id: "", name: "", descr: "", defaultTemplateID: "" })
+
   return (
     <ListCardBase>
       <Box>
         <CardHeader
-          closeSelf={props.closeSelf}
+          closeSelf={() => navigate(`/projects`)}
           openSettings={() => setProjectSettingsOpen(true)}
           path={[{ name: "Projekty", url: "" }]}
-          current={props.current.name}
-          descr={props.current.descr}
+          current={current.name}
+          descr={current.descr}
           settingsButtonText="Nastavení projektu"
         />
 
         <Card variant="elevation" elevation={2} sx={{mt: 3, mb: 3, p: 3, pt: 2}}>
           <Typography fontSize={28} variant="h6">Datasety</Typography>
-          <CardTable clickRow={props.clickRow} rows={nodeList} addButtonText="Přidat dataset" addButtonClick={() => setNewDatasetOpen(true)} />
+          <CardTable rows={nodeList} addButtonText="Přidat dataset" />
         </Card>
 
       </Box>
 
-      <Dialog fullScreen open={newDatasetOpen} onClose={() => setNewDatasetOpen(false)}>
-        <NewDataset currentProject={props.current} closeSelf={() => setNewDatasetOpen(false)}/>
-      </Dialog>
+      <Outlet/>
 
       <Dialog fullWidth open={newSchemeOpen} onClose={() => setNewSchemeOpen(false)}>
         <DialogContent>

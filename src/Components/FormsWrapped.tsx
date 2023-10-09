@@ -41,7 +41,7 @@ const FormsWrapped = (props:{
   return (
     <JsonForms
       schema={loadJSON(props.schema)}
-      uischema={props.uischema==="" || props.uischema==="{}" ? undefined : loadJSON(props.schema)}
+      uischema={props.uischema==="" || props.uischema==="{}" ? undefined : loadJSON(props.uischema)}
       data={props.data}
       renderers={renderers}
       cells={materialCells}

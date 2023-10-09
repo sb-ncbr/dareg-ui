@@ -3,11 +3,10 @@ import TemplateSelect from "./TemplateSelect";
 import FormsWrapped from "./FormsWrapped";
 import { useEffect, useState } from "react";
 import request from "../Utils/Request";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 
-const NewDataset = (props: {
-  currentProject: { id: string, name: string, descr: string, defaultTemplateID: string },
-  closeSelf: () => void
-}) => {
+const NewDataset = () => {
+  const params = useParams()
 
   const [selectedTemplateForm, setSelectedTemplateForm] = useState<{id: string, name: string, descr: string, scheme: string, ui_scheme: string}>({id: "", name: "", descr: "", scheme: "", ui_scheme: ""})
   const [selectedTemplate, setSelectedTemplate] = useState<{id: string, name: string, descr: string}>({id: "", name: "", descr: ""})
@@ -17,16 +16,17 @@ const NewDataset = (props: {
   
   useEffect(() => {
     request("/view_template", {
-      id: selectedTemplate.id==="" ? props.currentProject.defaultTemplateID : selectedTemplate.id
+      id: selectedTemplate.id==="" ? params.projId : selectedTemplate.id
     }, (response) => {
       setSelectedTemplateForm(response)
     })
   }, [selectedTemplate])
 
   const [data, setData] = useState<any>({});
+  const navigate = useNavigate()
 
   return (
-    
+    <Dialog fullScreen open={true}>
       <Stack direction="column" height="100vh" justifyContent="space-between" p={3}>
         <Typography variant="h5" sx={{ mb: 1 }}>Přidat dataset</Typography>
         <Stack flex={1} direction="row">
@@ -58,7 +58,7 @@ const NewDataset = (props: {
           </Box>
         </Stack>
         <Stack direction="row" justifyContent="flex-end" mt={2}>
-          <Button onClick={props.closeSelf}>Zrušit</Button>
+          <Button onClick={() => navigate(`/projects/${params.projId}`)}>Zrušit</Button>
           <Button
             sx={{ ml: 2 }}
             variant='contained'
@@ -66,7 +66,7 @@ const NewDataset = (props: {
               request("/new_node", {
                 name: name,
                 descr: descr,
-                upper: props.currentProject.id,
+                upper: params.projId,
                 default_template: null
               }, (response) => {
                 request("/save_form_data", {
@@ -74,7 +74,7 @@ const NewDataset = (props: {
                   used_template: selectedTemplateForm.id,
                   data: data
                 }, () => {
-                  props.closeSelf()
+                  navigate(`/projects/${params.projId}/${response.id}`)
                 })
               })
             }}
@@ -84,6 +84,7 @@ const NewDataset = (props: {
           
         </Stack>
       </Stack>
+    </Dialog>
   )
 };
 

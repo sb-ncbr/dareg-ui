@@ -22,6 +22,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import { AddRounded, DeleteForeverRounded, EditRounded } from '@mui/icons-material';
 import { Button, Stack } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Data {
   user: string;
@@ -212,9 +213,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
 const CardTable = (props: {
   addButtonText: string,
-  addButtonClick: () => void,
   rows: {name: string, user: string, created: string, id: string, descr: string}[],
-  clickRow: (id: string) => void
 }) => {
 
   const [order, setOrder] = React.useState<Order>('asc');
@@ -223,6 +222,8 @@ const CardTable = (props: {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
+
+  const navigate = useNavigate()
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -336,12 +337,12 @@ const CardTable = (props: {
                     component="th"
                     id={labelId}
                     scope="row"
-                    onClick={() => props.clickRow(row.id)}
+                    onClick={() => navigate(row.id)}
                   >
                     {row.name}
                   </TableCell>
-                  <TableCell onClick={() => props.clickRow(row.id)} align="right">{row.user}</TableCell>
-                  <TableCell onClick={() => props.clickRow(row.id)} align="right">{row.created}</TableCell>
+                  <TableCell onClick={() => {}} align="right">{row.user}</TableCell>
+                  <TableCell onClick={() => {}} align="right">{row.created}</TableCell>
                   <TableCell align="right" padding="none"><IconButton sx={{ p: 0.25 }} size="small"><EditRounded fontSize="small" /></IconButton></TableCell>
                   <TableCell align="right" padding='checkbox'><IconButton sx={{ p: 0.25 }} size="small"><DeleteForeverRounded fontSize="small" /></IconButton></TableCell>
                 </TableRow>
@@ -360,7 +361,9 @@ const CardTable = (props: {
         </Table>
       </TableContainer>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Button onClick={props.addButtonClick} sx={{ mt: 1 }} size="small" variant="contained" startIcon={<AddRounded />}>{props.addButtonText}</Button>
+        <Link style={{ textDecoration: "none" }} to={"new"}>
+          <Button sx={{ mt: 1 }} size="small" variant="contained" startIcon={<AddRounded />}>{props.addButtonText}</Button>
+        </Link>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

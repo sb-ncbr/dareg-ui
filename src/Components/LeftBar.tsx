@@ -4,8 +4,9 @@ import { AccountCircleRounded, AssignmentIndRounded, BackupTableRounded, Biotech
 import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 import ceitec_logo from '../ceitec_logo.png'
+import { useLocation } from 'react-router-dom';
 
-const LeftBar = (props: {section: string, setSection: (value: string) => void}) => {
+const LeftBar = (props: {setSection: (value: string) => void}) => {
   const LeftButton = styled(ListItemButton)(({}) => ({
     "&:hover": {
       fontWeight: 400,
@@ -13,6 +14,7 @@ const LeftBar = (props: {section: string, setSection: (value: string) => void}) 
   }))
 
   const { t } = useTranslation()
+  const location = useLocation();
 
   return (
     <Stack direction="row" height="100vh">
@@ -26,7 +28,7 @@ const LeftBar = (props: {section: string, setSection: (value: string) => void}) 
             />
           </Box>
           <ListItem disablePadding>
-            <ListItemButton selected={props.section==="projects" ? true : false} onClick={() => props.setSection("projects")}>
+            <ListItemButton selected={location.pathname.startsWith('/projects')} onClick={() => props.setSection("projects")}>
               <ListItemIcon>
                 <FolderCopyRounded />
               </ListItemIcon>
@@ -34,7 +36,7 @@ const LeftBar = (props: {section: string, setSection: (value: string) => void}) 
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-          <ListItemButton selected={props.section==="templates" ? true : false} onClick={() => props.setSection("templates")}>
+          <ListItemButton selected={location.pathname.startsWith('/templates')} onClick={() => props.setSection("templates")}>
               <ListItemIcon>
                 <BackupTableRounded />
               </ListItemIcon>
@@ -52,7 +54,7 @@ const LeftBar = (props: {section: string, setSection: (value: string) => void}) 
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-          <ListItemButton selected={props.section==="account" ? true : false} onClick={() => props.setSection("account")}>
+          <ListItemButton onClick={() => props.setSection("account")}>
               <ListItemIcon>
                 <AssignmentIndRounded />
               </ListItemIcon>
@@ -60,7 +62,7 @@ const LeftBar = (props: {section: string, setSection: (value: string) => void}) 
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-          <ListItemButton selected={props.section==="settings" ? true : false} onClick={() => props.setSection("settings")}>
+          <ListItemButton selected={location.pathname.startsWith('/settings')} onClick={() => props.setSection("settings")}>
               <ListItemIcon>
                 <SettingsRounded />
               </ListItemIcon>
