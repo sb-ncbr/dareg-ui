@@ -1,7 +1,7 @@
 import { Box, CssBaseline, Divider, List, Stack, ThemeProvider, Typography, createTheme, useMediaQuery } from '@mui/material';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import LeftBar from './LeftBar';
-import { Outlet, useOutletContext } from 'react-router-dom';
+import { Outlet, useOutletContext, useParams } from 'react-router-dom';
 import Settings from '../Pages/Settings';
 import ProjectsList from '../Pages/ProjectList';
 import TemplateList from '../Pages/TemplateList';
@@ -34,33 +34,35 @@ const Layout = (props: {section: string}) => {
     }
   })
 
-  //const [selectedTheme, setSelectedTheme] = useOutletContext<any>()
+  const params = useParams();
+  console.log(params)
 
   return (
     <Box>
       <CssBaseline/>
       <ThemeProvider theme={darkTheme}>
-        <Stack direction="row" justifyContent="center" height="100vh" bgcolor={"background.default"} color={"text.primary"}>
-          <Box minWidth={leftBarWidth}>
-            <Box position="fixed" ref={leftBarBox}>
-              <LeftBar section={section} setSection={clickSection} />
-            </Box>
+        <Box bgcolor={"background.default"} color={"text.primary"}>
+          <Box position="fixed" ref={leftBarBox}>
+            <LeftBar section={section} setSection={clickSection} />
           </Box>
-          <Box width={900}>
-            <Box sx={{display: section==="projects" ? "block" : "none"}}>
-              <ProjectsList/>
+          <Stack direction="row" justifyContent="center" height="100vh">
+            <Box minWidth={leftBarWidth+1}/>
+            <Box width={900}>
+              <Box sx={{display: section==="projects" ? "block" : "none"}}>
+                <ProjectsList/>
+              </Box>
+              <Box sx={{display: section==="templates" ? "block" : "none"}}>
+                <TemplateList/>
+              </Box>
+              <Box sx={{display: section==="account" ? "block" : "none"}}>
+                <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
+              </Box>
+              <Box sx={{display: section==="settings" ? "block" : "none"}}>
+                <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
+              </Box>
             </Box>
-            <Box sx={{display: section==="templates" ? "block" : "none"}}>
-              <TemplateList/>
-            </Box>
-            <Box sx={{display: section==="account" ? "block" : "none"}}>
-              <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
-            </Box>
-            <Box sx={{display: section==="settings" ? "block" : "none"}}>
-              <Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>
-            </Box>
-          </Box>
-        </Stack>
+          </Stack>
+        </Box>
       </ThemeProvider>
     </Box>  
   );

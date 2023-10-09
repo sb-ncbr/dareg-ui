@@ -15,6 +15,7 @@ import TemplateSelect from './TemplateSelect';
 import { JsonForms } from '@jsonforms/react';
 import { useState } from 'react';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
+import { Button } from '@mui/material';
 
 const renderers = [
   ...materialRenderers,
@@ -26,20 +27,25 @@ const loadJSON = (json: string) => {
   try {
     return (JSON.parse(json))
   }
-  catch { }
+  catch {
+  }
 }
 
-const FormsWrapped = (props: { schema: string, uischema: string }) => {
-  const [data, setData] = useState<any>({});
+const FormsWrapped = (props:{
+  schema: string,
+  uischema: string
+  data: any,
+  setData: (data: any) => void
+}) => {
 
   return (
     <JsonForms
       schema={loadJSON(props.schema)}
-      uischema={loadJSON(props.uischema)}
-      data={data}
+      uischema={props.uischema==="" || props.uischema==="{}" ? undefined : loadJSON(props.schema)}
+      data={props.data}
       renderers={renderers}
       cells={materialCells}
-      onChange={({ errors, data }) => setData(data)}
+      onChange={({ errors, data }) => props.setData(data)}
     />
   )
 };

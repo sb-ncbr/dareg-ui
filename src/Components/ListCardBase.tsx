@@ -5,13 +5,11 @@ import CardContent from '@mui/material/CardContent';
 
 const ListCardBase = (props: {children: ReactFragment}) => {
   return (
-    <Card sx={{marginTop: 2}} variant="outlined" >
-      <Box sx={{ overflowY: "auto" }} maxHeight="calc(100vh - 64px - 1rem)">
-        <CardContent>
-          {props.children}
-        </CardContent>
-      </Box>
-    </Card>
+    <Box bgcolor={"background.default"} sx={{ overflowY: "auto" }} maxHeight="1">
+      <CardContent>
+        {props.children}
+      </CardContent>
+    </Box>
   );
 }
 

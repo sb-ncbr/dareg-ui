@@ -15,6 +15,7 @@ import { JsonForms } from "@jsonforms/react";
 import { Add, AddRounded, RemoveRounded, SaveRounded, TextDecreaseRounded, TextIncreaseRounded, UndoRounded, Visibility, VisibilityRounded } from "@mui/icons-material";
 import { UISchemaElement } from "@jsonforms/core";
 import request from "../Utils/Request";
+import FormsWrapped from "./FormsWrapped";
 
 const FullscreenTextArea = styled("textarea")(({ theme }) => ({
   height: "100%",
@@ -40,9 +41,9 @@ const TemplateEditor = (props: {
   const [data, setData] = useState<any>({});
 
   const [schemeTextArea, setSchemeTextArea] = useState("")
-  const [schemeRenderJSON, setSchemeRenderJSON] = useState({})
+  const [schemeRenderJSON, setSchemeRenderJSON] = useState("")
   const [uiTextArea, setUiTextArea] = useState("")
-  const [uiRenderJSON, setUiRenderJSON] = useState<UISchemaElement>()
+  const [uiRenderJSON, setUiRenderJSON] = useState("")
 
   const [textSize, setTextSize] = useState(11)
   const [editorMode, setEditorMode] = useState("scheme")
@@ -90,14 +91,7 @@ const TemplateEditor = (props: {
             </Box>
           </Box>
           <Box flex="1">
-            <JsonForms
-              schema={schemeRenderJSON}
-              uischema={uiRenderJSON}
-              data={data}
-              renderers={renderers}
-              cells={materialCells}
-              onChange={({ errors, data }) => setData(data)}
-            />
+            <FormsWrapped data={data} setData={setData} schema={schemeRenderJSON} uischema={uiRenderJSON}/>
           </Box>
         </Box>
         <Stack direction="row" justifyContent="space-between" mt={2}>
@@ -130,8 +124,8 @@ const TemplateEditor = (props: {
             <Button
               startIcon={<VisibilityRounded />}
               onClick={() => {
-                setSchemeRenderJSON(JSON.parse(schemeTextArea))
-                setUiRenderJSON(JSON.parse(uiTextArea))
+                setSchemeRenderJSON(schemeTextArea)
+                setUiRenderJSON(uiTextArea)
               }}
             >
               Render preview

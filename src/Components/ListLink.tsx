@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, List, ListItem, ListItemButton, ListItemText, Paper, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, List, ListItem, ListItemButton, ListItemText, Paper, Stack, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 
 const bull = (
@@ -12,14 +12,16 @@ const bull = (
 
 const ListLink = (props: {name: string, username: string, date: string, disabled: boolean, onClick: () => void}) => {
   return (
-    <Card sx={{marginBottom: 1}} variant="outlined">
-      <ListItemButton disabled={props.disabled} sx={{ padding: 0 }} onClick={props.onClick}>
-        <Stack sx={{ padding: "0.5rem 1rem", justifyContent: "space-between", flexGrow: 1}} direction="row">
-          <Typography noWrap maxWidth={400}>{props.name}</Typography>
-          <Typography noWrap maxWidth={250}>{props.username} {bull} {props.date}</Typography>
-        </Stack>
-      </ListItemButton>
-    </Card>
+      <>
+        <ListItemButton disabled={props.disabled} sx={{ padding: 0 }} onClick={props.onClick}>
+          <Stack sx={{ padding: "0.5rem 1rem", justifyContent: "space-between", flexGrow: 1}} direction="row">
+            <Typography noWrap maxWidth={400}>{props.name}</Typography>
+            <Typography noWrap maxWidth={250}>{props.username} {bull} {props.date}</Typography>
+          </Stack>
+        </ListItemButton>
+        <Divider/>
+      </>
+
   );
 }
 

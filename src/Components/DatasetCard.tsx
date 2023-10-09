@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -6,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Breadcrumbs, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, FormGroup, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Paper, Stack, Switch, Tab, Tabs, TextField, ToggleButton, ToggleButtonGroup, styled } from '@mui/material';
-import { Add, AddRounded, AddToHomeScreen, BackspaceRounded, Close, CodeRounded, ContentCopyRounded, CreateNewFolderRounded, DeleteForeverRounded, DocumentScannerRounded, EditRounded, HistoryRounded, KeyboardBackspaceRounded, ModeEdit, NavigateNextRounded, PostAddRounded, SaveRounded, UndoRounded } from '@mui/icons-material';
+import { Add, AddRounded, AddToHomeScreen, BackspaceRounded, Close, CodeRounded, ColorLensOutlined, ContentCopyRounded, CreateNewFolderRounded, DeleteForeverRounded, DocumentScannerRounded, EditRounded, HistoryRounded, KeyboardBackspaceRounded, ModeEdit, NavigateNextRounded, PostAddRounded, SaveRounded, UndoRounded } from '@mui/icons-material';
 import { JsonForms } from '@jsonforms/react';
 
 import VersionPicker from './VersionPicker';
@@ -17,7 +17,10 @@ import CardHeader from './CardHeader';
 import TemplateSelect from './TemplateSelect';
 import FormsWrapped from './FormsWrapped';
 
-const ProjectsSchemeCard = (props: { closeSelf: () => void }) => {
+const DatasetCard = (props: {
+  closeSelf: () => void,
+  currentDataset: {name: string, descr: string, scheme: string, ui_scheme: string, data: string}
+}) => {
   const [editingForm, setEditingForm] = useState(false)
 
   const [value, setValue] = React.useState(0);
@@ -29,12 +32,26 @@ const ProjectsSchemeCard = (props: { closeSelf: () => void }) => {
   const { t } = useTranslation()
 
   const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
+  
+  const loadJSON = (json: string) => {
+    try {
+      return (JSON.parse(json))
+    }
+    catch {  }
+  }  
+
+  const [data, setData] = useState<any>();
+
+  useEffect(() => {
+    setData(loadJSON(props.currentDataset.data))
+  }, [props.currentDataset])
 
   return (
     <ListCardBase>
-      <CardHeader closeSelf={props.closeSelf} disableDuplicate path={[]} current='' descr='' />
-      <Divider sx={{ mb: 1 }}>plants_schema_2023 (<Link onClick={() => setTemplateSelectOpen(true)}>změnit</Link>)</Divider>
-      <FormsWrapped schema={"{}"} uischema={"{}"} />
+      <CardHeader settingsButtonText="Nastavení datasetu" openSettings={() => {}} closeSelf={props.closeSelf} disableDuplicate path={[]} current={props.currentDataset.name} descr={props.currentDataset.descr} />
+      <Paper variant="outlined" sx={{ mt: 3, p: 3, pt: 2 }}>
+        <FormsWrapped data={data} setData={setData} schema={props.currentDataset.scheme} uischema={props.currentDataset.ui_scheme} />
+      </Paper>
       <Box mt={2} display="flex" justifyContent="flex-end">
         {editingForm
           ?
@@ -51,13 +68,22 @@ const ProjectsSchemeCard = (props: { closeSelf: () => void }) => {
             {t("ListCard.editForm")}
           </CardButton>
         }
-        <CardButton startIcon={<CodeRounded />} >
+        <CardButton
+          onClick={() => {
+            const blob = new Blob([JSON.stringify(data)], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.download = `${props.currentDataset.name}.txt`;
+            link.href = url;
+            link.click();
+          }}
+          startIcon={<CodeRounded />} >
           {t("ListCard.downloadJSON")}
         </CardButton>
       </Box>
       <Dialog fullWidth open={templateSelectOpen} onClose={() => setTemplateSelectOpen(false)}>
         <DialogContent>
-          <TemplateSelect />
+          {/*<TemplateSelect selectedTemplate='' setSelectedTemplate={(none) => {}}/>*/}
           <Stack direction="row" justifyContent="flex-end" mt={2}>
             <Button onClick={() => setTemplateSelectOpen(false)}>Zrušit</Button>
             <Button sx={{ ml: 2 }} variant='contained' onClick={() => setTemplateSelectOpen(false)}>Vybrat</Button>
@@ -68,4 +94,4 @@ const ProjectsSchemeCard = (props: { closeSelf: () => void }) => {
   );
 }
 
-export default ProjectsSchemeCard;
+export default DatasetCard;

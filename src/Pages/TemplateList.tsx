@@ -50,7 +50,7 @@ const TemplateList = () => {
 
   return (
     <Box display="flex" maxHeight="100vh">
-      <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ filter: cardOpen || editorOpen ? "blur(3px)" : "", overflowY: "scroll" }}>
+      <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ opacity: cardOpen || editorOpen ? 0 : 1, overflowY: "scroll" }}>
         {schemeList.map((item: { id: string; name: string; description: string; }) => (
           <ListLink
             name={item.name}
@@ -62,7 +62,9 @@ const TemplateList = () => {
         ))}
       </Box>
       <Box position="fixed" width={870} maxHeight="100vh" sx={{ overflowY: "auto", scrollbarGutter: "stable" }}>
-        <TopBar newOpen={() => setNewSchemeOpen(true)} projectView={false} />
+      <Box display={cardOpen ? "none" : "block"}>
+          <TopBar newOpen={() => setNewSchemeOpen(true)} projectView={false} />
+      </Box>
         <Box display={cardOpen ? "block" : "none"} >
           <SchemeCard
             closeSelf={closeSchemeCard}

@@ -34,6 +34,12 @@ class Node(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.String(2000), nullable=False, unique=True)
     upper = db.Column(db.String(20), db.ForeignKey('node.id'))
+    default_template = db.Column(db.String(20), db.ForeignKey('template.id'))
+
+class Form(db.Model):
+    id = db.Column(db.String(20), nullable=False, primary_key=True, default=gen_key)
+    node = db.Column(db.String(20), db.ForeignKey('node.id'))
+    used_template = db.Column(db.String(20), db.ForeignKey('template.id'))
 
 @request_format(["name", "descr"])
 @app.route('/new_template', methods=["POST"])
@@ -47,14 +53,15 @@ def new_template():
 
     return {"id": new_templ.id}, 200
 
-@request_format(["name", "descr", "upper"])
+@request_format(["name", "descr", "upper", "default_template"])
 @app.route('/new_node', methods=["POST"])
 def new_node():
     name = request.json["name"]
     descr = request.json["descr"]
     upper = request.json["upper"]
+    default_template = request.json["default_template"]
 
-    new_node = Node(name=name, description=descr, upper=upper)
+    new_node = Node(name=name, description=descr, upper=upper, default_template=default_template)
     db.session.add(new_node)
     db.session.commit()
 
@@ -68,10 +75,10 @@ def get_templates():
 
 @request_format(["upper"])
 @app.route('/get_nodes', methods=["POST"])
-def get_projects():
+def get_nodes():
     upper = request.json["upper"]
 
-    get_proj = [{"id": x.id, "name": x.name, "descr": x.description} for x in Node.query.filter_by(upper=upper).all()]
+    get_proj = [{"id": x.id, "name": x.name, "descr": x.description, "user": "", "created": ""} for x in Node.query.filter_by(upper=upper).all()]
 
     return get_proj, 200
 
@@ -98,7 +105,7 @@ def view_node():
     id = request.json["id"]
     node = Node.query.filter_by(id=id).first()
 
-    node_data = {"id": node.id, "name": node.name, "descr": node.description}
+    node_data = {"id": node.id, "name": node.name, "descr": node.description, "defaultTemplateID": node.default_template}
     return node_data, 200
 
 @request_format(["id"])
@@ -109,7 +116,7 @@ def get_scheme_form():
     if temp.scheme_available:
         return {"scheme": "{hello}", "ui_scheme": "{}"}, 200
     else:
-        return {"scheme": "{world}", "ui_scheme": "{}"}, 200
+        return {"scheme": "{}", "ui_scheme": "{}"}, 200
 
 @request_format(["id", "scheme", "ui_scheme"])
 @app.route('/save_scheme_form', methods=["POST"])
@@ -128,6 +135,43 @@ def save_scheme_form():
     db.session.commit()
 
     return {}, 200
+
+@request_format(["id", "used_template", "data"])
+@app.route('/save_form_data', methods=["POST"])
+def save_form_data():
+    id = request.json["id"]
+    used_template = request.json["used_template"]
+    data = request.json["data"]
+
+    node = Node.query.filter_by(id=id).first()
+    temp = Template.query.filter_by(id=used_template).first()
+
+    new_form = Form(node=node.id, used_template=temp.id)
+    db.session.add(new_form)
+    db.session.commit()
+
+    with open(f"data/{new_form.id}", "w") as file:
+        file.write(str(data).replace("\'", "\""))
+
+    return {}, 200
+
+@request_format(["id"])
+@app.route('/view_form', methods=["POST"])
+def view_form():
+    id = request.json["id"]
+    node = Node.query.filter_by(id=id).first()
+    form = Form.query.filter_by(node=id).first()
+    temp = Template.query.filter_by(id=form.used_template).first()
+
+    with open(f"scheme/{temp.id}", "r") as file:
+        scheme = file.read()
+    with open(f"ui_scheme/{temp.id}", "r") as file:
+        ui_scheme = file.read()
+    with open(f"data/{form.id}", "r") as file:
+        data = file.read()
+
+    data = {"name": node.name, "descr": node.description, "scheme": scheme, "ui_scheme": ui_scheme, "data": data}
+    return data, 200
 
 
 if __name__ == '__main__':

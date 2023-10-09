@@ -3,8 +3,9 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import TopBar from '../Components/TopBar';
 import ListCard from '../Components/ListCard';
 import ListLink from '../Components/ListLink';
-import ProjectsSchemeCard from '../Components/ProjectsSchemeCard';
+import DatasetCard from '../Components/DatasetCard';
 import request from '../Utils/Request';
+import TemplateSelect from '../Components/TemplateSelect';
 
 //interface projectsProps {width: number}
 //const Projects: FC<projectsProps> = (props): JSX.Element => {
@@ -15,10 +16,11 @@ const ProjectsList = () => {
 
   const [newProjName, setNewProjName] = useState("")
   const [newProjDescr, setNewProjDescr] = useState("")
+  const [selectedDefaultTemplate, setSelectedDefaultTemplate] = useState<{id: string, name: string, descr: string}>({id: "", name: "", descr: ""})
 
   const [currentNode, setCurrentNode] = useState
-    <{ id: string, name: string, descr: string } | any>
-    ({ id: "", name: "", descr: "" })
+    <{ id: string, name: string, descr: string, defaultTemplateID: string } | any>
+    ({ id: "", name: "", descr: "", defaultTemplateID: "" })
 
   const openSchemeCard = (id: string) => {
     request("/view_node", {
@@ -41,9 +43,12 @@ const ProjectsList = () => {
     didRun.current = true
   }, [])
 
+  const [datasetCardOpen, setDatasetCardOpen] = useState(false)
+  const [currentDataset, setCurrentDataset] = useState({name: "", descr: "", scheme: "{}", ui_scheme: "{}", data: "{}"})
+
   return (
     <Box display="flex" maxHeight="100vh">
-      <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ filter: cardOpen || newOpen ? "blur(3px)" : "", overflowY: "scroll" }}>
+      <Box paddingTop={8} paddingRight="30px" flexGrow="1" sx={{ filter: cardOpen || newOpen ? "" : "", overflowY: "scroll" }}>
         {projList.map((item: { id: string; name: string; description: string; }) => (
           <ListLink
             name={item.name}
@@ -55,12 +60,26 @@ const ProjectsList = () => {
         ))}
       </Box>
       <Box position="fixed" width={870} maxHeight="100vh" sx={{ overflowY: "auto", scrollbarGutter: "stable" }}>
-        <TopBar newOpen={() => setNewOpen(true)} projectView={true} />
+        <Box display={cardOpen || datasetCardOpen ? "none" : "block"}>
+          <TopBar newOpen={() => setNewOpen(true)} projectView={true} />
+        </Box>
         <Box display={cardOpen ? "block" : "none"} >
           <ListCard
             closeSelf={() => setCardOpen(false)}
             current={currentNode}
+            clickRow={(id) => {
+              request("/view_form", {
+                id: id
+              }, (response) => {
+                setCurrentDataset(response)
+                setCardOpen(false)
+                setDatasetCardOpen(true)
+              })        
+            }}
           />
+        </Box>
+        <Box display={datasetCardOpen ? "block" : "none"} >
+          <DatasetCard currentDataset={currentDataset} closeSelf={() => {setDatasetCardOpen(false); setCardOpen(true)}}/>
         </Box>
       </Box>
       <Dialog fullWidth open={newOpen} onClose={() => setNewOpen(false)}>
@@ -71,7 +90,7 @@ const ProjectsList = () => {
             margin="dense"
             label="Název"
             fullWidth
-            variant="outlined"
+            variant="filled"
             value={newProjName}
             onChange={(e) => setNewProjName(e.target.value)}
           />
@@ -79,13 +98,15 @@ const ProjectsList = () => {
             margin="dense"
             label="Popis"
             fullWidth
-            variant="outlined"
+            variant="filled"
             multiline
             rows="3"
             sx={{ mb: 2 }}
             value={newProjDescr}
             onChange={(e) => setNewProjDescr(e.target.value)}
           />
+          <Typography variant="h5" sx={{ mb: 1 }}>Vybrat výchozí šablonu</Typography>
+          <TemplateSelect selectedTemplate={selectedDefaultTemplate} setSelectedTemplate={setSelectedDefaultTemplate}/>
           <Stack direction="row" justifyContent="flex-end" mt={2}>
             <Button onClick={() => setNewOpen(false)}>Zrušit</Button>
             <Button
@@ -95,7 +116,8 @@ const ProjectsList = () => {
                 request("/new_node", {
                   name: newProjName,
                   descr: newProjDescr,
-                  upper: null
+                  upper: null,
+                  default_template: selectedDefaultTemplate.id
                 }, () => {
                   setNewOpen(false)
                 })

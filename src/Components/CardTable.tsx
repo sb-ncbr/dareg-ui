@@ -24,38 +24,10 @@ import { AddRounded, DeleteForeverRounded, EditRounded } from '@mui/icons-materi
 import { Button, Stack } from '@mui/material';
 
 interface Data {
-  user: number;
+  user: string;
   name: string;
-  created: number;
+  created: string;
 }
-
-function createData(
-  name: string,
-  user: number,
-  created: number,
-): Data {
-  return {
-    name,
-    user,
-    created,
-  };
-}
-
-const rows = [
-  createData('Cupcake', 305, 3.7),
-  createData('Donut', 452, 25.0),
-  createData('Eclair', 262, 16.0),
-  createData('Frozen yoghurt', 159, 6.0),
-  createData('Gingerbread', 356, 16.0),
-  createData('Honeycomb', 408, 3.2),
-  createData('Ice cream sandwich', 237, 9.0),
-  createData('Jelly Bean', 375, 0.0),
-  createData('KitKat', 518, 26.0),
-  createData('Lollipop', 392, 0.2),
-  createData('Marshmallow', 318, 0),
-  createData('Nougat', 360, 19.0),
-  createData('Oreo', 437, 18.0),
-];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -240,7 +212,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
 const CardTable = (props: {
   addButtonText: string,
-  addButtonClick: () => void
+  addButtonClick: () => void,
+  rows: {name: string, user: string, created: string, id: string, descr: string}[],
+  clickRow: (id: string) => void
 }) => {
 
   const [order, setOrder] = React.useState<Order>('asc');
@@ -248,7 +222,7 @@ const CardTable = (props: {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -261,7 +235,7 @@ const CardTable = (props: {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.name);
+      const newSelected = props.rows.map((n) => n.name);
       setSelected(newSelected);
       return;
     }
@@ -305,16 +279,16 @@ const CardTable = (props: {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
 
-  const visibleRows = React.useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [order, orderBy, page, rowsPerPage],
-  );
+  const [visibleRows, setVisibleRows] = React.useState([{name: "", user: "", created: "", id: "", descr: ""}])
+  React.useEffect(() => {
+    setVisibleRows(
+      stableSort(props.rows, getComparator(order, orderBy)).slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage,)
+    )
+  }, [order, orderBy, page, rowsPerPage, props.rows])
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -330,7 +304,7 @@ const CardTable = (props: {
             orderBy={orderBy}
             onSelectAllClick={handleSelectAllClick}
             onRequestSort={handleRequestSort}
-            rowCount={rows.length}
+            rowCount={props.rows.length}
           />
           <TableBody>
             {visibleRows.map((row, index) => {
@@ -362,12 +336,12 @@ const CardTable = (props: {
                     component="th"
                     id={labelId}
                     scope="row"
-                    onClick={(event) => handleClick(event, row.name)}
+                    onClick={() => props.clickRow(row.id)}
                   >
                     {row.name}
                   </TableCell>
-                  <TableCell onClick={(event) => handleClick(event, row.name)} align="right">{row.user}</TableCell>
-                  <TableCell onClick={(event) => handleClick(event, row.name)} align="right">{row.created}</TableCell>
+                  <TableCell onClick={() => props.clickRow(row.id)} align="right">{row.user}</TableCell>
+                  <TableCell onClick={() => props.clickRow(row.id)} align="right">{row.created}</TableCell>
                   <TableCell align="right" padding="none"><IconButton sx={{ p: 0.25 }} size="small"><EditRounded fontSize="small" /></IconButton></TableCell>
                   <TableCell align="right" padding='checkbox'><IconButton sx={{ p: 0.25 }} size="small"><DeleteForeverRounded fontSize="small" /></IconButton></TableCell>
                 </TableRow>
@@ -386,11 +360,11 @@ const CardTable = (props: {
         </Table>
       </TableContainer>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Button onClick={props.addButtonClick} sx={{ mt: 1 }} size="small" variant="text" startIcon={<AddRounded />}>{props.addButtonText}</Button>
+        <Button onClick={props.addButtonClick} sx={{ mt: 1 }} size="small" variant="contained" startIcon={<AddRounded />}>{props.addButtonText}</Button>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={props.rows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
