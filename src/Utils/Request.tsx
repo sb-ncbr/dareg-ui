@@ -4,7 +4,7 @@ const request = async (url: string, data: Object, callback: (response: any) => v
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   }
-  const res = await fetch("https://api."+window.location.host+url, requestOptions)
+  const res = await fetch("/api"+url, requestOptions)
   switch (res.status) {
     case 401:
       //addWindow(LoginWindow, {lastRequest: {url: url, data: data, callback: callback}})
