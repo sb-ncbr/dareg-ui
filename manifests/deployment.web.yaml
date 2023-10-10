@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    role: frontend
+    role: dareg-frontend
     deployment-id: ${APP}
-  name: dareg-web-web-${APP}
+  name: dareg-web-${APP}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      role: ps-frontend-${APP}
+      role: dareg-frontend-${APP}
   template:
     metadata:
       labels:
-        role: ps-frontend-${APP}
+        role: dareg-frontend-${APP}
     spec:
       imagePullSecrets:
       - name: gitlab-coffee-auth
@@ -54,7 +54,7 @@ metadata:
   name: dareg-web-svc-${APP}
 spec:
   selector:
-    role: ps-frontend-${APP}
+    role: dareg-frontend-${APP}
   type: ClusterIP
   ports:
   - name: default

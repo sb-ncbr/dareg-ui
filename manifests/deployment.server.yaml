@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    role: backend
+    role: dareg-backend
     deployment-id: ${APP}
   name: dareg-server-${APP}
 spec:
@@ -45,6 +45,13 @@ spec:
             capabilities:
               drop:
               - ALL
+          volumeMounts:
+          - mountPath: "/app/instance"
+            name: db-persistance
+      volumes:
+        - name: db-persistance 
+          persistentVolumeClaim:
+            claimName: ${APP}-app-persistance       
 ---
 apiVersion: v1
 kind: Service
@@ -88,3 +95,25 @@ spec:
               name: dareg-backend-svc-${APP}
               port: 
                 name: default
+        - pathType: ImplementationSpecific
+          path: "/api"
+          backend:
+            service:
+              name: dareg-web-svc-${APP}
+              port: 
+                name: default
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}-app-persistance
+  labels:
+    deployment-id: ${APP}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+  storageClassName: nfs-csi
+  volumeMode: Filesystem

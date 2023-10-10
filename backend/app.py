@@ -10,6 +10,8 @@ app.config['SECRET_KEY'] = "kjigjeriogerigsiejgiosjergj7Z37843"
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
 
+INSTANCE_STORAGE_DIR = "instance"
+
 db = SQLAlchemy(app)
 
 def gen_key():
@@ -94,9 +96,9 @@ def view_template():
         node = Node.query.filter_by(id=id).first()
         temp = Template.query.filter_by(id=node.default_template).first()
     if temp.scheme_available:
-        with open(f"scheme/{temp.id}", "r") as file:
+        with open(f"{INSTANCE_STORAGE_DIR}/scheme/{temp.id}", "r") as file:
             scheme = file.read()
-        with open(f"ui_scheme/{temp.id}", "r") as file:
+        with open(f"{INSTANCE_STORAGE_DIR}/ui_scheme/{temp.id}", "r") as file:
             ui_scheme = file.read()
     else:
         scheme = "{}"
@@ -132,9 +134,9 @@ def save_scheme_form():
     ui_scheme = request.json["ui_scheme"]
 
     temp = Template.query.filter_by(id=id).first()
-    with open(f"scheme/{temp.id}", "w") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/scheme/{temp.id}", "w") as file:
         file.write(scheme)
-    with open(f"ui_scheme/{temp.id}", "w") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/ui_scheme/{temp.id}", "w") as file:
         file.write(ui_scheme)
 
     temp.scheme_available = True
@@ -156,7 +158,7 @@ def save_form_data():
     db.session.add(new_form)
     db.session.commit()
 
-    with open(f"data/{new_form.id}", "w") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/data/{new_form.id}", "w") as file:
         file.write(str(data).replace("\'", "\""))
 
     return {}, 200
@@ -169,11 +171,11 @@ def view_form():
     form = Form.query.filter_by(node=id).first()
     temp = Template.query.filter_by(id=form.used_template).first()
 
-    with open(f"scheme/{temp.id}", "r") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/scheme/{temp.id}", "r") as file:
         scheme = file.read()
-    with open(f"ui_scheme/{temp.id}", "r") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/ui_scheme/{temp.id}", "r") as file:
         ui_scheme = file.read()
-    with open(f"data/{form.id}", "r") as file:
+    with open(f"{INSTANCE_STORAGE_DIR}/data/{form.id}", "r") as file:
         data = file.read()
 
     data = {"name": node.name, "descr": node.description, "scheme": scheme, "ui_scheme": ui_scheme, "data": data}
