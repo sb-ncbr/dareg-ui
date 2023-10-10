@@ -22,9 +22,6 @@ const Layout = () => {
     setLeftBarWidth(leftBarBox.current.offsetWidth)
   } ,[])
 
-  const params = useParams();
-  console.log(params)
-
   return (
     <Box bgcolor={"background.default"} color={"text.primary"}>
       <Box position="fixed" ref={leftBarBox}>

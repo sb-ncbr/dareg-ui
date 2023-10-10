@@ -6,6 +6,7 @@ import ListLink from '../Components/ListLink';
 import TemplateEditor from '../Components/TemplateEditor';
 import SchemeCard from '../Components/SchemeCard';
 import request from '../Utils/Request';
+import { useNavigate } from 'react-router-dom';
 
 //interface projectsProps {width: number}
 //const Projects: FC<projectsProps> = (props): JSX.Element => {
@@ -35,18 +36,11 @@ const TemplateList = () => {
     <{ id: string, name: string, descr: string, scheme: string, ui_scheme: string } | any>
     ({ id: "", name: "", descr: "", scheme: "{}", ui_scheme: "{}" })
 
-  const openSchemeCard = (id: string) => {
-    request("/view_template", {
-      id: id
-    }, (response) => {
-      setCurrentScheme(response)
-      setCardOpen(true)
-    })
-  }
-
   const closeSchemeCard = () => {
     setCardOpen(false)
   }
+
+  const navigate = useNavigate()
 
   return (
     <Box display="flex" maxHeight="100vh">
@@ -57,19 +51,13 @@ const TemplateList = () => {
             username={"username"}
             date={"item.date"}
             disabled={cardOpen || editorOpen}
-            onClick={() => openSchemeCard(item.id)}
+            onClick={() => navigate(`/templates/${item.id}`)}
           />
         ))}
       </Box>
       <Box position="fixed" width={870} maxHeight="100vh" sx={{ overflowY: "auto", scrollbarGutter: "stable" }}>
-      <Box display={cardOpen ? "none" : "block"}>
-          <TopBar newOpen={() => setNewSchemeOpen(true)} projectView={false} />
-      </Box>
-        <Box display={cardOpen ? "block" : "none"} >
-          <SchemeCard
-            closeSelf={closeSchemeCard}
-            current={currentScheme}
-          />
+        <Box display={cardOpen ? "none" : "block"}>
+            <TopBar newOpen={() => setNewSchemeOpen(true)} projectView={false} />
         </Box>
       </Box>
       <TemplateEditor open={editorOpen} closeSelf={() => setEditorOpen(false)} id={editorID} />

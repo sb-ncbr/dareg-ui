@@ -5,29 +5,42 @@ import ListCardBase from "./ListCardBase"
 import schema from '../schema.json';
 import uischema from '../uischema.json';
 import { Button, Dialog, DialogContent, Divider, Paper, Stack, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CloseRounded, DeleteForeverRounded, EditRounded, SaveRounded } from "@mui/icons-material";
+import request from "../Utils/Request";
+import { useNavigate, useParams } from "react-router-dom";
 
-const SchemeCard = (props: {
-  closeSelf: () => void,
-  current: { id: string, name: string, descr: string, scheme: string, ui_scheme: string }
-}) => {
+const SchemeCard = () => {
+
+  const [current, setCurrent] = useState({ id: "", name: "", descr: "", scheme: "", ui_scheme: "" })
+
+  const params = useParams()
+
+  useEffect(() => {
+    request("/view_template", {
+      id: params.templateId
+    }, (response) => {
+      setCurrent(response)
+    })
+  }, [])
 
   const [templateSettingsOpen, setTemplateSettingsOpen] = useState(false)
   const [data, setData] = useState<any>({});
-
+  
+  const navigate = useNavigate()
+  
   return (
     <ListCardBase>
       <CardHeader
         openSettings={() => setTemplateSettingsOpen(true)}
-        closeSelf={props.closeSelf}
+        closeSelf={() => navigate("/templates")}
         path={[{ url: "", name: "Šablony" }]}
-        current={props.current.name}
-        descr={props.current.descr}
+        current={current.name}
+        descr={current.descr}
         settingsButtonText="Nastavení šablony"
       />
       <Paper variant="outlined" sx={{ mt: 3, p: 3, pt: 2 }}>
-        <FormsWrapped data={data} setData={setData} schema={props.current.scheme} uischema={props.current.ui_scheme} />
+        <FormsWrapped data={data} setData={setData} schema={current.scheme} uischema={current.ui_scheme} />
       </Paper>
       <Dialog fullWidth open={templateSettingsOpen} onClose={() => setTemplateSettingsOpen(false)}>
         <DialogContent>

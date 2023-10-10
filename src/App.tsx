@@ -15,6 +15,7 @@ import Settings from './Pages/Settings';
 import ListCard from './Components/ListCard';
 import NewDataset from './Components/NewDataset';
 import DatasetCard from './Components/DatasetCard';
+import SchemeCard from './Components/SchemeCard';
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
@@ -33,12 +34,22 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Layout />} >
-            <Route path='projects/:projId' element={<ListCard/>} >
-              <Route path='new' element={<NewDataset/>} />
+            <Route index element={<ProjectsList />} />
+            
+            <Route path='projects'>
+              <Route index element={<ProjectsList />} />
+              <Route path=':projId'>
+                <Route index element={<ListCard/>} />
+                <Route path='new' element={<NewDataset/>} />
+                <Route path=':datasetId' element={<DatasetCard />} />
+              </Route>
             </Route>
-            <Route path='projects' element={<ProjectsList />} />
-            <Route path='projects/:projId/:datasetId' element={<DatasetCard />} />
-            <Route path='templates' element={<TemplateList />} />
+            
+            <Route path='templates'>
+              <Route index element={<TemplateList />} />
+              <Route path=':templateId' element={<SchemeCard />} />
+            </Route>
+            
             <Route path='settings' element={<Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>} />
           </Route>
         </Routes>
