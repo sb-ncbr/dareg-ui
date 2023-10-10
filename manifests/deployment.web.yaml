@@ -88,3 +88,10 @@ spec:
               name: dareg-web-svc-${APP}
               port: 
                 name: default
+        - pathType: ImplementationSpecific
+          path: "/api"
+          backend:
+            service:
+              name: dareg-web-svc-${APP}
+              port: 
+                name: default

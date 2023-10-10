@@ -95,13 +95,6 @@ spec:
               name: dareg-backend-svc-${APP}
               port: 
                 name: default
-        - pathType: ImplementationSpecific
-          path: "/api"
-          backend:
-            service:
-              name: dareg-web-svc-${APP}
-              port: 
-                name: default
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
