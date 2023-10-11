@@ -1,9 +1,17 @@
-import { Box, Button, Card, CardContent, CardMedia, Link, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Divider, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import ListCardBase from '../Components/ListCardBase';
+import { useAuth, hasAuthParams } from 'react-oidc-context';
 import ceitec_logo from '../ceitec_logo.png'
+import { useLocation } from 'react-router-dom';
+import useLocalStorage from '../Utils/useLocalStorage';
 
 const Login = () => {
+
+  const auth = useAuth();
+  const location = useLocation();
+  const r = "dareg-"+(Math.random() + 1).toString(36).substring(7);
+  const [authNonce, setAuthNonce] = useLocalStorage(r, "none");
+
   const [tab, setTab] = useState("login");
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -13,15 +21,30 @@ const Login = () => {
       setTab(newTab);
   };
 
+  const initLogin = () => {
+    if (!hasAuthParams() &&
+        !auth.isAuthenticated && !auth.activeNavigator && !auth.isLoading) {
+            const auth_state = {
+                id: r,
+                redirect: (location?.state?.from || "/").toString(),
+                expires: new Date().toLocaleTimeString(),
+            }
+            setAuthNonce(auth_state);
+        auth.signinRedirect({state: {"auth_request_id": r}});
+    }
+  };
+
+
   return (
-    <Box alignItems="center" justifyContent="center" display="flex" height="100vh">
       <Card variant="outlined" sx={{ width: 400 }}>
         <CardContent>
           <CardMedia
             component="img"
             image={ceitec_logo}
             />
-          <ToggleButtonGroup
+            <Typography align='center'>DAREG - Dataset Registry</Typography>
+            <Divider variant='middle' sx={{mt: 2, mb:2 }}></Divider>
+          {/* <ToggleButtonGroup
             color="primary"
             value={tab}
             exclusive
@@ -51,10 +74,10 @@ const Login = () => {
               <TextField sx={{ mt: 2 }} label="Repeat password" variant="outlined" fullWidth />
               <Button sx={{ mt: 2 }} size="large" variant="outlined" fullWidth>Sign-up</Button>
             </Box>
-          }
+          } */}
+          <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>Log-in using CEITEC ID</Button>
         </CardContent>
       </Card>
-    </Box>
   );
 }
 

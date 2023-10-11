@@ -4,15 +4,9 @@ RUN adduser -D 1000 -u 1000
 
 WORKDIR /app
 
-RUN mkdir ./instance && chown -R 1000:1000 ./instance
-RUN mkdir ./instance/scheme && chown -R 1000:1000 ./instance/scheme
-RUN mkdir ./instance/ui_scheme && chown -R 1000:1000 ./instance/ui_scheme
-RUN mkdir ./instance/data && chown -R 1000:1000 ./instance/data
-RUN mkdir ./conf && chown -R 1000:1000 ./conf
+COPY --chown=1000:1000 backend/requirements.txt backend/app.py backend/makedb.py backend/init.sh ./
 
-COPY --chown=1000:1000 backend/requirements.txt backend/app.py backend/makedb.py ./
-
-RUN pip install -r requirements.txt && python3 makedb.py
+RUN pip install -r requirements.txt && chown 1000:1000 /app
 
 ENV FLASK_ENV production
 
@@ -20,4 +14,4 @@ EXPOSE 5000
 
 USER 1000
 
-CMD ["gunicorn", "-b", ":5000", "app:app"]
+CMD ["/bin/sh", "-c", "./init.sh"]

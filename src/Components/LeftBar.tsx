@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, CardMedia, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Typography } from '@mui/material';
-import { AccountCircleRounded, AssignmentIndRounded, BackupTableRounded, BiotechRounded, ExitToAppRounded, FolderCopyRounded, LogoutRounded, ScienceRounded, SettingsRounded } from '@mui/icons-material';
+import { Box, CardMedia, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material';
+import { AssignmentIndRounded, BackupTableRounded, ExitToAppRounded, FolderCopyRounded, SettingsRounded } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 import ceitec_logo from '../ceitec_logo.png'
 import { useLocation } from 'react-router-dom';
+import { useAuth } from 'react-oidc-context';
 
 const LeftBar = (props: {setSection: (value: string) => void}) => {
   const LeftButton = styled(ListItemButton)(({}) => ({
@@ -13,6 +13,7 @@ const LeftBar = (props: {setSection: (value: string) => void}) => {
     }
   }))
 
+  const auth = useAuth();
   const { t } = useTranslation()
   const location = useLocation();
 
@@ -58,7 +59,7 @@ const LeftBar = (props: {setSection: (value: string) => void}) => {
               <ListItemIcon>
                 <AssignmentIndRounded />
               </ListItemIcon>
-              <ListItemText primary={t('LeftBar.account')} />
+              <ListItemText primary={auth.user?.profile.name || t('LeftBar.account')} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
