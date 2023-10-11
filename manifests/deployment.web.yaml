@@ -45,6 +45,13 @@ spec:
             capabilities:
               drop:
               - ALL
+          volumeMounts:
+          - name: app-config
+            mountPath: /usr/share/nginx/html/configs
+      volumes:
+        - name: app-config 
+          configMap:
+            name: production-config
 ---
 apiVersion: v1
 kind: Service

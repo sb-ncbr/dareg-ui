@@ -1,7 +1,10 @@
 const request = async (url: string, data: Object, callback: (response: any) => void) => {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json' ,
+      // 'Authorization': 'Bearer '+auth.user?.access_token
+    },
     body: JSON.stringify(data)
   }
   const res = await fetch("/api"+url, requestOptions)

@@ -30,6 +30,7 @@ i18n
             uploadNewJson: "upload a new JSON",
           },
           LeftBar: {
+            home: "Home",
             projects: "Projects",
             templates: "Templates",
             logout: "Logout",
@@ -75,6 +76,16 @@ i18n
             description: "Description",
             using: "using",
             save: "Save"
+          },
+          auth: {
+            welcome: "Welcome",
+            logout: "Log out"
+          },
+          profile: {
+            name: "Name",
+            organization: "Organization",
+            email: "E-mail",
+            logged: "Logged in as"
           }
         }
       },
@@ -90,6 +101,7 @@ i18n
             uploadNewJson: "nahrát jiný JSON",
           },
           LeftBar: {
+            home: "Domov",
             projects: "Projekty",
             templates: "Šablony",
             logout: "Odhlásit se",
@@ -135,6 +147,16 @@ i18n
             description: "Popis",
             using: "využívá",
             save: "Uložit"
+          },
+          auth: {
+            welcome: "Vítejte",
+            logout: "Odhlásit se"
+          },
+          profile: {
+            name: "Jméno",
+            organization: "Organizace",
+            email: "E-mail",
+            logged: "Přihlášen pomoci"
           }
         }
       }
