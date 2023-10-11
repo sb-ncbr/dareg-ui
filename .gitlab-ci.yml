@@ -13,6 +13,7 @@ variables:
   DOCKER_IMAGE_NAME_BE: "$HARBOR_URL/xrosinec/dareg-server"
   CLUSTER_DOMAIN: "dyn.cloud.e-infra.cz"
   DEPLOYMENT_TLD: dareg.${CLUSTER_DOMAIN}
+  DEPLOYMENT_TLD_FIX: "dareg.biodata.ceitec.cz"
   K8S_AGENT_NAME: agent-dareg
   K8S_NAMESPACE: ceitec-dareg-ns
 
@@ -104,6 +105,7 @@ review:
     APP_COMPONENT: web
     APP: review-$CI_COMMIT_REF_SLUG
     APP_HOST: $CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
+    APP_HOST_FIX: test.${DEPLOYMENT_TLD_FIX}
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
@@ -120,6 +122,7 @@ review-be:
     APP_COMPONENT: server
     APP: review-api-$CI_COMMIT_REF_SLUG
     APP_HOST: api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
+    APP_HOST_FIX: test.${DEPLOYMENT_TLD_FIX}
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
@@ -136,9 +139,10 @@ staging:
   variables:
     APP: staging
     APP_HOST: stage.${DEPLOYMENT_TLD}
+    APP_HOST_FIX: stage.${DEPLOYMENT_TLD_FIX}
   environment:
     name: staging
-    url: https://stage.${DEPLOYMENT_TLD}
+    url: https://stage.${DEPLOYMENT_TLD_FIX}
   only:
     - master
   needs: ["staging-be"]
@@ -149,9 +153,10 @@ staging-be:
   variables:
     APP: staging-api
     APP_HOST: api.stage.${DEPLOYMENT_TLD}
+    APP_HOST_FIX: api.stage.${DEPLOYMENT_TLD_FIX}
   environment:
     name: staging
-    url: https://api.stage.${DEPLOYMENT_TLD}
+    url: https://api.stage.${DEPLOYMENT_TLD_FIX}
   only:
     - master
 
@@ -161,10 +166,11 @@ production:
   variables:
     APP: production
     APP_HOST: ${DEPLOYMENT_TLD}
+    APP_HOST_FIX: ${DEPLOYMENT_TLD_FIX}
   when: manual
   environment:
     name: production
-    url: https://${DEPLOYMENT_TLD}
+    url: https://${DEPLOYMENT_TLD_FIX}
   only:
     - master
   needs: ["production-be"]
@@ -175,10 +181,11 @@ production-be:
   variables:
     APP: production-api
     APP_HOST: "api.${DEPLOYMENT_TLD}"
+    APP_HOST_FIX: api.${DEPLOYMENT_TLD_FIX}
   when: manual
   environment:
     name: production
-    url: "https://api.${DEPLOYMENT_TLD}"
+    url: "https://api.${DEPLOYMENT_TLD_FIX}"
   only:
     - master
 

@@ -83,9 +83,27 @@ spec:
   tls:
   - hosts:
       - ${APP_HOST}
+      - ${APP_HOST_FIX}
     secretName: ${APP}-dareg-web-dyn-cloud-e-infra-cz
   rules:
   - host: ${APP_HOST}
+    http:
+      paths:
+        - pathType: ImplementationSpecific
+          path: "/"
+          backend:
+            service:
+              name: dareg-web-svc-${APP}
+              port: 
+                name: default
+        - pathType: ImplementationSpecific
+          path: "/api"
+          backend:
+            service:
+              name: dareg-web-svc-${APP}
+              port: 
+                name: default
+  - host: ${APP_HOST_FIX}
     http:
       paths:
         - pathType: ImplementationSpecific
