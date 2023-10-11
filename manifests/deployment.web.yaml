@@ -100,7 +100,7 @@ spec:
           path: "/api"
           backend:
             service:
-              name: dareg-web-svc-${APP}
+              name: dareg-backend-svc-${APP}
               port: 
                 name: default
   - host: ${APP_HOST_FIX}
@@ -117,6 +117,6 @@ spec:
           path: "/api"
           backend:
             service:
-              name: dareg-web-svc-${APP}
+              name: dareg-backend-svc-${APP}
               port: 
                 name: default

@@ -122,7 +122,7 @@ review-be:
     APP_COMPONENT: server
     APP: review-api-$CI_COMMIT_REF_SLUG
     APP_HOST: api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
-    APP_HOST_FIX: test.${DEPLOYMENT_TLD_FIX}
+    APP_HOST_FIX: api.test.${DEPLOYMENT_TLD_FIX}
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
