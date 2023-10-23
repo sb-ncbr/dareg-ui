@@ -52,7 +52,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     }, [])
 
     useEffect(() => {
-        if(mode==='edit'){
+        if(mode==='edit' || mode==='new'){
             (async () => {
                 setTemplateData(await get(`/templates/${selectedTemplate?.id}`))
             })()
