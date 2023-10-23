@@ -3,8 +3,8 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import LeftBar from './LeftBar';
 import { Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Settings from '../Pages/Settings';
-import ProjectsList from '../Pages/ProjectList';
-import TemplateList from '../Pages/TemplateList';
+import ProjectsList from '../Pages/Projects/ProjectList';
+import TemplateList from '../Pages/Templates/TemplateList';
 
 const LoginLayout = () => {
 

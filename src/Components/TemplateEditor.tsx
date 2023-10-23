@@ -1,21 +1,14 @@
-import { Box, Button, ButtonGroup, Dialog, IconButton, Input, Stack, TextField, TextareaAutosize, ToggleButton, ToggleButtonGroup, Typography, styled } from "@mui/material";
-import schema from '../schema.json';
-import uischema from '../uischema.json';
+import { Box, Button, ButtonGroup, Dialog, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, styled } from "@mui/material";
 import {
-  materialCells,
   materialRenderers,
 } from '@jsonforms/material-renderers';
 import RatingControl from '../RatingControl';
 import ratingControlTester from '../ratingControlTester';
-import VersionPicker from './VersionPicker';
-import ListCardBase from './ListCardBase';
-import { useTranslation } from 'react-i18next';
-import { useEffect, useRef, useState } from "react";
-import { JsonForms } from "@jsonforms/react";
-import { Add, AddRounded, RemoveRounded, SaveRounded, TextDecreaseRounded, TextIncreaseRounded, UndoRounded, Visibility, VisibilityRounded } from "@mui/icons-material";
-import { UISchemaElement } from "@jsonforms/core";
-import request from "../Utils/Request";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { SaveRounded, TextDecreaseRounded, TextIncreaseRounded, UndoRounded, VisibilityRounded } from "@mui/icons-material";
 import FormsWrapped from "./FormsWrapped";
+import request from "../Utils/Request";
+import { TemplatesData } from "../Pages/Templates/TemplateList";
 
 const FullscreenTextArea = styled("textarea")(({ theme }) => ({
   height: "100%",
@@ -26,19 +19,29 @@ const FullscreenTextArea = styled("textarea")(({ theme }) => ({
   fontFamily: "monospace"
 }));
 
-const TemplateEditor = (props: {
+export type TemplateEditorState = {
+  name: string,
+  description: string,
+  scheme: string,
+  uischeme: string,
+  id?: string
+}
+
+type TemplateEditorProps = {
+  data: TemplatesData,
+  setData: Dispatch<SetStateAction<TemplatesData>>,
   open: boolean,
   closeSelf: () => void,
-  id: string
-}) => {
+  id?: string
+}
+
+const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProps): JSX.Element => {
 
   const renderers = [
     ...materialRenderers,
     //register custom renderers
     { tester: ratingControlTester, renderer: RatingControl },
   ];
-
-  const [data, setData] = useState<any>({});
 
   const [schemeTextArea, setSchemeTextArea] = useState("")
   const [schemeRenderJSON, setSchemeRenderJSON] = useState("")
@@ -49,30 +52,28 @@ const TemplateEditor = (props: {
   const [editorMode, setEditorMode] = useState("scheme")
 
   useEffect(() => {
-    if (props.id !== "")
-      request("/get_scheme_form", {
-        id: props.id
-      }, (response) => {
-        console.log(response)
-        setSchemeTextArea(response.scheme)
-        setUiTextArea(response.ui_scheme)
-      })
-  }, [props.id])
+    setSchemeTextArea(data.scheme)
+    setSchemeRenderJSON(data.uischeme)
+  }, [])
 
   const saveForm = () => {
-    request("/save_scheme_form", {
-      id: props.id,
+    setData({
+      name: data.name,
+      description: data.description,
+      id: id,
       scheme: schemeTextArea,
-      ui_scheme: uiTextArea
-    }, () => {
-      props.closeSelf()
+      uischeme: uiTextArea,
     })
+    closeSelf()
   }
 
   return (
-    <Dialog fullScreen open={props.open} onClose={props.closeSelf}>
+    <Dialog fullScreen open={open} onClose={closeSelf}>
       <Box display="flex" flexDirection="column" height="100vh" padding={3}>
-        <Typography variant="h5" sx={{ mb: 1 }}>plants_schema_2023</Typography>
+        <Stack direction={"row"} spacing={3} sx={{mb: 1}}>
+          <Typography variant="h5">Editing template: {data.name}</Typography>
+          <Typography variant="h6">({data.description})</Typography>
+        </Stack>
         <Box height="100%" display="flex" gap={2} justifyContent="space-between" >
           <Box height="100%" width="50%" display="flex">
             <Box width="100%" display={editorMode === "ui" ? "none" : "flex"}>
@@ -132,7 +133,7 @@ const TemplateEditor = (props: {
             </Button>
           </Stack>
           <Stack direction={"row"} gap={2}>
-            <Button startIcon={<UndoRounded />} onClick={props.closeSelf}>Zahodit změny</Button>
+            <Button startIcon={<UndoRounded />} onClick={closeSelf}>Zahodit změny</Button>
             <Button startIcon={<SaveRounded />} variant="contained" onClick={saveForm}>Uložit</Button>
           </Stack>
         </Stack>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -7,76 +7,120 @@ import { CssBaseline, ThemeProvider, createTheme, useMediaQuery } from '@mui/mat
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Layout from './Components/Layout';
 import Login from './Pages/Login';
-import ProjectsList from './Pages/ProjectList';
-import TemplateList from './Pages/TemplateList';
+import ProjectsList from './Pages/Projects/ProjectList';
+import TemplateList from './Pages/Templates/TemplateList';
 import Settings from './Pages/Settings';
 import ListCard from './Components/ListCard';
 import NewDataset from './Components/NewDataset';
 import DatasetCard from './Components/DatasetCard';
-import SchemeCard from './Components/SchemeCard';
-import { AuthProvider } from 'react-oidc-context';
+import { hasAuthParams, useAuth } from 'react-oidc-context';
 import LoginLayout from './Components/LoginLayout';
-import config from './Config';
 import AuthenticatedRoute from './Components/AuthenticatedRoute';
 import OIDCCallback from './Components/OIDCCallback';
-import Profile from './Components/Profile';
+import Profile from './Pages/Profile';
+import TemplatesNew from './Pages/Templates/TemplatesEdit';
+import TemplateView from './Pages/Templates/TemplateView';
+import { CachePolicies, Provider } from 'use-http';
+import { User, WebStorageStateStore } from 'oidc-client-ts';
+import config from './Config';
+import ProjectEdit from './Pages/Projects/ProjectEdit';
+import DatasetView from './Pages/Datasets/DatasetView';
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
   const [selectedTheme, setSelectedTheme] = useState<"dark"|"light"|"system">("system")
   const darkTheme = createTheme({
     palette: {
-      mode: selectedTheme==="system" ? (prefersDarkMode ? "dark" : "light") : selectedTheme
+      mode: selectedTheme==="system" ? (prefersDarkMode ? "light" : "dark") : selectedTheme
     }
   })
+  const auth = useAuth()
 
-  const oidcConfig = {
-    authority: config.REACT_APP_OIDC_AUTHORITY,
-    client_id: config.REACT_APP_OIDC_CLIENT_ID,
-    scope: config.REACT_APP_OIDC_SCOPE,
-    response_type: "code",
-    // In case of e-infra cz use http://localhost:3000
-    redirect_uri: (new URL(config.REACT_APP_OIDC_REDIRECT_URL, window.location.origin)).href,
-    metadata: {
-      issuer: config.REACT_APP_OIDC_METADATA_issuer,
-      jwks_uri: config.REACT_APP_OIDC_METADATA_jwks_uri,
-      authorization_endpoint: config.REACT_APP_OIDC_METADATA_authorization_endpoint,
-      token_endpoint: config.REACT_APP_OIDC_METADATA_token_endpoint,
-      userinfo_endpoint: config.REACT_APP_OIDC_METADATA_userinfo_endpoint,
-      end_session_endpoint: config.REACT_APP_OIDC_METADATA_end_session_endpoint,
-    },
-    automaticSilentRenew: false,
-    checkSessionIntervalInSeconds: 3600
-  };
+  switch (auth.activeNavigator) {
+    case "signinSilent":
+        return <div>Signing you in...</div>;
+    case "signoutRedirect":
+        return <div>Signing you out...</div>;
+}
+
+if (auth.isLoading) {
+    return <div>Loading...</div>;
+}
+
+if (auth.error) {
+    return <div>Oops... {auth.error.message}</div>;
+}
+
+const getUser = () => {
+  const oidcStorage = sessionStorage.getItem(`oidc.user:${config.REACT_APP_OIDC_AUTHORITY}:${config.REACT_APP_OIDC_CLIENT_ID}`)
+  if (!oidcStorage) {
+      return null;
+    }
+  return User.fromStorageString(oidcStorage);
+}
+
+const options = {
+  interceptors: {
+    request: ({ options, url, path, route }: any) => {
+      const u = getUser();
+      options.headers.Authorization = `Bearer ${u?.id_token}`
+      return options
+    }
+  },
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  cachePolicy: CachePolicies.NO_CACHE,
+  retries: 1,
+  retryOn: async ({ attempt, error, response }: any) => {
+    // returns true or false to determine whether to retry
+    return error || response && response.status >= 300
+  },
+
+  retryDelay: ({ attempt, error, response }: any) => {
+    // exponential backoff
+    return Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000)
+    // linear backoff
+    return attempt * 1000
+  }
+}
 
   return (
-    <>
-      <AuthProvider {...oidcConfig}>
+    <Provider url='http://localhost:5000/api' options={options}>
+      <BrowserRouter>
         <CssBaseline/>
         <ThemeProvider theme={darkTheme}>
-            <BrowserRouter>
               <Routes>
                 <Route element={<AuthenticatedRoute />}>
                   <Route path='/' element={<Layout />} >
                     <Route index element={<ProjectsList />} />
-                    
+
                     <Route path='projects'>
                       <Route index element={<ProjectsList />} />
-                      <Route path=':projId'>
+                      <Route path='new' element={<ProjectEdit mode={'new'} />} />
+                      <Route path=':projectId' element={<ProjectEdit mode={'view'} />} />
+                      <Route path=':projectId/edit' element={<ProjectEdit mode={'edit'} />} />
+                      <Route path=':projectId/datasets' element={<DatasetCard />} />
+                      <Route path=':projectId/datasets/new' element={<DatasetView mode={'new'} />} />
+                      <Route path=':projectId/datasets/:datasetId' element={<DatasetView mode='view' />} />
+                      <Route path=':projectId/datasets/:datasetId/edit' element={<DatasetView mode='edit' />} />
+                      {/* <Route path=':projId'>
                         <Route index element={<ListCard/>} />
-                        <Route path='new' element={<NewDataset/>} />
-                        <Route path=':datasetId' element={<DatasetCard />} />
-                      </Route>
+                        <Route path='dataset' element={<DatasetCard />}>
+                          <Route path=':datasetId/edit' element={<ProjectEdit editMode={true} />} />
+                        </Route>
+                      </Route> */}
                     </Route>
                     
                     <Route path='templates'>
                       <Route index element={<TemplateList />} />
-                      <Route path=':templateId' element={<SchemeCard />} />
+                      <Route path=':templateId' element={<TemplateView />}>
+                      </Route>
+                      <Route path=':templateId/edit' element={<TemplatesNew editMode={true} />} />
+                      <Route path='new' element={<TemplatesNew editMode={false} />} />
                     </Route>
                     
-                    <Route path='settings' element={<Settings selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme}/>} />
-
-                    <Route path='account' element={<Profile />} />
+                    <Route path='account' element={<Profile selectedTheme={selectedTheme} setSelectedTheme={setSelectedTheme} />} />
                   </Route>
                 </Route>
                 <Route element={<LoginLayout />} >
@@ -84,12 +128,15 @@ const App = () => {
                   <Route path="/auth" element={< OIDCCallback />} />
                 </Route>
               </Routes>
-            </BrowserRouter>
         </ThemeProvider>
-      </AuthProvider>
-    </>
+      </BrowserRouter>
+    </Provider>
   );
 }
 
 export default App;
+
+function async(arg0: () => void) {
+  throw new Error('Function not implemented.');
+}
 

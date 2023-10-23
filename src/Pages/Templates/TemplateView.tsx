@@ -1,0 +1,111 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { TemplateEditorState } from "../../Components/TemplateEditor";
+import useApi from "../../Utils/useApi";
+import { Box, Button, LinearProgress, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import ContentCard from "../../Components/ContentCard";
+import ContentHeader from "../../Components/ContentHeader";
+import FormsWrapped from "../../Components/FormsWrapped";
+import { Edit } from "@mui/icons-material";
+import { useFetch } from "use-http";
+import { useAuth } from "react-oidc-context";
+import { TemplatesData } from "./TemplateList";
+
+const TemplateView = () => {
+    const navigate = useNavigate();
+    const auth = useAuth()
+    const { templateId } = useParams()
+    const {get, post, patch, response, loading, error } = useFetch(`/templates/${templateId}`);
+    const [data, setData] = useState<TemplatesData>();
+
+    useEffect(() => {
+        (async () => {
+            const templateData = await get();
+            setData(templateData)
+            console.log(templateData)
+        })()
+    }, [])
+
+
+    if (data){
+        return (
+            <Box>
+                <ContentHeader title={"Template: View"} actions={
+                    <Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/templates/${data?.id}/edit`)}>
+                        Edit
+                    </Button>
+                }>
+                <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Template name"
+                        fullWidth
+                        variant="filled"
+                        value={data?.name}
+                        disabled={true}
+                        sx={{maxWidth: "33.33%", background: "#FFF"}}
+                        />
+                    <TextField
+                        margin="dense"
+                        label="Template description"
+                        fullWidth
+                        variant="filled"
+                        value={data?.description}
+                        disabled={true}
+                        sx={{maxWidth: "66.67%", background: "#FFF"}}
+                        />
+                </Stack>
+            </ContentHeader>
+            <ContentCard title={"Form"}>
+                {(data?.scheme || data?.uischeme) ? 
+                    <FormsWrapped schema={data.scheme} uischema={data.uischeme} data={{}} setData={() => {}} />
+                    : <>No schema defined, use "Edit templates" section</>}
+                </ContentCard>
+            </Box>
+        )
+    } else {
+        return (
+            <Box>
+                <ContentHeader title={"Template: View"} actions={
+                    <Skeleton>
+                        <Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => {}}>
+                            Edit
+                        </Button>
+                    </Skeleton>
+                    }>
+                    <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
+                        <Skeleton width={"33%"}>
+                            <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Template name"
+                            fullWidth
+                            variant="filled"
+                            value={""}
+                            disabled={true}
+                            sx={{maxWidth: "33.33%", background: "#FFF"}}
+                            />
+                        </Skeleton>
+                        <Skeleton width={"67%"}>
+                        <TextField
+                            margin="dense"
+                            label="Template description"
+                            fullWidth
+                            variant="filled"
+                            value={""}
+                            disabled={true}
+                            sx={{maxWidth: "66.67%", background: "#FFF"}}
+                            />
+                        </Skeleton>
+                    </Stack>
+                </ContentHeader>
+                <ContentCard title={"Form"}>
+                    <Skeleton />
+                </ContentCard>
+            </Box>
+        )
+    }
+}
+
+export default TemplateView;

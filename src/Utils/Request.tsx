@@ -1,9 +1,14 @@
+import { useAuth } from "react-oidc-context";
+
 const request = async (url: string, data: Object, callback: (response: any) => void) => {
+
+  // const auth = useAuth()
+
   const requestOptions = {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json' ,
-      // 'Authorization': 'Bearer '+auth.user?.access_token
+      // 'Authorization': 'Bearer '+auth.user?.id_token
     },
     body: JSON.stringify(data)
   }
@@ -22,4 +27,4 @@ const request = async (url: string, data: Object, callback: (response: any) => v
   }
 };
 
-export default request;
+export default request

@@ -1,25 +1,24 @@
 import { Autocomplete, Box, Button, Dialog, DialogContent, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import request from "../Utils/Request";
+import { useNavigate } from "react-router-dom";
+import { useFetch } from "use-http";
 
 const TemplateSelect = (props: {
   selectedTemplate: {id: string, name: string, descr: string},
   setSelectedTemplate: (temp: {id: string, name: string, descr: string}) => void
 }) => {
 
-  const [schemeList, setSchemeList] = useState<any>([])
-  
-  const didRun = useRef(false)
+  const [ data, setData ] = useState<any>();
+  const {get, post, patch, response, loading, error } = useFetch(`/templates`);
+  const navigate = useNavigate()
+
   useEffect(() => {
-    if (didRun.current === false)
-      request("/get_templates", {
-
-      }, (response) => {
-        setSchemeList(response)
-      })
-    didRun.current = true
+    (async () => {
+      const fetched = await get()
+      setData(fetched)
+    })()
   }, [])
-
 
   return (
     <>
@@ -39,11 +38,12 @@ const TemplateSelect = (props: {
       <Autocomplete
         disableClearable
         id="combo-box-demo"
-        options={schemeList}
+        options={data}
+        sx={{ml: 0, width: "33%"}}
         getOptionLabel={(option: any) => option.name}
         value={props.selectedTemplate}
         onChange={(e, value) => props.setSelectedTemplate(value)}
-        renderInput={(params) => <TextField variant="filled" {...params} label="Šablona" />}
+        renderInput={(params) => <TextField variant="filled" {...params} label="Scheme" />}
       />
     </>
   )
