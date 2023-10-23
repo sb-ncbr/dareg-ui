@@ -68,7 +68,7 @@ const options = {
 }
 
   return (
-    <Provider url='http://localhost:5000/api' options={options}>
+    <Provider url={config.REACT_APP_BASE_API_URL} options={options}>
       <BrowserRouter>
         <CssBaseline/>
         <ThemeProvider theme={darkTheme}>
