@@ -86,7 +86,7 @@ const options = {
 }
 
   return (
-    <Provider url='http://localhost:5000/api' options={options}>
+    <Provider url='/api' options={options}>
       <BrowserRouter>
         <CssBaseline/>
         <ThemeProvider theme={darkTheme}>
