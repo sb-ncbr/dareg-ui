@@ -1,15 +1,15 @@
 import { DataObject, Edit, Save } from "@mui/icons-material";
-import { Box, Button, Divider, Stack, TextField } from "@mui/material";
+import { Alert, Box, Button, Skeleton, Stack, TextField } from "@mui/material";
 import ContentHeader from "../../Components/ContentHeader";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ContentCard from "../../Components/ContentCard";
 import FormsWrapped from "../../Components/FormsWrapped";
-import { TemplateEditorState } from "../../Components/TemplateEditor";
 import useFetch from "use-http";
 import { ProjectsData } from "../Projects/ProjectList";
 import { ProjectDataStateKeys } from "../Projects/ProjectEdit";
-import { parse, stringify } from 'yaml'
+import { stringify } from 'yaml'
+import { TemplatesData } from "../Templates/TemplateList";
 
 type AvailableViewModes = 'edit' | 'view' | 'new';
 
@@ -29,136 +29,290 @@ type FormData = {
     data: string,
     creator?: string,
     created_at?: string
+}
 
+type DatasetsData = {
+    dataset: ProjectsData,
+    project: ProjectsData,
+    template: TemplatesData,
+    form: FormData,
 }
 
 const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
 
     const navigate = useNavigate();
-    const { projectId, datasetId } = useParams();
-    
-    const [ template, setTemplate ] = useState<TemplateEditorState>();
-    const [ data, setData ] = useState<ProjectsData>({name: "", description: "", default_template: "", created_at: "", creator: "", upper: projectId});
-    const [ formData, setFormData ] = useState<FormData>({node: "", data: "{}", used_template: "", });
-    const [ formDataString, setFormDataString ] = useState({})
-    const [ project, setProject ] = useState<ProjectsData>();
+    const { get, post, patch, loading } = useFetch();
 
-    const { get, post, patch } = useFetch();
+    const { projectId, datasetId } = useParams();
+
+    const [ data, setData ] = useState<DatasetsData>({dataset: {name: "", description: ""}, form: {data: "{}"}, template: {uischeme: "", scheme: ""}} as DatasetsData);
+    const [ formDataString, setFormDataString ] = useState({})
+    const [ error, setError ] = useState<boolean>(false)
+
+    const [ editorMode, setEditorMode ] = useState<"form"|"editor">("form")
+    const toggleEditor = useCallback(() => setEditorMode((prevState) => prevState==="form" ? "editor" : "form"), [])
 
     useEffect(() => {
         (async () => {
-            const project = await get(`/nodes/${projectId}`)
-            setProject(project)
-            const template = await get(`/templates/${project.default_template}`)
-            setTemplate(template)
-            if (mode==='view'){
-                const node_data = await get(`/nodes/${datasetId}`)
-                setData(node_data)
-                const form_data = await get(`/form?node=${datasetId}`)
-                console.log(form_data)
-                setFormData(formData)
-                setFormDataString(JSON.parse(formData.data))
-                }
-            })()
-    }, [])
+          await get(`/nodes/${projectId}`)
+            .then((response: ProjectsData): ProjectsData => {
+              setData((prevState) => ({
+                ...prevState,
+                project: response
+              }));
+              return response
+            })
+            .then((r) => get(`/templates/${r.default_template}`))
+            .then((response) => {
+              setData((prevState) => ({
+                ...prevState,
+                template: response
+              }));
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+            if (mode==='view' || mode==='edit'){
+                await get(`/nodes/${datasetId}`)
+                .then((response) => {
+                    setData((prevState) => ({
+                        ...prevState,
+                        dataset: response
+                    }));
+                })
+                .then(() => {
+                    return get(`/form?node=${datasetId}`);
+                })
+                .then((response) => {
+                    setData((prevState) => ({
+                        ...prevState,
+                        form: response
+                    }))
+                    return JSON.parse(response.data)
+                })
+                .then((formData) => {
+                    setFormDataString(formData)
+                })
+                .catch((error) => {
+                    setError(true)
+                    console.log(error)
+                });
+            }
+        })()
+    }, [datasetId, projectId]);
 
     const saveForm = (): void => {
         let updatedTemplate;
         switch(mode){
             case 'edit':
-                console.log(data)
-                updatedTemplate = patch(`/nodes/${datasetId}`, {...data, upper: projectId})
-                    .then((response) => {
-                        return patch(`/form/${formData.id}`, {id: formData?.id, data: formData.data, node: response.id, used_scheme: template?.id});
-                        navigate(`/projects/${projectId}/datasets/${datasetId}`)
-                    })
+                patch(`/nodes/${datasetId}`, {name: data.dataset.name, description: data.dataset.description})
+                .then((response) => (patch(`/form/${data.form.id}`, {...data.form}))
+                .then((response) => {
+                    navigate(`/projects/${projectId}/datasets/${datasetId}`)
+                }))
                 break;
             case 'new':
-                updatedTemplate = post(`/nodes`, {...data, default_template: project?.default_template})
-                .then((response) => {
-                    console.log(template, project, formData)
-                    return post(`/form`, {data: formData.data, node: response.id, used_template: template?.id})
+                updatedTemplate = post(`/nodes`, {
+                    name: data.dataset.name, 
+                    description: data.dataset.description, 
+                    default_template: data.project.default_template, 
+                    upper: data.project.id
                 })
-                .then((response) => {console.log(response); navigate(`/projects/${projectId}/datasets/${response.id}`)})
+                .then((response) => {
+                    return [response.id, post(`/form`, {data: data.form.data, node: response.id, used_template: data.template.id})]
+                })
+                .then(([id, response]) => {console.log(response); navigate(`/projects/${projectId}/datasets/${id}`)})
                 break;
         }
     }
 
-    useEffect(() => {
-        setFormData({
-            ...formData,
-            data: JSON.stringify(formDataString)
-        })
-    }, [formDataString])
-
-    const handleChange = (inputId: ProjectDataStateKeys, e: any): void => {
+    const handleChange = (inputId: ProjectDataStateKeys | keyof FormData, dataset: keyof DatasetsData, e: any): void => {
         if(!inputId){ 
             return 
         }
         setData({
             ...data,
-            [inputId]: e.target.value
+            [dataset]: {
+                ...data[dataset],
+                [inputId]: e.target.value
+            }
         })
     }
 
-    console.log(formData.data)
+    useEffect(() => {
+        setData((prevState) => {
+            return {
+                ...prevState,
+                form: {
+                    ...prevState.form,
+                    data: JSON.stringify(formDataString)
+                },
+            }
+        })
+    }, [formDataString])
+
+    useEffect(() => {
+        try{
+            setFormDataString(JSON.parse(data.form.data))
+        } catch (e) {
+            console.log(e, data.form.data)
+            setFormDataString({})
+        }
+    }, [data.form.data])
 
     const downloadMetadata = (): void => {
         const element = document.createElement("a");
-        const file = new Blob([stringify(formData)], {type: 'text/plain'});
+        const file = new Blob([stringify(JSON.parse(data.form.data))], {type: 'text/plain'});
         element.href = URL.createObjectURL(file);
-        element.download = `${data.name || data.id}-${(new Date()).toISOString()}.metadata.yaml`;
+        element.download = `${data.dataset.name || data.dataset.id}-${(new Date()).toISOString()}.metadata.yaml`;
         document.body.appendChild(element); // Required for this to work in FireFox
         element.click();
     }
 
-    console.log(formData)
-    return (
-        <Box>
-            <ContentHeader title={`Dataset: ${ObjectMode(mode)}`} actions={
-                        mode==='view' ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${projectId}/datasets/${datasetId}/edit`)}>
-                            Edit
-                        </Button>) : <></>
-                    }>
-                <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Dataset name"
-                        fullWidth
-                        variant="filled"
-                        value={data?.name}
-                        onChange={(e) => handleChange("name", e)}
-                        sx={{maxWidth: "33.33%", background: "#FFF"}}
-                        disabled={mode==='view'}
-                        />
-                    <TextField
-                        margin="dense"
-                        label="Dataset description"
-                        fullWidth
-                        variant="filled"
-                        value={data?.description}
-                        onChange={(e) => handleChange("description", e)}
-                        sx={{maxWidth: "66.67%", background: "#FFF"}}
-                        disabled={mode==='view'}
-                        />
-                </Stack>
-            </ContentHeader>
-            <ContentCard title={"Metadata"}>
-                <FormsWrapped  readonly={mode==='view'} schema={template?.scheme || ""} uischema={template?.uischeme || ""} data={formDataString} setData={setFormDataString} />
-            </ContentCard>
-            <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
-                {mode==='view' ? <></> : (
-                    <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
-                        Save
+    if (!loading){
+        return (
+            <Box>
+                <ContentHeader title={`Dataset: ${ObjectMode(mode)}`} actions={
+                            mode==='view' ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${projectId}/datasets/${datasetId}/edit`)}>
+                                Edit
+                            </Button>) : <></>
+                        }>
+                    <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Dataset name"
+                            fullWidth
+                            required
+                            variant="filled"
+                            value={data?.dataset?.name}
+                            onChange={(e) => handleChange("name", "dataset", e)}
+                            sx={{maxWidth: "33.33%", background: "#FFF"}}
+                            disabled={mode==='view'}
+                            />
+                        <TextField
+                            margin="dense"
+                            label="Dataset description"
+                            fullWidth
+                            variant="filled"
+                            value={data?.dataset?.description}
+                            onChange={(e) => handleChange("description", "dataset", e)}
+                            sx={{maxWidth: "66.67%", background: "#FFF"}}
+                            disabled={mode==='view'}
+                            />
+                    </Stack>
+                </ContentHeader>
+                <ContentCard title={"Metadata"} actions={
+                    <Button sx={{ml:2}} variant="contained" size="small" onClick={toggleEditor}>
+                        Switch Editor
                     </Button>
-                )}
-                <Button sx={{ml:2}} disabled={formData.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
-                    Download metadata
-                </Button>
-            </ContentCard>
-        </Box>
-    )
+                }>
+                    {error ? (
+                        <Alert sx={{mb:2}} severity="warning">
+                            There might be a problem with metadata! Switch to the text editor instead?
+                            <Button sx={{ml:2}} variant="contained" size="small" onClick={toggleEditor}>
+                                Switch
+                            </Button>
+                        </Alert>
+                    ) : <></> }
+                    {editorMode==='form' ? (
+                        data.template.scheme && data.template.uischeme ? (
+                            <FormsWrapped  readonly={mode==='view'} schema={data.template?.scheme || ""} uischema={data.template?.uischeme || ""} data={formDataString} setData={setFormDataString} />
+                        ) : <>S</>
+                    ) : (
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Metadata"
+                            fullWidth
+                            multiline
+                            rows={20}
+                            required
+                            variant="filled"
+                            value={data.form.data}
+                            onChange={(e) => handleChange("data", "form", e)}
+                            sx={{maxWidth: "100%", background: "#FFF"}}
+                            disabled={mode==='view'}
+                            />
+                    )}
+                </ContentCard>
+                <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
+                    <Stack gap={2} direction="row" justifyContent="flex-start">
+                        {mode==='view' ? <></> : (
+                            <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
+                                Save
+                            </Button>
+                        )}
+                        <Button  disabled={data.form?.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                            Download metadata
+                        </Button>
+                    </Stack>
+                </ContentCard>
+            </Box>
+        )
+    } else {
+        return (
+            <Box>
+                <ContentHeader title={`Dataset: ${ObjectMode(mode)}`} actions={
+                    <Skeleton>
+                        <Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => {}}>
+                            Edit
+                        </Button>
+                    </Skeleton>
+                    }>
+                    <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
+                        <Skeleton width={"33%"}>
+                            <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Template name"
+                            fullWidth
+                            variant="filled"
+                            value={""}
+                            disabled={true}
+                            sx={{maxWidth: "33.33%", background: "#FFF"}}
+                            />
+                        </Skeleton>
+                        <Skeleton width={"67%"}>
+                        <TextField
+                            margin="dense"
+                            label="Template description"
+                            fullWidth
+                            variant="filled"
+                            value={""}
+                            disabled={true}
+                            sx={{maxWidth: "66.67%", background: "#FFF"}}
+                            />
+                        </Skeleton>
+                    </Stack>
+                </ContentHeader>
+                <ContentCard title={"Metadata"}>
+                    <Skeleton width={"100%"} height={"4em"}/>
+                    <Skeleton width={"100%"} height={"3em"}/>
+                    <Skeleton width={"100%"} height={"3em"}/>
+                    <Skeleton width={"75%"} height={"2em"}/>
+                    <Skeleton width={"50%"} height={"2em"}/>
+                    <Skeleton width={"25%"} height={"2em"}/>
+                </ContentCard>
+                <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
+                    <Stack gap={2} direction="row" justifyContent="flex-start">
+                        <Skeleton width={"5%"} height={"4em"}>
+                        {mode==='view' ? <></> : (
+                            <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
+                                Save
+                            </Button>
+                        )}
+                        </Skeleton>
+                        <Skeleton>
+                            <Button  disabled={data.form?.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                                Download metadata
+                            </Button>
+                        </Skeleton>
+                    </Stack>
+                </ContentCard>
+            </Box>
+        )
+    }
 }
 
 export default DatasetView;

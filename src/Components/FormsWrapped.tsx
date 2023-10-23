@@ -27,12 +27,10 @@ type FormsWrappedProps = {
 } & Omit<JsonFormsInitStateProps, "data" | "renderers" | "cells" | "schema" | "uischema" | "onChange">
 
 const FormsWrapped = ({schema, uischema, data, setData, ...other}: FormsWrappedProps): JSX.Element => {
-  console.log('Rendering!!!');
 
   const JSschema = useMemo(() => loadJSON(schema), [schema])
   const JSschemaui = useMemo(() => loadJSON(uischema), [schema])
 
-  const [datab, setDatab] = useState<any>({});
   return (
     <>
       <JsonForms

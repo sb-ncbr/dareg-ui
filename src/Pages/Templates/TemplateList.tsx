@@ -1,11 +1,11 @@
-import { Box, Button, Skeleton, Typography } from '@mui/material';
-import React, { FC, useEffect, useRef, useState } from 'react';
-import ListLink from '../../Components/ListLink';
+import { Box, Button } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentHeader from '../../Components/ContentHeader';
 import { PostAddRounded } from '@mui/icons-material';
 import ContentCard from '../../Components/ContentCard';
 import { useFetch } from 'use-http';
+import DaregTable from '../../Components/EntityTable/EntityTable';
 
 export type TemplatesData = {
   id?: string, name: string, description: string, scheme: string, uischeme: string, created_at?: string, creator?: string
@@ -14,7 +14,7 @@ export type TemplatesData = {
 const TemplateList = () => {
 
   const [ data, setData ] = useState<TemplatesData[]>();
-  const {get, post, patch, response, loading, error } = useFetch(`/templates`);
+  const { get } = useFetch(`/templates`);
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -23,6 +23,17 @@ const TemplateList = () => {
       setData(projects)
     })()
   }, [])
+
+  const tableColumns = [
+    { id: 'name', label: 'Name', width: 200 },
+    { id: 'description', label: 'Description', width: 400 },
+    { id: 'default_template', label: 'Tags', width: 200 },
+    { id: 'creator', label: 'Creator', width: 200 },
+    { id: 'created_at', label: 'Creation', width: 200 },
+    { id: 'actions', label: 'Actions', width: 200, renderCell: (params: any) => (
+      <Button variant="contained" size="small" onClick={() => navigate(`/templates/${params.id}`)}>View</Button>
+    )}
+  ]
 
   return (
     <Box>
@@ -33,15 +44,7 @@ const TemplateList = () => {
       }>
       </ContentHeader>
       <ContentCard>
-        {!data ? (
-          <>
-          {[0,1,2,3,4,5,6].map((item: number) => <Skeleton />)}
-          </>
-        ) : (
-          <>
-          {data?.map((item: TemplatesData) => <ListLink name={item.name} key={item.name} username={item?.creator || ""} date={item?.created_at || ""} disabled={false} onClick={() => navigate("/templates/"+item.id)}></ListLink>)}
-          </>
-        )}
+        <DaregTable columns={tableColumns} data={data || []} />
       </ContentCard>
     </Box>
   );

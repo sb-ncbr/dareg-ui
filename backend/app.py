@@ -276,18 +276,24 @@ def node_patch(current_user, id):
 @token_required
 def form_get_by_node(current_user):
     node_id = request.args["node"]
-    form = Form.query.filter_by(node=node_id).first()
-
-    data = {"id": form.id, "node": form.node, "used_template": form.used_template, "data": form.data}
+    try:
+        form = Form.query.filter_by(node=node_id).first()
+        data = {"id": form.id, "node": form.node, "used_template": form.used_template, "data": form.data}
+    except Exception as err:
+        print(err)
+        return {"code": 200, "error": "Object with given name doesn't exist!", "message": f"Unexpected {err=}, {type(err)=}"}, 404
     return data, 200
 
 @app.route('/api/form/<id>', methods=["GET"])
 @token_required
 def form_get(current_user, id):
     id = request.json["id"]
-    form = Form.query.filter_by(node=id).first()
-
-    data = {"used_template": form.used_template, "data": form.data}
+    try:
+        form = Form.query.filter_by(node=id).first()
+        data = {"used_template": form.used_template, "data": form.data}
+    except Exception as err:
+        print(err)
+        return {"code": 200, "error": "Object with given name doesn't exist!", "message": f"Unexpected {err=}, {type(err)=}"}, 404
     return data, 200
 
 @app.route('/api/form/', methods=["POST"])
@@ -297,18 +303,14 @@ def form_post(current_user):
     node_id = request.json["node"]
     data = request.json["data"]
     used_template = request.json["used_template"]
-
     try:
         new_form = Form(node=node_id, data=data, used_template=used_template, creator=current_user.id)
         new_form_data = {"id": new_form.id, "node": node_id, "used_template": new_form.used_template, "data": new_form.data, "creator": new_form.creator, "created_at": new_form.created_at}
-
         db.session.add(new_form)
         db.session.commit()
-
     except Exception as err:
         print(err)
         return {"code": 200, "error": "Object with given name already exist!", "message": f"Unexpected {err=}, {type(err)=}"}, 200
-    
     return new_form_data, 200
 
 @app.route('/api/form/<id>', methods=["PATCH"])
@@ -316,12 +318,27 @@ def form_post(current_user):
 def form_patch(current_user, id):
     json_data = request.get_json()
     try:
+        print(json_data)
         stmt = update(Form).filter_by(id=id).values(**dict(json_data), creator=current_user.id, created_at=datetime.utcnow())
         db.session.execute(stmt)
         db.session.commit()
         return {"code": 200, "message": f"Successfully updated Template object with id={id}."}
     except Exception as err:
+        print(err)
         return {"code": 200, "error": "Object with given name already exist!", "message": f"Unexpected {err=}, {type(err)=}"}, 200
+
+# @app.route('/api/form/dataset/<node_id>', methods=["PATCH"])
+# @token_required
+# def form_patch_by_node(current_user, node_id):
+#     json_data = request.get_json()
+#     print(json_data)
+#     try:
+#         stmt = update(Form).filter_by(node=node_id).values(**dict(json_data), creator=current_user.id, created_at=datetime.utcnow())
+#         db.session.execute(stmt)
+#         db.session.commit()
+#         return {"code": 200, "message": f"Successfully updated Template object with id={id}."}
+#     except Exception as err:
+#         return {"code": 200, "error": "Object with given name already exist!", "message": f"Unexpected {err=}, {type(err)=}"}, 200
 
 @request_format(["id", "scheme", "ui_scheme"])
 @token_required
@@ -384,4 +401,3 @@ def view_form(current_user):
 
 if __name__ == '__main__':
     app.run(debug=True)
-

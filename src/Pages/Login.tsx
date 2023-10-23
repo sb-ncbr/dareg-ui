@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, CardMedia, Divider, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, CircularProgress, Divider, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useAuth, hasAuthParams } from 'react-oidc-context';
 import ceitec_logo from '../ceitec_logo.png'
@@ -34,7 +34,6 @@ const Login = () => {
     }
   };
 
-
   return (
       <Card variant="outlined" sx={{ width: 400 }}>
         <CardContent>
@@ -42,43 +41,12 @@ const Login = () => {
             component="img"
             image={ceitec_logo}
             />
-            <Typography align='center'>DAREG - Dataset Registry</Typography>
+            <Typography variant='h5' align='center'>DAREG - Dataset Registry</Typography>
             <Divider variant='middle' sx={{mt: 2, mb:2 }}></Divider>
-          {/* <ToggleButtonGroup
-            color="primary"
-            value={tab}
-            exclusive
-            onChange={handleChange}
-            aria-label="Platform"
-            fullWidth
-            size="small"
-            sx={{ mt: 1 }}
-            >
-            <ToggleButton value="login">Log-in</ToggleButton>
-            <ToggleButton value="signup">Sign-up</ToggleButton>
-          </ToggleButtonGroup>
-          {tab==="login" ?
-            <Box>
-              <TextField sx={{ mt: 2 }} label="Username" variant="outlined" fullWidth />
-              <TextField sx={{ mt: 2 }} label="Password" variant="outlined" fullWidth />
-              <Stack direction="row" justifyContent="flex-end" sx={{ mt: 1 }}>
-                <Link variant="body2">Reset password</Link>
-              </Stack>
-              <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth>Log-in</Button>
-            </Box>
-          :
-            <Box>
-              <TextField sx={{ mt: 2 }} label="Username" variant="outlined" fullWidth />
-              <TextField sx={{ mt: 2 }} label="E-mail" variant="outlined" fullWidth />
-              <TextField sx={{ mt: 2 }} label="Password" variant="outlined" fullWidth />
-              <TextField sx={{ mt: 2 }} label="Repeat password" variant="outlined" fullWidth />
-              <Button sx={{ mt: 2 }} size="large" variant="outlined" fullWidth>Sign-up</Button>
-            </Box>
-          } */}
           <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>Log-in using CEITEC ID</Button>
         </CardContent>
       </Card>
-  );
+    );
 }
 
 export default Login;

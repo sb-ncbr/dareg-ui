@@ -1,5 +1,5 @@
-import { Box, CardMedia, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material';
-import { AssignmentIndRounded, BackupTableRounded, ExitToAppRounded, FolderCopyRounded, SettingsRounded } from '@mui/icons-material';
+import { Avatar, Box, CardMedia, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material';
+import { BackupTableRounded, ExitToAppRounded, FolderCopyRounded } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
 import ceitec_logo from '../ceitec_logo.png'
@@ -57,17 +57,9 @@ const LeftBar = (props: {setSection: (value: string) => void}) => {
           <ListItem disablePadding>
           <ListItemButton onClick={() => props.setSection("account")}>
               <ListItemIcon>
-                <AssignmentIndRounded />
+                <Avatar sx={{width: "24px", height: "24px"}} />
               </ListItemIcon>
               <ListItemText primary={auth.user?.profile.name || t('LeftBar.account')} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-          <ListItemButton selected={location.pathname.startsWith('/settings')} onClick={() => props.setSection("settings")}>
-              <ListItemIcon>
-                <SettingsRounded />
-              </ListItemIcon>
-              <ListItemText primary={t('LeftBar.settings')} />
             </ListItemButton>
           </ListItem>
         </List>

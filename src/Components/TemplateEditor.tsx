@@ -1,13 +1,12 @@
-import { Box, Button, ButtonGroup, Dialog, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, styled } from "@mui/material";
+import { Box, Button, ButtonGroup, CircularProgress, Dialog, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, styled } from "@mui/material";
 import {
   materialRenderers,
 } from '@jsonforms/material-renderers';
 import RatingControl from '../RatingControl';
 import ratingControlTester from '../ratingControlTester';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SaveRounded, TextDecreaseRounded, TextIncreaseRounded, UndoRounded, VisibilityRounded } from "@mui/icons-material";
 import FormsWrapped from "./FormsWrapped";
-import request from "../Utils/Request";
 import { TemplatesData } from "../Pages/Templates/TemplateList";
 
 const FullscreenTextArea = styled("textarea")(({ theme }) => ({
@@ -43,17 +42,16 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
     { tester: ratingControlTester, renderer: RatingControl },
   ];
 
-  const [schemeTextArea, setSchemeTextArea] = useState("")
-  const [schemeRenderJSON, setSchemeRenderJSON] = useState("")
-  const [uiTextArea, setUiTextArea] = useState("")
-  const [uiRenderJSON, setUiRenderJSON] = useState("")
+  const [schemeTextArea, setSchemeTextArea] = useState(data.scheme)
+  const [uiTextArea, setUiTextArea] = useState(data.uischeme)
 
   const [textSize, setTextSize] = useState(11)
   const [editorMode, setEditorMode] = useState("scheme")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     setSchemeTextArea(data.scheme)
-    setSchemeRenderJSON(data.uischeme)
+    setUiTextArea(data.uischeme)
   }, [])
 
   const saveForm = () => {
@@ -65,6 +63,14 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
       uischeme: uiTextArea,
     })
     closeSelf()
+  }
+
+  const refreshPreview = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
   }
 
   return (
@@ -81,18 +87,24 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
                 value={schemeTextArea}
                 sx={{ fontSize: textSize }}
                 spellCheck={false}
-                onChange={(e) => setSchemeTextArea(e.target.value)} /> {/* Add tab indent support */}
+                onChange={(e) => {setSchemeTextArea(e.target.value); refreshPreview()}} /> {/* Add tab indent support */}
             </Box>
             <Box width="100%" display={editorMode === "scheme" ? "none" : "flex"}>
               <FullscreenTextArea
                 value={uiTextArea}
                 sx={{ fontSize: textSize }}
                 spellCheck={false}
-                onChange={(e) => setUiTextArea(e.target.value)} />
+                onChange={(e) => {setUiTextArea(e.target.value); refreshPreview()}} />
             </Box>
           </Box>
           <Box flex="1">
-            <FormsWrapped data={data} setData={setData} schema={schemeRenderJSON} uischema={uiRenderJSON}/>
+            {loading ? (
+              <Box height={"100%"} display="flex" alignItems="center" justifyContent="center">
+                <CircularProgress size={80} />
+              </Box>
+            ) : (
+              <FormsWrapped data={{}} setData={() => {}} schema={schemeTextArea} uischema={uiTextArea}/>
+            )}
           </Box>
         </Box>
         <Stack direction="row" justifyContent="space-between" mt={2}>
@@ -124,17 +136,14 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
             </ButtonGroup>
             <Button
               startIcon={<VisibilityRounded />}
-              onClick={() => {
-                setSchemeRenderJSON(schemeTextArea)
-                setUiRenderJSON(uiTextArea)
-              }}
+              onClick={() => refreshPreview()}
             >
               Render preview
             </Button>
           </Stack>
           <Stack direction={"row"} gap={2}>
-            <Button startIcon={<UndoRounded />} onClick={closeSelf}>Zahodit změny</Button>
-            <Button startIcon={<SaveRounded />} variant="contained" onClick={saveForm}>Uložit</Button>
+            <Button startIcon={<UndoRounded />} color="error" onClick={closeSelf}>Discard</Button>
+            <Button startIcon={<SaveRounded />} variant="contained" onClick={saveForm}>Save</Button>
           </Stack>
         </Stack>
       </Box>

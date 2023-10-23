@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom"
-import { Box, Button, Paper, Skeleton, Stack, TextField, Typography } from "@mui/material";
-import { Add, Dataset, DesignServices, Edit, Save } from "@mui/icons-material";
-import TemplateEditor, { TemplateEditorState } from "../../Components/TemplateEditor";
+import { Box, Button, Skeleton, Stack, TextField } from "@mui/material";
+import { Add, Edit, Save } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
@@ -10,8 +9,8 @@ import { useFetch } from "use-http";
 import { ProjectsData } from "./ProjectList";
 import TemplateSelect from "../../Components/TemplateSelect";
 import { TemplatesData } from "../Templates/TemplateList";
-import ListLink from "../../Components/ListLink";
 import { LoadingButton } from "@mui/lab";
+import DaregTable from "../../Components/EntityTable/EntityTable";
 
 export type ProjectDataStateKeys = keyof ProjectsData;
 
@@ -95,6 +94,17 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
             [inputId]: e.target.value
         })
     }
+    
+    const datasetsTable = [
+        { id: 'name', label: 'Name', width: 200 },
+        { id: 'description', label: 'Description', width: 400 },
+        { id: 'default_template', label: 'Tags', width: 200 },
+        { id: 'creator', label: 'Creator', width: 200 },
+        { id: 'created_at', label: 'Creation', width: 200 },
+        { id: 'actions', label: 'Actions', width: 200, renderCell: (params: any) => (
+            <Button variant="contained" size="small" onClick={() => navigate(`/projects/${projectId}/datasets/${params.id}`)}>View</Button>
+        )}
+    ]
 
     if (data){
         return (
@@ -134,9 +144,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                             New Dataset
                         </Button>
                     }>
-                            <>
-                                {datasets?.map((item: ProjectsData) => <ListLink name={item.name} key={item.name} username={item.creator} date={item.created_at} disabled={false} onClick={() => navigate(`/projects/${projectId}/datasets/${item.id}`)}></ListLink>)}
-                            </>
+                        <DaregTable columns={datasetsTable} data={datasets || []} size="small"/>
                     </ContentCard>
                 ) : <></>}
                 

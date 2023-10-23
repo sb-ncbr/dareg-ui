@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { DesignServices, Save } from "@mui/icons-material";
-import TemplateEditor, { TemplateEditorState } from "../../Components/TemplateEditor";
+import TemplateEditor from "../../Components/TemplateEditor";
 import { useEffect, useState } from "react";
 import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
@@ -22,13 +22,10 @@ const TemplatesNew = ({editMode}: {editMode: boolean}) => {
     const {get, post, patch, response, loading, error } = useFetch(`/templates`);
 
     useEffect(() => {
-        const tmp = async () => {
+        (async () => {
             const tmp = await get(`/${templateId}`);
             setData(tmp)
-        }
-        if(editMode){
-            tmp()
-        }
+        })()
     }, [])
 
     const openEditor = (type: TemplateEditorStateKeys): void => {

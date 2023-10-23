@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -9,11 +9,8 @@ import Layout from './Components/Layout';
 import Login from './Pages/Login';
 import ProjectsList from './Pages/Projects/ProjectList';
 import TemplateList from './Pages/Templates/TemplateList';
-import Settings from './Pages/Settings';
-import ListCard from './Components/ListCard';
-import NewDataset from './Components/NewDataset';
 import DatasetCard from './Components/DatasetCard';
-import { hasAuthParams, useAuth } from 'react-oidc-context';
+import { useAuth } from 'react-oidc-context';
 import LoginLayout from './Components/LoginLayout';
 import AuthenticatedRoute from './Components/AuthenticatedRoute';
 import OIDCCallback from './Components/OIDCCallback';
@@ -21,7 +18,7 @@ import Profile from './Pages/Profile';
 import TemplatesNew from './Pages/Templates/TemplatesEdit';
 import TemplateView from './Pages/Templates/TemplateView';
 import { CachePolicies, Provider } from 'use-http';
-import { User, WebStorageStateStore } from 'oidc-client-ts';
+import { User } from 'oidc-client-ts';
 import config from './Config';
 import ProjectEdit from './Pages/Projects/ProjectEdit';
 import DatasetView from './Pages/Datasets/DatasetView';
@@ -35,21 +32,6 @@ const App = () => {
     }
   })
   const auth = useAuth()
-
-  switch (auth.activeNavigator) {
-    case "signinSilent":
-        return <div>Signing you in...</div>;
-    case "signoutRedirect":
-        return <div>Signing you out...</div>;
-}
-
-if (auth.isLoading) {
-    return <div>Loading...</div>;
-}
-
-if (auth.error) {
-    return <div>Oops... {auth.error.message}</div>;
-}
 
 const getUser = () => {
   const oidcStorage = sessionStorage.getItem(`oidc.user:${config.REACT_APP_OIDC_AUTHORITY}:${config.REACT_APP_OIDC_CLIENT_ID}`)
@@ -71,7 +53,7 @@ const options = {
     "Content-Type": "application/json"
   },
   cachePolicy: CachePolicies.NO_CACHE,
-  retries: 1,
+  retries: 0,
   retryOn: async ({ attempt, error, response }: any) => {
     // returns true or false to determine whether to retry
     return error || response && response.status >= 300
@@ -86,7 +68,7 @@ const options = {
 }
 
   return (
-    <Provider url='/api' options={options}>
+    <Provider url='http://localhost:5000/api' options={options}>
       <BrowserRouter>
         <CssBaseline/>
         <ThemeProvider theme={darkTheme}>
@@ -135,8 +117,4 @@ const options = {
 }
 
 export default App;
-
-function async(arg0: () => void) {
-  throw new Error('Function not implemented.');
-}
 
