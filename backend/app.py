@@ -164,9 +164,13 @@ def view_template_id(current_user, id):
 @token_required
 def patch_template(current_user, id):
     json_data = request.get_json()
-    json_data.pop("creator")
-    json_data.pop("created_at")
-    json_data.pop("id")
+    if "creator" in json_data.keys():
+        json_data.pop("creator")
+    if "created_at" in json_data.keys():
+        json_data.pop("created_at")
+    if "id" in json_data.keys():
+        json_data.pop("id")
+
     try:
         stmt = update(Template).filter_by(id=id).values(**dict(json_data), creator=current_user.id, created_at=datetime.utcnow())
         db.session.execute(stmt)
