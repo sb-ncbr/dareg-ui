@@ -62,9 +62,7 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
 
   const saveForm = () => {
     setData({
-      name: data.name,
-      description: data.description,
-      id: id,
+      ...data,
       scheme: schemeTextArea,
       uischeme: uiTextArea,
     })

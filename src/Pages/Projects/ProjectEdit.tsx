@@ -17,10 +17,12 @@ export type ProjectDataStateKeys = keyof ProjectsData;
 const ProjectEdit = ({mode}: {mode: ViewModes}) => {
 
     const navigate = useNavigate();
-    const [data, setData] = useState<ProjectsData>({name: "", description: "", default_template: "", created_at: "", creator: "", upper: null})
-    const [selectedTemplate, setSelectedTemplate] = useState<any>()
+    const [data, setData] = useState<ProjectsData>({name: "", description: "", default_template: "", created_at: "", creator: "", upper: null} as ProjectsData)
+    const [selectedTemplate, setSelectedTemplate] = useState<TemplatesData>({id: "", name: ""} as TemplatesData)
     const [ templateData, setTemplateData ] = useState<TemplatesData>();
     const [ datasets, setDatasets ] = useState<ProjectsData[]>();
+
+    const [loadingState, setLoadingState] = useState<boolean>(false)
 
     const [ loadingButtonState, setLoadingButtonState ] = useState<boolean>(false)
     
@@ -28,10 +30,13 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
     const { get, post, patch } = useFetch();
 
     useEffect(() => {
+        setLoadingState(true)
         if(mode === ViewModes.Edit || mode === ViewModes.View){
             (async () => {
-                const tmp = await get(`/nodes/${projectId}`);
-                setData(tmp)
+                setData(await get(`/nodes/${projectId}`))
+                const template = await get(`/templates/${data.default_template}`)
+                setTemplateData(template)
+                setLoadingState(false)
             })();
             (async () => {
                 const tmp2 = await get(`/nodes?upper=${projectId}`);
@@ -41,21 +46,25 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
     }, [projectId, mode, get])
 
     useEffect(() => {
-        if(mode === ViewModes.New && selectedTemplate){
+        if((mode === ViewModes.Edit || mode === ViewModes.View) && data.default_template){
+            (async () => {
+                const template = await get(`/templates/${data.default_template}`)
+                setTemplateData(template)
+                setSelectedTemplate(template)
+            })()
+        }
+    }, [loadingState, mode, get])
+    
+    useEffect(() => {
+        if((mode === ViewModes.New || mode === ViewModes.Edit) && selectedTemplate.id){
             (async () => {
                 setTemplateData(await get(`/templates/${selectedTemplate.id}`))
             })()
-            setData(prevState => ({...prevState, default_template: selectedTemplate.id}))
+            setData(prevState => ({...prevState, default_template: selectedTemplate.id as string}))
+            console.log("NOOK", templateData)
         }
     }, [selectedTemplate, get, mode])
 
-    useEffect(() => {
-        if(data.default_template && (mode === ViewModes.Edit || mode === ViewModes.View)){
-            (async () => {
-                setTemplateData(await get(`/templates/${data.default_template}`))
-            })()
-        }
-    }, [data.default_template, get, mode])
 
     const saveForm = (): void => {
         let updatedTemplate;
