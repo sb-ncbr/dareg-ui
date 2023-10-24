@@ -6,20 +6,11 @@ import ContentCard from '../../Components/ContentCard';
 import ContentHeader from '../../Components/ContentHeader';
 import { useFetch } from 'use-http';
 import DaregTable from '../../Components/EntityTable/EntityTable';
-
-export type ProjectsData = {
-  id?: string,
-  name: string,
-  description: string,
-  upper?: string | null,
-  default_template: string,
-  creator: string,
-  created_at: string,
-}
+import { ProjectsData } from '../../types/global';
 
 const ProjectsList = () => {
 
-  const {get, loading } = useFetch(`/nodes?upper=null`);
+  const {get } = useFetch(`/nodes?upper=null`);
   const [ data, setData ] = useState<ProjectsData[]>([])
   const navigate = useNavigate()
 
@@ -28,7 +19,7 @@ const ProjectsList = () => {
       const projects = await get().catch((e) => console.log(e))
       setData(projects)
     })()
-  }, [])
+  }, [get])
 
   const tableColumns = [
     { id: 'name', label: 'Name', width: 200 },

@@ -6,10 +6,7 @@ import { PostAddRounded } from '@mui/icons-material';
 import ContentCard from '../../Components/ContentCard';
 import { useFetch } from 'use-http';
 import DaregTable from '../../Components/EntityTable/EntityTable';
-
-export type TemplatesData = {
-  id?: string, name: string, description: string, scheme: string, uischeme: string, created_at?: string, creator?: string
-}
+import { TemplatesData } from '../../types/global';
 
 const TemplateList = () => {
 
@@ -22,7 +19,7 @@ const TemplateList = () => {
       const projects = await get()
       setData(projects)
     })()
-  }, [])
+  }, [get])
 
   const tableColumns = [
     { id: 'name', label: 'Name', width: 200 },

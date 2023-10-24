@@ -164,6 +164,9 @@ def view_template_id(current_user, id):
 @token_required
 def patch_template(current_user, id):
     json_data = request.get_json()
+    json_data.pop("creator")
+    json_data.pop("created_at")
+    json_data.pop("id")
     try:
         stmt = update(Template).filter_by(id=id).values(**dict(json_data), creator=current_user.id, created_at=datetime.utcnow())
         db.session.execute(stmt)
@@ -183,7 +186,7 @@ def new_template(current_user):
     name = request.json["name"]
     descr = request.json["description"]
     scheme = request.json["scheme"]
-    ui_scheme = request.json["ui_scheme"]
+    ui_scheme = request.json["uischeme"]
 
     new_templ = Template(name=name, description=descr, creator=current_user.id, scheme=scheme, uischeme=ui_scheme)
     try:

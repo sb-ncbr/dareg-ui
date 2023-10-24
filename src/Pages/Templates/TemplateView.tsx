@@ -1,30 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { TemplateEditorState } from "../../Components/TemplateEditor";
-import useApi from "../../Utils/useApi";
-import { Box, Button, LinearProgress, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Skeleton, Stack, TextField } from "@mui/material";
 import ContentCard from "../../Components/ContentCard";
 import ContentHeader from "../../Components/ContentHeader";
 import FormsWrapped from "../../Components/FormsWrapped";
 import { Edit } from "@mui/icons-material";
 import { useFetch } from "use-http";
-import { useAuth } from "react-oidc-context";
-import { TemplatesData } from "./TemplateList";
+import { TemplatesData } from "../../types/global";
 
 const TemplateView = () => {
     const navigate = useNavigate();
-    const auth = useAuth()
     const { templateId } = useParams()
-    const {get, post, patch, response, loading, error } = useFetch(`/templates/${templateId}`);
+    const { get } = useFetch(`/templates/${templateId}`);
     const [data, setData] = useState<TemplatesData>();
 
     useEffect(() => {
         (async () => {
-            const templateData = await get();
-            setData(templateData)
-            console.log(templateData)
+            setData(await get())
         })()
-    }, [])
+    }, [get])
 
 
     if (data){

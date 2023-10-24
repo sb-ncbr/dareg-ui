@@ -7,26 +7,32 @@ import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
 import ContentHeader from "../../Components/ContentHeader";
 import { useFetch } from "use-http";
-import { TemplatesData } from "./TemplateList";
+import { TemplatesData } from "../../types/global";
+import { ViewModes } from "../../types/enums";
 
 type TemplateEditorStateKeys = keyof TemplatesData | 'full-editor';
 
-const TemplatesNew = ({editMode}: {editMode: boolean}) => {
+type Props = {
+    mode: ViewModes
+}
+
+const TemplatesNew = ({mode}: Props) => {
 
     const navigate = useNavigate();
     
     const [templateEditorState, setTemplateEditorState] = useState<boolean>(false)
-    const [data, setData] = useState<TemplatesData>({id: "", creator: "", created_at: "", name: "", description: "", uischeme: "", scheme: ""})
+    const [data, setData] = useState<TemplatesData>({id: "", creator: "", created_at: "", name: "", description: "", uischeme: "{}", scheme: "{}"})
     
     const { templateId } = useParams();
-    const {get, post, patch, response, loading, error } = useFetch(`/templates`);
+    const {get, post, patch, error } = useFetch(`/templates`);
 
     useEffect(() => {
-        (async () => {
-            const tmp = await get(`/${templateId}`);
-            setData(tmp)
-        })()
-    }, [])
+        if (mode===ViewModes.Edit){
+            (async () => {
+                setData(await get(`/${templateId}`))
+            })()
+        }
+    }, [templateId, get, mode])
 
     const openEditor = (type: TemplateEditorStateKeys): void => {
         switch(type){
@@ -55,18 +61,19 @@ const TemplatesNew = ({editMode}: {editMode: boolean}) => {
     }
 
     const saveForm = (): void => {
-        let updatedTemplate;
-        if(editMode){
-            console.log("Patching,...", data)
-            updatedTemplate = patch(`/${templateId}`, data).then((response) => {navigate(`/templates/${templateId}`)})
-        } else {
-            updatedTemplate = post(data).then((response) => {navigate(`/templates/${response.id}`)})
+        switch(mode){
+            case ViewModes.Edit:
+                patch(`/${templateId}`, data).then((response) => {navigate(`/templates/${templateId}`)})
+                break;
+            case ViewModes.New:
+                post(data).then((response) => {navigate(`/templates/${response.id}`)})
+                break;
         }
     }
 
     return (
       <Box>
-        <ContentHeader title={`Template: ${editMode ? "Edit" : "Create"}`}>
+        <ContentHeader title={`Template: ${mode}`}>
             <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
                 <TextField
                     autoFocus

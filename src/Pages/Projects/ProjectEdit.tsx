@@ -6,26 +6,15 @@ import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
 import ContentHeader from "../../Components/ContentHeader";
 import { useFetch } from "use-http";
-import { ProjectsData } from "./ProjectList";
 import TemplateSelect from "../../Components/TemplateSelect";
-import { TemplatesData } from "../Templates/TemplateList";
 import { LoadingButton } from "@mui/lab";
 import DaregTable from "../../Components/EntityTable/EntityTable";
+import { ProjectsData, TemplatesData } from "../../types/global";
+import { ViewModes } from "../../types/enums";
 
 export type ProjectDataStateKeys = keyof ProjectsData;
 
-export type AvailableViewModes = 'edit' | 'view' | 'new';
-
-const ObjectMode = (mode: AvailableViewModes) => {
-    const mapping = {
-        'edit': "Edit",
-        'view': "View",
-        'new': "Create"
-    }
-    return mapping[mode];
-}
-
-const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
+const ProjectEdit = ({mode}: {mode: ViewModes}) => {
 
     const navigate = useNavigate();
     const [data, setData] = useState<ProjectsData>({name: "", description: "", default_template: "", created_at: "", creator: "", upper: null})
@@ -39,7 +28,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     const { get, post, patch } = useFetch();
 
     useEffect(() => {
-        if(mode==='view' || mode==='edit'){
+        if(mode === ViewModes.Edit || mode === ViewModes.View){
             (async () => {
                 const tmp = await get(`/nodes/${projectId}`);
                 setData(tmp)
@@ -49,33 +38,33 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                 setDatasets(tmp2)
             })()
         }
-    }, [])
+    }, [projectId, mode, get])
 
     useEffect(() => {
-        if(mode==='edit' || mode==='new'){
+        if(mode === ViewModes.New && selectedTemplate){
             (async () => {
-                setTemplateData(await get(`/templates/${selectedTemplate?.id}`))
+                setTemplateData(await get(`/templates/${selectedTemplate.id}`))
             })()
-            setData({...data, default_template: selectedTemplate?.id})
+            setData(prevState => ({...prevState, default_template: selectedTemplate.id}))
         }
-    }, [selectedTemplate])
+    }, [selectedTemplate, get, mode])
 
     useEffect(() => {
-        if(data.default_template){
+        if(data.default_template && (mode === ViewModes.Edit || mode === ViewModes.View)){
             (async () => {
-                setTemplateData(await get(`/templates/${data?.default_template}`))
+                setTemplateData(await get(`/templates/${data.default_template}`))
             })()
         }
-    }, [data])
+    }, [data.default_template, get, mode])
 
     const saveForm = (): void => {
         let updatedTemplate;
         setLoadingButtonState(true);
         switch(mode){
-            case 'edit':
+            case ViewModes.Edit:
                 updatedTemplate = patch(`/nodes/${projectId}`, data)
                 break;
-            case 'new':
+            case ViewModes.New:
                 updatedTemplate = post(`/nodes`, data)
                 break;
         }
@@ -109,8 +98,8 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     if (data){
         return (
             <Box>
-                <ContentHeader title={`Project: ${ObjectMode(mode)}`} actions={
-                            mode==='view' ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${data?.id}/edit`)}>
+                <ContentHeader title={`Project: ${mode}`} actions={
+                            mode===ViewModes.View ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${data?.id}/edit`)}>
                                 Edit
                             </Button>) : <></>
                         }>
@@ -124,7 +113,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                             value={data?.name}
                             onChange={(e) => handleChange("name", e)}
                             sx={{maxWidth: "33.33%", background: "#FFF"}}
-                            disabled={mode==='view'}
+                            disabled={mode===ViewModes.View}
                             />
                         <TextField
                             margin="dense"
@@ -134,11 +123,11 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                             value={data?.description}
                             onChange={(e) => handleChange("description", e)}
                             sx={{maxWidth: "66.67%", background: "#FFF"}}
-                            disabled={mode==='view'}
+                            disabled={mode===ViewModes.View}
                             />
                     </Stack>
                 </ContentHeader>
-                {mode==='view' ? (
+                {mode===ViewModes.View ? (
                     <ContentCard title={"Datasets"} actions={
                         <Button variant={"contained"} size="medium" endIcon={<Add />} onClick={() => navigate(`/projects/${data?.id}/datasets/new`)}>
                             New Dataset
@@ -148,7 +137,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                     </ContentCard>
                 ) : <></>}
                 
-                {mode==='view' ? <></> : (<ContentCard title={"Select default template"}>
+                {mode===ViewModes.View ? <></> : (<ContentCard title={"Select default template"}>
                     <Stack direction="row" justifyContent="flex-start" alignItems="baseline" spacing={3}>
                         <TemplateSelect selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate}/>
                     </Stack>
@@ -159,7 +148,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                     <FormsWrapped readonly schema={templateData?.scheme || ""} uischema={templateData?.uischeme || ""} data={{}} setData={() => {}} />
                     : <>No schema defined, use "Edit templates" section</>}
                 </ContentCard>
-                {mode==='view' ? <></> : (<ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
+                {mode===ViewModes.View ? <></> : (<ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
                     <LoadingButton
                         loading={loadingButtonState}
                         loadingPosition="end"
@@ -177,7 +166,7 @@ const ProjectEdit = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     } else {
         return (
             <Box>
-                <ContentHeader title={"Template: View"} actions={
+                <ContentHeader title={`Template: ${mode}`} actions={
                     <Skeleton>
                         <Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => {}}>
                             Edit

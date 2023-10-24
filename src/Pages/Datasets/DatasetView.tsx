@@ -6,39 +6,16 @@ import { useCallback, useEffect, useState } from "react";
 import ContentCard from "../../Components/ContentCard";
 import FormsWrapped from "../../Components/FormsWrapped";
 import useFetch from "use-http";
-import { ProjectsData } from "../Projects/ProjectList";
 import { ProjectDataStateKeys } from "../Projects/ProjectEdit";
 import { stringify } from 'yaml'
-import { TemplatesData } from "../Templates/TemplateList";
+import { DatasetsData, FormData, ProjectsData } from "../../types/global";
+import { ViewModes } from "../../types/enums";
 
-type AvailableViewModes = 'edit' | 'view' | 'new';
-
-const ObjectMode = (mode: AvailableViewModes) => {
-    const mapping = {
-        'edit': "Edit",
-        'view': "View",
-        'new': "Create"
-    }
-    return mapping[mode];
+type Props = {
+    mode: ViewModes
 }
 
-type FormData = {
-    id?: string,
-    node: string,
-    used_template: string,
-    data: string,
-    creator?: string,
-    created_at?: string
-}
-
-type DatasetsData = {
-    dataset: ProjectsData,
-    project: ProjectsData,
-    template: TemplatesData,
-    form: FormData,
-}
-
-const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
+const DatasetView = ({mode}: Props) => {
 
     const navigate = useNavigate();
     const { get, post, patch, loading } = useFetch();
@@ -72,7 +49,7 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
             .catch((error) => {
               console.log(error)
             });
-            if (mode==='view' || mode==='edit'){
+            if (mode===ViewModes.View || mode===ViewModes.Edit){
                 await get(`/nodes/${datasetId}`)
                 .then((response) => {
                     setData((prevState) => ({
@@ -99,20 +76,19 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                 });
             }
         })()
-    }, [datasetId, projectId]);
+    }, [datasetId, projectId, get, mode]);
 
     const saveForm = (): void => {
-        let updatedTemplate;
         switch(mode){
-            case 'edit':
+            case ViewModes.Edit:
                 patch(`/nodes/${datasetId}`, {name: data.dataset.name, description: data.dataset.description})
                 .then((response) => (patch(`/form/${data.form.id}`, {...data.form}))
                 .then((response) => {
-                    navigate(`/projects/${projectId}/datasets/${datasetId}`)
+                    navigate(`/projects/${projectId}/datasets/${datasetId}`, {replace: true})
                 }))
                 break;
-            case 'new':
-                updatedTemplate = post(`/nodes`, {
+            case ViewModes.New:
+                post(`/nodes`, {
                     name: data.dataset.name, 
                     description: data.dataset.description, 
                     default_template: data.project.default_template, 
@@ -172,8 +148,8 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     if (!loading){
         return (
             <Box>
-                <ContentHeader title={`Dataset: ${ObjectMode(mode)}`} actions={
-                            mode==='view' ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${projectId}/datasets/${datasetId}/edit`)}>
+                <ContentHeader title={`Dataset: ${mode}`} actions={
+                            mode===ViewModes.View ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${projectId}/datasets/${datasetId}/edit`)}>
                                 Edit
                             </Button>) : <></>
                         }>
@@ -185,20 +161,20 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                             fullWidth
                             required
                             variant="filled"
-                            value={data?.dataset?.name}
+                            value={data.dataset.name}
                             onChange={(e) => handleChange("name", "dataset", e)}
                             sx={{maxWidth: "33.33%", background: "#FFF"}}
-                            disabled={mode==='view'}
+                            disabled={mode===ViewModes.View}
                             />
                         <TextField
                             margin="dense"
                             label="Dataset description"
                             fullWidth
                             variant="filled"
-                            value={data?.dataset?.description}
+                            value={data.dataset.description}
                             onChange={(e) => handleChange("description", "dataset", e)}
                             sx={{maxWidth: "66.67%", background: "#FFF"}}
-                            disabled={mode==='view'}
+                            disabled={mode===ViewModes.View}
                             />
                     </Stack>
                 </ContentHeader>
@@ -217,7 +193,7 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                     ) : <></> }
                     {editorMode==='form' ? (
                         data.template.scheme && data.template.uischeme ? (
-                            <FormsWrapped  readonly={mode==='view'} schema={data.template?.scheme || ""} uischema={data.template?.uischeme || ""} data={formDataString} setData={setFormDataString} />
+                            <FormsWrapped  readonly={mode===ViewModes.View} schema={data.template.scheme} uischema={data.template.uischeme} data={formDataString} setData={setFormDataString} />
                         ) : <>S</>
                     ) : (
                         <TextField
@@ -232,18 +208,18 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                             value={data.form.data}
                             onChange={(e) => handleChange("data", "form", e)}
                             sx={{maxWidth: "100%", background: "#FFF"}}
-                            disabled={mode==='view'}
+                            disabled={mode===ViewModes.View}
                             />
                     )}
                 </ContentCard>
                 <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
                     <Stack gap={2} direction="row" justifyContent="flex-start">
-                        {mode==='view' ? <></> : (
+                        {mode===ViewModes.View ? <></> : (
                             <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
                                 Save
                             </Button>
                         )}
-                        <Button  disabled={data.form?.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                        <Button  disabled={data.form.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
                             Download metadata
                         </Button>
                     </Stack>
@@ -253,7 +229,7 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
     } else {
         return (
             <Box>
-                <ContentHeader title={`Dataset: ${ObjectMode(mode)}`} actions={
+                <ContentHeader title={`Dataset: ${mode}`} actions={
                     <Skeleton>
                         <Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => {}}>
                             Edit
@@ -297,7 +273,7 @@ const DatasetView = ({mode}: {mode: 'edit' | 'view' | 'new'}) => {
                 <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
                     <Stack gap={2} direction="row" justifyContent="flex-start">
                         <Skeleton width={"5%"} height={"4em"}>
-                        {mode==='view' ? <></> : (
+                        {mode===ViewModes.View ? <></> : (
                             <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
                                 Save
                             </Button>

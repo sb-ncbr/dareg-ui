@@ -120,7 +120,7 @@ review-be:
   stage: review
   variables:
     APP_COMPONENT: server
-    APP: review-api-$CI_COMMIT_REF_SLUG
+    APP: review-$CI_COMMIT_REF_SLUG
     APP_HOST: api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
     APP_HOST_FIX: api.test.${DEPLOYMENT_TLD_FIX}
   environment:
@@ -151,7 +151,7 @@ staging-be:
   <<: *deploy
   stage: staging
   variables:
-    APP: staging-api
+    APP: staging
     APP_HOST: api.stage.${DEPLOYMENT_TLD}
     APP_HOST_FIX: api.stage.${DEPLOYMENT_TLD_FIX}
   environment:
@@ -179,7 +179,7 @@ production-be:
   <<: *deploy
   stage: production
   variables:
-    APP: production-api
+    APP: production
     APP_HOST: "api.${DEPLOYMENT_TLD}"
     APP_HOST_FIX: api.${DEPLOYMENT_TLD_FIX}
   when: manual
