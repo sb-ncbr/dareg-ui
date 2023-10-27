@@ -2,7 +2,7 @@ from app import *
 import os
 
 base_directory = "./instance"
-subfolders = ["schema", "ui_schema", "data"]
+subfolders = ["scheme", "ui_scheme", "data"]
 
 if not os.path.exists(os.path.join(base_directory, "db.sqlite3")):
     with app.app_context():

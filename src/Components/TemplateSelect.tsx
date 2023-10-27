@@ -1,29 +1,27 @@
-import { Autocomplete, Box, Button, Dialog, DialogContent, Stack, TextField, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import request from "../Utils/Request";
+import { Autocomplete, Box, TextField } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useFetch } from "use-http";
+import { TemplatesData } from "../types/global";
 
-const TemplateSelect = (props: {
-  selectedTemplate: {id: string, name: string, descr: string},
-  setSelectedTemplate: (temp: {id: string, name: string, descr: string}) => void
-}) => {
+type Props = {
+  selectedTemplate: TemplatesData,
+  setSelectedTemplate: React.Dispatch<React.SetStateAction<TemplatesData>>
+}
 
-  const [schemeList, setSchemeList] = useState<any>([])
-  
-  const didRun = useRef(false)
+const TemplateSelect = ({selectedTemplate, setSelectedTemplate}: Props) => {
+
+  const [ data, setData ] = useState<TemplatesData[]>();
+  const { get } = useFetch(`/templates`);
+
   useEffect(() => {
-    if (didRun.current === false)
-      request("/get_templates", {
-
-      }, (response) => {
-        setSchemeList(response)
-      })
-    didRun.current = true
-  }, [])
-
+    (async () => {
+      setData(await get())
+    })()
+  }, [get])
 
   return (
     <>
-      <Box display="none">
+      {/* <Box display="none">
         <Autocomplete
           sx={{ mt: 1, mb: 2 }}
           multiple
@@ -35,30 +33,20 @@ const TemplateSelect = (props: {
               <TextField variant="filled" {...params} label="Filtrovat výběr podle značek" />
               )}
           />
-      </Box>
+      </Box> */}
       <Autocomplete
         disableClearable
         id="combo-box-demo"
-        options={schemeList}
-        getOptionLabel={(option: any) => option.name}
-        value={props.selectedTemplate}
-        onChange={(e, value) => props.setSelectedTemplate(value)}
-        renderInput={(params) => <TextField variant="filled" {...params} label="Šablona" />}
+        options={data || []}
+        sx={{ml: 0, width: "33%"}}
+        getOptionLabel={(option: TemplatesData) => option.name}
+        value={selectedTemplate}
+        onChange={(e, value) => setSelectedTemplate(value)}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        renderInput={(params) => <TextField variant="filled" {...params} label="Scheme" />}
       />
     </>
   )
 };
 
 export default TemplateSelect;
-
-const tags = [
-  { title: 'plants' },
-  { title: 'bio_warfare' },
-  { title: 'cf_measure' },
-];
-
-const templates = [
-  { label: 'super_template' },
-  { label: 'template_2023' },
-  { label: 'cf_master' },
-];

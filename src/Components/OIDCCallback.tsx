@@ -1,5 +1,7 @@
+import { Box, Card, CardContent, CardMedia, CircularProgress, Divider, Typography } from "@mui/material";
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
+import ceitec_logo from '../ceitec_logo.png'
 
 type UserStateCallback = {
     auth_request_id: string
@@ -21,10 +23,21 @@ const OIDCCallback = () => {
     return (
         !auth.isLoading && auth.isAuthenticated ? (
                 <Navigate to={redirect} />
-            ) :
-        <div>
-            error while trying to authenticate.
-        </div>
+            ) : (
+            <Card variant="outlined" sx={{ width: 400 }}>
+                <CardContent>
+                <CardMedia
+                    component="img"
+                    image={ceitec_logo}
+                    />
+                    <Typography align='center'>DAREG - Dataset Registry</Typography>
+                    <Divider variant='middle' sx={{mt: 2, mb:2 }}></Divider>
+                    <Box sx={{ display: 'flex' }}>
+                        <CircularProgress />
+                    </Box>
+                </CardContent>
+            </Card>
+            )
     )
 }
 

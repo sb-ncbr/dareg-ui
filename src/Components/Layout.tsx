@@ -3,8 +3,8 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import LeftBar from './LeftBar';
 import { Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Settings from '../Pages/Settings';
-import ProjectsList from '../Pages/ProjectList';
-import TemplateList from '../Pages/TemplateList';
+import ProjectsList from '../Pages/Projects/ProjectList';
+import TemplateList from '../Pages/Templates/TemplateList';
 
 /*const views: {name: string, component: FC, args: object}[] = [
   {name: "projects", component: ListView, args: {projectView: true}},
@@ -29,7 +29,7 @@ const Layout = () => {
       </Box>
       <Stack direction="row" justifyContent="center" height="100vh">
         <Box minWidth={leftBarWidth+1}/>
-        <Box width={900}>
+        <Box width={"75%"}>
           <Outlet/>
         </Box>
       </Stack>

@@ -1,25 +1,31 @@
-import { Avatar, Button, Table, TableCell, TableRow, Grid, Typography } from '@mui/material';
+import { Avatar, Button, Table, TableCell, TableRow, Grid, Typography, Stack, Divider, Box } from '@mui/material';
 import { useTranslation } from "react-i18next";
 import { useAuth } from "react-oidc-context";
 import ceitecLogo from "../ceitec_logo.png"
 import useAvatar from '../Utils/useAvatar';
 import { User } from 'oidc-client-ts';
+import ContentHeader from '../Components/ContentHeader';
+import ContentCard from '../Components/ContentCard';
+import { Settings } from '@mui/icons-material';
+import SettingsMenu from '../Components/SettingsMenu';
 
 type AdvancedUser = User & {organization: string}
-const Profile = () => {
+const Profile = (props: {selectedTheme: string, setSelectedTheme: (theme: "light"|"dark"|"system") => void}) => {
     const auth = useAuth();
-    const { t } = useTranslation();
     const { avatarUrl} = useAvatar();
-
+    const { t, i18n } = useTranslation()
+    const langDict:{[key: string]: string} = {
+      "en-US": "English",
+      "cs-CZ": "čeština",
+    }
     return(
         <>
-        <Typography variant="h4" sx={{mb:3}}>{t('auth.welcome')} {auth.user?.profile.given_name},</Typography>
-        <Grid container spacing={2} alignItems={"center"}>
-                <Grid item justifyContent="center" display={"flex"}>
-                    <Avatar sx={{width:200,height:200}} variant={"circular"} src={avatarUrl+"?s=200"} alt="Profile picture, gravatar of the logged in user" />
-                </Grid>
-                <Grid item>
-                    <Table>
+        <ContentHeader title={"Profile"}>
+        </ContentHeader>
+        <ContentCard title={`${t('auth.welcome')} ${auth.user?.profile.given_name},`}>
+            <Stack alignItems={"center"} direction={"row"} spacing={3} divider={<Divider orientation="vertical" flexItem />}>
+                <Avatar sx={{width:200,height:200}} variant={"circular"} src={avatarUrl+"?s=200"} alt="Profile picture, gravatar of the logged in user" />
+                <Table>
                         <TableRow>
                             <TableCell>
                                 {t('profile.name')}      
@@ -54,8 +60,29 @@ const Profile = () => {
                             </TableCell>
                         </TableRow>    
                     </Table>
-                </Grid>
-        </Grid>
+            </Stack>
+        </ContentCard>
+        <ContentCard title='Settings'>
+            <Box sx={{width: "25%"}}>
+        <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+            <Typography>{t("Settings.language")}: </Typography>
+            <SettingsMenu
+              bttnText={langDict[i18n.language]}
+              options={langDict}
+              onClick={(lang) => i18n.changeLanguage(lang)}
+            />
+          </Stack>
+          <Divider sx={{ mt: 1, mb: 1 }}/>
+          <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+            <Typography>{t("Settings.appearance")}: </Typography>
+            <SettingsMenu 
+              bttnText={t(`Settings.${props.selectedTheme}`)} 
+              options={{system: t("Settings.system"), light: t("Settings.light"), dark: t("Settings.dark")}}
+              onClick={(theme: "light"|"dark"|"system") => {props.setSelectedTheme(theme)}}
+            />
+          </Stack>
+          </Box>
+        </ContentCard>
         </>
     );
 }

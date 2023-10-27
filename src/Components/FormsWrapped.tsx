@@ -1,21 +1,9 @@
-import schema from '../schema.json';
-import uischema from '../uischema.json';
-import {
-  materialCells,
-  materialRenderers,
-} from '@jsonforms/material-renderers';
+import { materialCells, materialRenderers } from '@jsonforms/material-renderers';
 import RatingControl from '../RatingControl';
 import ratingControlTester from '../ratingControlTester';
-import VersionPicker from './VersionPicker';
-import ListCardBase from './ListCardBase';
-import { useTranslation } from 'react-i18next';
-import CardButton from './CardButton';
-import CardHeader from './CardHeader';
-import TemplateSelect from './TemplateSelect';
-import { JsonForms } from '@jsonforms/react';
-import { useState } from 'react';
+import { JsonForms, JsonFormsInitStateProps } from '@jsonforms/react';
+import { useMemo, useState } from 'react';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
-import { Button } from '@mui/material';
 
 const renderers = [
   ...materialRenderers,
@@ -31,22 +19,31 @@ const loadJSON = (json: string) => {
   }
 }
 
-const FormsWrapped = (props:{
+type FormsWrappedProps = {
   schema: string,
-  uischema: string
+  uischema: string,
   data: any,
-  setData: (data: any) => void
-}) => {
+  setData: (data: any) => void,
+} & Omit<JsonFormsInitStateProps, "data" | "renderers" | "cells" | "schema" | "uischema" | "onChange">
+
+const FormsWrapped = ({schema, uischema, data, setData, ...other}: FormsWrappedProps): JSX.Element => {
+
+  const JSschema = useMemo(() => loadJSON(schema), [schema])
+  const JSschemaui = useMemo(() => loadJSON(uischema), [schema])
 
   return (
-    <JsonForms
-      schema={loadJSON(props.schema)}
-      uischema={props.uischema==="" || props.uischema==="{}" ? undefined : loadJSON(props.uischema)}
-      data={props.data}
-      renderers={renderers}
-      cells={materialCells}
-      onChange={({ errors, data }) => props.setData(data)}
-    />
+    <>
+      <JsonForms
+        schema={JSschema as JsonSchema}
+        uischema={uischema===""|| uischema==="{}" ? undefined : JSschemaui as UISchemaElement}
+        data={data}
+        renderers={renderers}
+        cells={materialCells}
+        onChange={({ errors, data }) => setData(data)}
+        validationMode='ValidateAndShow'
+        {...other}
+        />
+    </>
   )
 };
 
