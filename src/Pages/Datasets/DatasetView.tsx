@@ -95,7 +95,7 @@ const DatasetView = ({mode}: Props) => {
                     upper: data.project.id
                 })
                 .then((response) => {
-                    return [response.id, post(`/form`, {data: data.form.data, node: response.id, used_template: data.template.id})]
+                    return [response.id, post(`/form/`, {data: data.form.data, node: response.id, used_template: data.template.id})]
                 })
                 .then(([id, response]) => {console.log(response); navigate(`/projects/${projectId}/datasets/${id}`)})
                 break;
