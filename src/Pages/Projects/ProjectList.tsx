@@ -1,40 +1,34 @@
 import { Box, Button } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PostAddRounded } from '@mui/icons-material';
 import ContentCard from '../../Components/ContentCard';
 import ContentHeader from '../../Components/ContentHeader';
-import { useFetch } from 'use-http';
-import DaregTable from '../../Components/EntityTable/EntityTable';
-import { ProjectsData } from '../../types/global';
+import DaregTable, { Column } from '../../Components/EntityTable/EntityTable';
+import { DaregAPIResponse } from '../../types/global';
+import { Project, useGetProjectsQuery } from '../../Services/projects';
+import DateTimeFormatter from '../../Components/DateTimeFormatter';
 
 const ProjectsList = () => {
 
-  const {get } = useFetch(`/nodes?upper=null`);
-  const [ data, setData ] = useState<ProjectsData[]>([])
+  const [ page, setPage ] = useState(1)
+  const {data: projects, isLoading} = useGetProjectsQuery(page)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    (async () => {
-      const projects = await get().catch((e) => console.log(e))
-      setData(projects)
-    })()
-  }, [get])
-
-  const tableColumns = [
-    { id: 'name', label: 'Name', width: 200 },
-    { id: 'description', label: 'Description', width: 400 },
-    { id: 'default_template', label: 'Tags', width: 200 },
-    { id: 'creator', label: 'Creator', width: 200 },
-    { id: 'created_at', label: 'Creation', width: 200 },
-    { id: 'actions', label: 'Actions', width: 200, renderCell: (params: any) => (
+  const tableColumns: Column<Project>[] = [
+    { id: 'name', label: 'Name', minWidth: 200 },
+    { id: 'description', label: 'Description', minWidth: 400 },
+    { id: 'facility', label: 'Facility', minWidth: 200, renderCell: (params: any) => (params.facility.abbreviation)},
+    { id: 'created_by', label: 'Creator', minWidth: 200, renderCell: (params: any) => (params.created_by?.full_name || "Unknown")},
+    { id: 'created', label: 'Creation', minWidth: 200, renderCell: (params: any) => <DateTimeFormatter>{params.created}</DateTimeFormatter> },
+    { id: 'actions', label: 'Actions', minWidth: 200, renderCell: (params: any) => (
       <Button variant="contained" size="small" onClick={() => navigate(`/projects/${params.id}`)}>View</Button>
     )}
   ]
 
   return (
     <Box>
-      <ContentHeader title={"Projects"} actions={
+      <ContentHeader<Project> title={"Projects"} actions={
         <Button variant="contained" size="small" endIcon={<PostAddRounded />} onClick={() => navigate("/projects/new")}>
           Add new
         </Button>
@@ -42,8 +36,11 @@ const ProjectsList = () => {
       </ContentHeader>
       <ContentCard>
         <DaregTable
+          loading={isLoading}
           columns={tableColumns}
-          data={data}
+          data={projects || {results: []} as unknown as DaregAPIResponse<Project>}
+          page={page}
+          setPage={setPage}
         />
       </ContentCard>
     </Box>

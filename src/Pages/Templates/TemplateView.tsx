@@ -6,19 +6,15 @@ import ContentHeader from "../../Components/ContentHeader";
 import FormsWrapped from "../../Components/FormsWrapped";
 import { Edit } from "@mui/icons-material";
 import { useFetch } from "use-http";
-import { TemplatesData } from "../../types/global";
+import { SchemasData } from "../../types/global";
+import { useGetSchemaQuery } from "../../Services/schemas";
 
 const TemplateView = () => {
     const navigate = useNavigate();
     const { templateId } = useParams()
-    const { get } = useFetch(`/templates/${templateId}`);
-    const [data, setData] = useState<TemplatesData>();
 
-    useEffect(() => {
-        (async () => {
-            setData(await get())
-        })()
-    }, [get])
+    const data = useGetSchemaQuery(templateId as string).data
+
 
 
     if (data){
@@ -52,8 +48,8 @@ const TemplateView = () => {
                 </Stack>
             </ContentHeader>
             <ContentCard title={"Form"}>
-                {(data?.scheme || data?.uischeme) ? 
-                    <FormsWrapped schema={data.scheme} uischema={data.uischeme} data={{}} setData={() => {}} />
+                {(data?.schema || data?.uischema) ? 
+                    <FormsWrapped schema={data.schema} uischema={data.uischema} data={{}} setData={() => {}} />
                     : <>No schema defined, use "Edit templates" section</>}
                 </ContentCard>
             </Box>

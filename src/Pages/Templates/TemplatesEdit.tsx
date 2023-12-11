@@ -7,10 +7,13 @@ import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
 import ContentHeader from "../../Components/ContentHeader";
 import { useFetch } from "use-http";
-import { TemplatesData } from "../../types/global";
+import { SchemasData } from "../../types/global";
 import { ViewModes } from "../../types/enums";
+import { useAddSchemaMutation, useGetSchemaQuery, useUpdateSchemaMutation } from "../../Services/schemas";
+import { LoadingButton } from "@mui/lab";
 
-type TemplateEditorStateKeys = keyof TemplatesData | 'full-editor';
+
+type TemplateEditorStateKeys = keyof SchemasData | 'full-editor';
 
 type Props = {
     mode: ViewModes
@@ -19,26 +22,26 @@ type Props = {
 const TemplatesNew = ({mode}: Props) => {
 
     const navigate = useNavigate();
+    const { templateId } = useParams();
     
     const [templateEditorState, setTemplateEditorState] = useState<boolean>(false)
-    const [data, setData] = useState<TemplatesData>({id: "", creator: "", created_at: "", name: "", description: "", uischeme: "{}", scheme: "{}"})
-    
-    const { templateId } = useParams();
-    const {get, post, patch, error } = useFetch(`/templates`);
 
+    const [ loadingButtonState, setLoadingButtonState ] = useState<boolean>(false)
+    
+    const schemaData = useGetSchemaQuery(templateId as string).data
+    const [data, setData] = useState<SchemasData>({id: "", created: "", name: "", description: "", uischema: {}, schema: {}})
+    
     useEffect(() => {
-        if (mode===ViewModes.Edit){
-            (async () => {
-                setData(await get(`/${templateId}`))
-            })()
-        }
-    }, [templateId, get, mode])
+        if (mode===ViewModes.Edit && schemaData)
+            setData(schemaData as SchemasData)
+    }, [schemaData])
+    
 
     const openEditor = (type: TemplateEditorStateKeys): void => {
         switch(type){
-            case "uischeme":
+            case "uischema":
                 break;
-            case "scheme":
+            case "schema":
                 break;
             case "full-editor":
                 setTemplateEditorState(true)
@@ -60,15 +63,24 @@ const TemplatesNew = ({mode}: Props) => {
         setTemplateEditorState(false);
     }
 
+    const [ addSchema ] = useAddSchemaMutation()
+    const [ updateSchema ] = useUpdateSchemaMutation()
+    
     const saveForm = (): void => {
+        let updatedSchema;
+        setLoadingButtonState(true)
         switch(mode){
             case ViewModes.Edit:
-                patch(`/${templateId}`, data).then((response) => {navigate(`/templates/${templateId}`)})
+                updatedSchema = updateSchema({id: data.id, name:data.name, description:data.description, schema:data.schema, uischema:data.uischema})
                 break;
             case ViewModes.New:
-                post(data).then((response) => {navigate(`/templates/${response.id}`)})
-                break;
-        }
+                updatedSchema =  addSchema(data)
+                break; 
+            }
+        updatedSchema?.then((response) => {
+            navigate(`/templates/${(response as {data: {id: string}}).data.id}`)
+            setLoadingButtonState(false)
+        })
     }
 
     return (
@@ -121,8 +133,8 @@ const TemplatesNew = ({mode}: Props) => {
         </ContentCard>
 
         <ContentCard title={"Preview"}>
-            {(data.scheme || data.uischeme) ? 
-            <FormsWrapped schema={data.scheme} uischema={data.uischeme} data={{}} setData={() => {}} />
+            {(data.schema || data.uischema) ? 
+            <FormsWrapped schema={data.schema} uischema={data.uischema} data={{}} setData={() => {}} />
             : <>No schema defined, use "Edit templates" section</>}
         </ContentCard>
 
@@ -134,11 +146,18 @@ const TemplatesNew = ({mode}: Props) => {
         <PermissionsTable />
         </ContentCard> */}
         <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
-            <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
+            <LoadingButton
+                loading={loadingButtonState}
+                loadingPosition="end"
+                endIcon={<Save />}
+                variant="contained"
+                size="large"
+                onClick={() => saveForm()}
+            >
                 Save
-            </Button>
+            </LoadingButton>
         </ContentCard>
-        {error ? <Typography variant="subtitle1">{error.message || ""}</Typography> : <p></p>}
+        {/*error ? <Typography variant="subtitle1">{error.message || ""}</Typography> : <p></p>*/}
       </Box>
     )
 }

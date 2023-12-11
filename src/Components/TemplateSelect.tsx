@@ -1,49 +1,30 @@
 import { Autocomplete, Box, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useFetch } from "use-http";
-import { TemplatesData } from "../types/global";
+import { DaregAPIObjectBase, DaregAPIObjectExtended, DaregAPIResponse, SchemasData } from "../types/global";
+import { useGetSchemasQuery } from "../Services/schemas";
 
-type Props = {
-  selectedTemplate: TemplatesData,
-  setSelectedTemplate: React.Dispatch<React.SetStateAction<TemplatesData>>
+type Props<T> = {
+  label: string,
+  selectedId: string,
+  setSelectedId: (value: string) => void
+  entities: DaregAPIResponse<T>
 }
 
-const TemplateSelect = ({selectedTemplate, setSelectedTemplate}: Props) => {
-
-  const [ data, setData ] = useState<TemplatesData[]>();
-  const { get } = useFetch(`/templates`);
-
-  useEffect(() => {
-    (async () => {
-      setData(await get())
-    })()
-  }, [get])
+const TemplateSelect = <T extends DaregAPIObjectExtended>({label, selectedId, setSelectedId, entities}: Props<T>) => {
 
   return (
     <>
-      {/* <Box display="none">
-        <Autocomplete
-          sx={{ mt: 1, mb: 2 }}
-          multiple
-          disableClearable
-          fullWidth
-          options={tags}
-          getOptionLabel={(option) => option.title}
-            renderInput={(params) => (
-              <TextField variant="filled" {...params} label="Filtrovat výběr podle značek" />
-              )}
-          />
-      </Box> */}
       <Autocomplete
         disableClearable
         id="combo-box-demo"
-        options={data || []}
+        options={entities?.results || []}
         sx={{ml: 0, width: "33%"}}
-        getOptionLabel={(option: TemplatesData) => option.name}
-        value={selectedTemplate}
-        onChange={(e, value) => setSelectedTemplate(value)}
+        getOptionLabel={(option: T) => option.name}
+        value={entities?.results.find((template: T) => template.id === selectedId) as NonNullable<T> || undefined}
+        onChange={(e, value) => setSelectedId((value as T).id as string)}
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        renderInput={(params) => <TextField variant="filled" {...params} label="Scheme" />}
+        renderInput={(params) => <TextField variant="filled" {...params} label={label} />}
       />
     </>
   )

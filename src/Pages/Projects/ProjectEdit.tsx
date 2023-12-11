@@ -1,85 +1,76 @@
 import { useNavigate, useParams } from "react-router-dom"
-import { Box, Button, Skeleton, Stack, TextField } from "@mui/material";
+import { Box, Button, Chip, Skeleton, Stack, TextField } from "@mui/material";
 import { Add, Edit, Save } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import FormsWrapped from "../../Components/FormsWrapped";
 import ContentCard from "../../Components/ContentCard";
 import ContentHeader from "../../Components/ContentHeader";
-import { useFetch } from "use-http";
 import TemplateSelect from "../../Components/TemplateSelect";
 import { LoadingButton } from "@mui/lab";
-import DaregTable from "../../Components/EntityTable/EntityTable";
-import { ProjectsData, TemplatesData } from "../../types/global";
+import DaregTable, { Column } from "../../Components/EntityTable/EntityTable";
+import { DaregAPIResponse, ProjectsData } from "../../types/global";
 import { ViewModes } from "../../types/enums";
+import { useGetSchemaQuery, useGetSchemasQuery } from "../../Services/schemas";
+import { useAddProjectMutation, useGetProjectQuery, useUpdateProjectMutation } from "../../Services/projects";
+import { useGetFacilitiesQuery } from "../../Services/facilities";
+import { Dataset, useGetDatasetsQuery } from "../../Services/datasets";
+import DateTimeFormatter from "../../Components/DateTimeFormatter";
 
 export type ProjectDataStateKeys = keyof ProjectsData;
 
 const ProjectEdit = ({mode}: {mode: ViewModes}) => {
 
     const navigate = useNavigate();
-    const [data, setData] = useState<ProjectsData>({name: "", description: "", default_template: "", created_at: "", creator: "", upper: null} as ProjectsData)
-    const [selectedTemplate, setSelectedTemplate] = useState<TemplatesData>({id: "", name: ""} as TemplatesData)
-    const [ templateData, setTemplateData ] = useState<TemplatesData>();
-    const [ datasets, setDatasets ] = useState<ProjectsData[]>();
+    const { projectId } = useParams();
+
+    const {data: facilities} = useGetFacilitiesQuery(1) // TODO: Implement pagination
+    
+    const [data, setData] = useState<ProjectsData>({name: "", description: "", default_dataset_schema: "", project_schema: undefined, metadata: {}, facility: facilities?.results[0].id})
+    const {data: schemas, isLoading} = useGetSchemasQuery(1) // TODO: Implement pagination
+    
+    const templateData = useGetSchemaQuery(data.default_dataset_schema as string).data
+
+    const {data: datasets} = useGetDatasetsQuery({page: 1, projId: projectId}, {skip: projectId===undefined})
 
     const [loadingState, setLoadingState] = useState<boolean>(false)
 
     const [ loadingButtonState, setLoadingButtonState ] = useState<boolean>(false)
-    
-    const { projectId } = useParams();
-    const { get, post, patch } = useFetch();
 
+    const projectData = useGetProjectQuery(projectId as string).data
     useEffect(() => {
-        setLoadingState(true)
-        if(mode === ViewModes.Edit || mode === ViewModes.View){
-            (async () => {
-                setData(await get(`/nodes/${projectId}`))
-                const template = await get(`/templates/${data.default_template}`)
-                setTemplateData(template)
-                setLoadingState(false)
-            })();
-            (async () => {
-                const tmp2 = await get(`/nodes?upper=${projectId}`);
-                setDatasets(tmp2)
-            })()
-        }
-    }, [projectId, mode, get])
+        if ((mode===ViewModes.Edit||mode===ViewModes.View) && projectData)
+            setData({
+                ...projectData, 
+                default_dataset_schema: projectData.default_dataset_schema!==null ? projectData.default_dataset_schema.id : "", 
+                facility: projectData.facility.id!==null ? projectData.facility.id : "",
+            } as ProjectsData)
+    }, [projectData])
 
-    useEffect(() => {
-        if((mode === ViewModes.Edit || mode === ViewModes.View) && data.default_template){
-            (async () => {
-                const template = await get(`/templates/${data.default_template}`)
-                setTemplateData(template)
-                setSelectedTemplate(template)
-            })()
-        }
-    }, [loadingState, mode, get])
-    
-    useEffect(() => {
-        if((mode === ViewModes.New || mode === ViewModes.Edit) && selectedTemplate.id){
-            (async () => {
-                setTemplateData(await get(`/templates/${selectedTemplate.id}`))
-            })()
-            setData(prevState => ({...prevState, default_template: selectedTemplate.id as string}))
-            console.log("NOOK", templateData)
-        }
-    }, [selectedTemplate, get, mode])
+    const [
+        addProject,
+        { isLoading: isUpdating },
+    ] = useAddProjectMutation()
 
-
+    const [ updateProject ] = useUpdateProjectMutation()
+            
     const saveForm = (): void => {
-        let updatedTemplate;
+        let updatedProject;
         setLoadingButtonState(true);
+        const requestData = {
+            ...data, 
+            default_dataset_schema: data.default_dataset_schema!==undefined ? data.default_dataset_schema : null,
+            facility: data.facility!==undefined ? data.facility : null,
+        }
         switch(mode){
             case ViewModes.Edit:
-                updatedTemplate = patch(`/nodes/${projectId}`, data)
+                updatedProject = updateProject(data)
                 break;
             case ViewModes.New:
-                updatedTemplate = post(`/nodes`, data)
+                updatedProject = addProject(data)
                 break;
         }
-        updatedTemplate?.then((response) => {
-            setLoadingButtonState(false)
-            navigate(`/projects/${projectId}`)
+        updatedProject?.then((response) => {
+        setLoadingButtonState(false)
+        navigate(`/projects/${(response as {data: {id: string}}).data.id}`)
         })
     }
 
@@ -89,17 +80,17 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
         }
         setData({
             ...data,
-            [inputId]: e.target.value
+            [inputId]: typeof(e)==="string" ? e : e.target.value
         })
     }
     
-    const datasetsTable = [
-        { id: 'name', label: 'Name', width: 200 },
-        { id: 'description', label: 'Description', width: 400 },
-        { id: 'default_template', label: 'Tags', width: 200 },
-        { id: 'creator', label: 'Creator', width: 200 },
-        { id: 'created_at', label: 'Creation', width: 200 },
-        { id: 'actions', label: 'Actions', width: 200, renderCell: (params: any) => (
+    const datasetsTable: Column<Dataset>[] = [
+        { id: 'name', label: 'Name', minWidth: 200 },
+        { id: 'description', label: 'Description', minWidth: 400 },
+        { id: 'tags', label: 'Tags', minWidth: 100, renderCell: (params: any) => (params.tags?.map((item: string, index: number) => (<Chip label={item} size="small" variant="outlined" />)) || "None") },
+        { id: 'created_by', label: 'Creator', minWidth: 200, renderCell: (params: any) => (params.created_by?.full_name || "Unknown")},
+        { id: 'created', label: 'Creation', minWidth: 200, renderCell: (params: any) => <DateTimeFormatter>{params.created}</DateTimeFormatter>},
+        { id: 'actions', label: 'Actions', minWidth: 200, renderCell: (params: any) => (
             <Button variant="contained" size="small" onClick={() => navigate(`/projects/${projectId}/datasets/${params.id}`)}>View</Button>
         )}
     ]
@@ -138,25 +129,41 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
                 </ContentHeader>
                 {mode===ViewModes.View ? (
                     <ContentCard title={"Datasets"} actions={
-                        <Button variant={"contained"} size="medium" endIcon={<Add />} onClick={() => navigate(`/projects/${data?.id}/datasets/new`)}>
-                            New Dataset
-                        </Button>
+                        <>
+                            {/* <TextField size="small" id="dataset-search" 
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><SearchRounded></SearchRounded></InputAdornment>,
+                              }}/> */}
+                            <Button variant={"contained"} size="medium" endIcon={<Add />} onClick={() => navigate(`/projects/${data?.id}/datasets/new`)}>
+                                New Dataset
+                            </Button>
+                        </>
                     }>
-                        <DaregTable columns={datasetsTable} data={datasets || []} size="small"/>
+                        <DaregTable
+                            columns={datasetsTable}
+                            data={datasets || {results: []} as unknown as DaregAPIResponse<Dataset>}
+                            size="small"
+                        />
                     </ContentCard>
                 ) : <></>}
                 
-                {mode===ViewModes.View ? <></> : (<ContentCard title={"Select default template"}>
+                {mode===ViewModes.View || !facilities ? <></> : (<ContentCard title={"Select facility"}>
                     <Stack direction="row" justifyContent="flex-start" alignItems="baseline" spacing={3}>
-                        <TemplateSelect selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate}/>
+                        <TemplateSelect label="" selectedId={data.facility as string} setSelectedId={(value) => handleChange("facility", value)} entities={facilities}/>
                     </Stack>
                 </ContentCard>)}
 
-                <ContentCard title={"Preview"}>
+                {mode===ViewModes.View || !schemas ? <></> : (<ContentCard title={"Select default template"}>
+                    <Stack direction="row" justifyContent="flex-start" alignItems="baseline" spacing={3}>
+                        <TemplateSelect label="" selectedId={data.default_dataset_schema as string} setSelectedId={(value) => handleChange("default_dataset_schema", value)} entities={schemas}/>
+                    </Stack>
+                </ContentCard>)}
+
+                {/* <ContentCard title={"Preview"}>
                     {(true) ? 
-                    <FormsWrapped readonly schema={templateData?.scheme || ""} uischema={templateData?.uischeme || ""} data={{}} setData={() => {}} />
+                    <FormsWrapped readonly schema={templateData?.schema || {}} uischema={templateData?.uischema || {}} data={{}} setData={() => {}} />
                     : <>No schema defined, use "Edit templates" section</>}
-                </ContentCard>
+                </ContentCard> */}
                 {mode===ViewModes.View ? <></> : (<ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
                     <LoadingButton
                         loading={loadingButtonState}

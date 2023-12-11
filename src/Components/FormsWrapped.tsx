@@ -4,6 +4,7 @@ import ratingControlTester from '../ratingControlTester';
 import { JsonForms, JsonFormsInitStateProps } from '@jsonforms/react';
 import { useMemo, useState } from 'react';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
+import { Skeleton, Stack } from '@mui/material';
 
 const renderers = [
   ...materialRenderers,
@@ -11,7 +12,7 @@ const renderers = [
   { tester: ratingControlTester, renderer: RatingControl },
 ];
 
-const loadJSON = (json: string) => {
+export const loadJSON = (json: string) => {
   try {
     return (JSON.parse(json))
   }
@@ -20,22 +21,22 @@ const loadJSON = (json: string) => {
 }
 
 type FormsWrappedProps = {
-  schema: string,
-  uischema: string,
+  schema: Object,
+  uischema: Object,
   data: any,
   setData: (data: any) => void,
 } & Omit<JsonFormsInitStateProps, "data" | "renderers" | "cells" | "schema" | "uischema" | "onChange">
 
 const FormsWrapped = ({schema, uischema, data, setData, ...other}: FormsWrappedProps): JSX.Element => {
 
-  const JSschema = useMemo(() => loadJSON(schema), [schema])
-  const JSschemaui = useMemo(() => loadJSON(uischema), [schema])
+  //const JSschema = useMemo(() => loadJSON(schema), [schema])
+  //const JSschemaui = useMemo(() => loadJSON(uischema), [uischema])
 
   return (
     <>
       <JsonForms
-        schema={JSschema as JsonSchema}
-        uischema={uischema===""|| uischema==="{}" ? undefined : JSschemaui as UISchemaElement}
+        schema={schema as JsonSchema}
+        uischema={Object.keys(uischema).length > 0 ?  uischema as UISchemaElement : undefined}
         data={data}
         renderers={renderers}
         cells={materialCells}
@@ -46,6 +47,18 @@ const FormsWrapped = ({schema, uischema, data, setData, ...other}: FormsWrappedP
     </>
   )
 };
+
+export const FormsWrapperSkeleton = () => {
+  return (
+    <Stack direction="column" spacing={1} justifyContent="space-evenly">
+      <Skeleton variant="text" width="50%" height={50} />
+      <Stack direction="row" spacing={1} justifyContent="space-evenly">
+        <Skeleton variant="rectangular" width="50%" height={50} />
+        <Skeleton variant="rectangular" width="50%" height={50} />
+      </Stack>
+    </Stack>
+  )
+}
 
 export default FormsWrapped;
 
