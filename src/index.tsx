@@ -5,6 +5,8 @@ import './i18n'
 import config from './Config';
 import { WebStorageStateStore } from 'oidc-client-ts';
 import { AuthProvider } from 'react-oidc-context';
+import { Provider } from 'react-redux';
+import { store } from './Services/store';
 
 const oidcConfig = {
   authority: config.REACT_APP_OIDC_AUTHORITY,
@@ -51,7 +53,9 @@ ReactDOM.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <AuthProvider {...oidcConfig}>
-      <App />
+      <Provider store={store}>
+        <App />
+      </Provider>
     </AuthProvider>
   </ThemeProvider>,
   document.getElementById('root')

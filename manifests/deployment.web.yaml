@@ -3,17 +3,17 @@ kind: Deployment
 metadata:
   labels:
     role: dareg-frontend
-    deployment-id: ${APP}
-  name: dareg-web-${APP}
+    deployment-id: ${APP_ID}
+  name: dareg-web-${APP_ID}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      role: dareg-frontend-${APP}
+      role: dareg-frontend-${APP_ID}
   template:
     metadata:
       labels:
-        role: dareg-frontend-${APP}
+        role: dareg-frontend-${APP_ID}
     spec:
       imagePullSecrets:
       - name: gitlab-coffee-auth
@@ -25,7 +25,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - image: ${DOCKER_IMAGE_NAME_FE}:${CI_COMMIT_SHORT_SHA}
+        - image: ${DOCKER_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
           imagePullPolicy: Always
           name: dareg-web
           ports:
@@ -51,17 +51,17 @@ spec:
       volumes:
         - name: app-config 
           configMap:
-            name: production-config
+            name: ${APP}-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    deployment-id: ${APP}
-  name: dareg-web-svc-${APP}
+    deployment-id: ${APP_ID}
+  name: dareg-web-svc-${APP_ID}
 spec:
   selector:
-    role: dareg-frontend-${APP}
+    role: dareg-frontend-${APP_ID}
   type: ClusterIP
   ports:
   - name: default
@@ -72,9 +72,9 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dareg-web-ingress-${APP}
+  name: dareg-web-ingress-${APP_ID}
   labels:
-    deployment-id: ${APP}
+    deployment-id: ${APP_ID}
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/ingress.class: nginx
@@ -84,7 +84,7 @@ spec:
   - hosts:
       - ${APP_HOST}
       - ${APP_HOST_FIX}
-    secretName: ${APP}-dareg-web-dyn-cloud-e-infra-cz
+    secretName: ${APP_ID}-dareg-web-dyn-cloud-e-infra-cz
   rules:
   - host: ${APP_HOST}
     http:
@@ -93,14 +93,14 @@ spec:
           path: "/"
           backend:
             service:
-              name: dareg-web-svc-${APP}
+              name: dareg-web-svc-${APP_ID}
               port: 
                 name: default
         - pathType: ImplementationSpecific
           path: "/api"
           backend:
             service:
-              name: dareg-backend-svc-${APP}
+              name: dareg-backend-svc-${APP_ID}
               port: 
                 name: default
   - host: ${APP_HOST_FIX}
@@ -110,13 +110,13 @@ spec:
           path: "/"
           backend:
             service:
-              name: dareg-web-svc-${APP}
+              name: dareg-web-svc-${APP_ID}
               port: 
                 name: default
         - pathType: ImplementationSpecific
           path: "/api"
           backend:
             service:
-              name: dareg-backend-svc-${APP}
+              name: dareg-backend-svc-${APP_ID}
               port: 
                 name: default

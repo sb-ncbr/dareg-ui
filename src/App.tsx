@@ -44,7 +44,7 @@ const options = {
   interceptors: {
     request: ({ options }: any) => {
       const u = getUser();
-      options.headers.Authorization = `Bearer ${u?.id_token}`
+      options.headers.Authorization = `Bearer ${u?.access_token}`
       return options
     }
   },

@@ -9,8 +9,7 @@ stages:
   - cleanup
 
 variables:
-  DOCKER_IMAGE_NAME_FE: "$HARBOR_URL/xrosinec/dareg-ui"
-  DOCKER_IMAGE_NAME_BE: "$HARBOR_URL/xrosinec/dareg-server"
+  DOCKER_IMAGE_NAME: "$HARBOR_URL/ceitec-biodata/dareg-ui"
   CLUSTER_DOMAIN: "dyn.cloud.e-infra.cz"
   DEPLOYMENT_TLD: dareg.${CLUSTER_DOMAIN}
   DEPLOYMENT_TLD_FIX: "dareg.biodata.ceitec.cz"
@@ -53,31 +52,16 @@ build_app:
     expire_in: 2 hours
   # needs: ["unit test"]
 
-build_image-fe:
+build_image:
   stage: publish
   image: docker:latest
   services:
     - docker:dind
   before_script:
     - docker login -u $HUB_REGISTRY_USER -p $HARBOR_PASSWORD $HARBOR_URL
-    - ls -la
   script:
-    - docker build --tag $DOCKER_IMAGE_NAME_FE:$CI_COMMIT_SHORT_SHA -f $CI_PROJECT_DIR/Dockerfile .
-    - docker push $DOCKER_IMAGE_NAME_FE:$CI_COMMIT_SHORT_SHA
-  needs: ["build_app"]
-
-build_image-be:
-  stage: publish
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u $HUB_REGISTRY_USER -p $HARBOR_PASSWORD $HARBOR_URL
-    - ls -la
-  script:
-    - docker build --tag $DOCKER_IMAGE_NAME_BE:$CI_COMMIT_SHORT_SHA -f $CI_PROJECT_DIR/Dockerfile.server .
-    - docker push $DOCKER_IMAGE_NAME_BE:$CI_COMMIT_SHORT_SHA
-  needs: ["build_image-fe"]
+    - docker build --tag $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --tag latest --tag $CI_COMMIT_REF_NAME -f $CI_PROJECT_DIR/Dockerfile .
+    - docker push --all-tags $DOCKER_IMAGE_NAME
 
 .deploy: &deploy
   image:
@@ -104,6 +88,7 @@ review:
   variables:
     APP_COMPONENT: web
     APP: review-$CI_COMMIT_REF_SLUG
+    APP_ID: review-$CI_COMMIT_REF_SLUG
     APP_HOST: $CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
     APP_HOST_FIX: test.${DEPLOYMENT_TLD_FIX}
   environment:
@@ -115,24 +100,6 @@ review:
   except:
     - master
 
-review-be:
-  <<: *deploy
-  stage: review
-  variables:
-    APP_COMPONENT: server
-    APP: review-$CI_COMMIT_REF_SLUG
-    APP_HOST: api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
-    APP_HOST_FIX: api.test.${DEPLOYMENT_TLD_FIX}
-  environment:
-    name: review/$CI_COMMIT_REF_SLUG
-    url: https://api.$CI_COMMIT_REF_SLUG.${DEPLOYMENT_TLD}
-    on_stop: stop-review
-  only:
-    - branches
-  except:
-    - master
-  needs: ["review"]
-
 staging:
   <<: *deploy
   stage: staging
@@ -143,20 +110,6 @@ staging:
   environment:
     name: staging
     url: https://stage.${DEPLOYMENT_TLD_FIX}
-  only:
-    - master
-  needs: ["staging-be"]
-
-staging-be:
-  <<: *deploy
-  stage: staging
-  variables:
-    APP: staging
-    APP_HOST: api.stage.${DEPLOYMENT_TLD}
-    APP_HOST_FIX: api.stage.${DEPLOYMENT_TLD_FIX}
-  environment:
-    name: staging
-    url: https://api.stage.${DEPLOYMENT_TLD_FIX}
   only:
     - master
 
@@ -172,22 +125,9 @@ production:
     name: production
     url: https://${DEPLOYMENT_TLD_FIX}
   only:
-    - master
-  needs: ["production-be"]
-
-production-be:
-  <<: *deploy
-  stage: production
-  variables:
-    APP: production
-    APP_HOST: "api.${DEPLOYMENT_TLD}"
-    APP_HOST_FIX: api.${DEPLOYMENT_TLD_FIX}
-  when: manual
-  environment:
-    name: production
-    url: "https://api.${DEPLOYMENT_TLD_FIX}"
-  only:
-    - master
+    - tags
+  except:
+    - branches
 
 stop-review:
   <<: *deploy

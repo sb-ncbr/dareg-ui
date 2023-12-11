@@ -2,6 +2,8 @@ import { Box, Card, CardContent, CardMedia, CircularProgress, Divider, Typograph
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
 import ceitec_logo from '../ceitec_logo.png'
+import { setCredentials } from "../Reducers/authSlice";
+import { User } from "oidc-client-ts";
 
 type UserStateCallback = {
     auth_request_id: string
@@ -12,6 +14,7 @@ const OIDCCallback = () => {
     let redirect = "/";
 
     if (auth.isAuthenticated && !auth.isLoading) {
+        setCredentials({ user: auth.user || {} as User, token: auth.user?.access_token || ""})
         const authRequestId = (auth.user?.state as UserStateCallback).auth_request_id;
         const o = JSON.parse(localStorage.getItem(authRequestId) as string)
         if (authRequestId && o) { 

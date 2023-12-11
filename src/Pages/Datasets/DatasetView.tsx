@@ -1,15 +1,21 @@
-import { DataObject, Edit, Save } from "@mui/icons-material";
+import { AccessTime, AccountCircle, Assignment, DataObject, Edit, HomeRepairService, Save } from "@mui/icons-material";
 import { Alert, Box, Button, Skeleton, Stack, TextField } from "@mui/material";
 import ContentHeader from "../../Components/ContentHeader";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ContentCard from "../../Components/ContentCard";
-import FormsWrapped from "../../Components/FormsWrapped";
+import FormsWrapped, { FormsWrapperSkeleton } from "../../Components/FormsWrapped";
 import useFetch from "use-http";
 import { ProjectDataStateKeys } from "../Projects/ProjectEdit";
 import { stringify } from 'yaml'
-import { DatasetsData, FormData, ProjectsData } from "../../types/global";
+import { DaregAPIMinimalNestedObject, FormData } from "../../types/global";
 import { ViewModes } from "../../types/enums";
+import { Dataset, DatasetRequest, useAddDatasetMutation, useGetDatasetQuery, useUpdateDatasetMutation } from "../../Services/datasets";
+import { useGetSchemaQuery } from "../../Services/schemas";
+import { Project, useGetProjectQuery } from "../../Services/projects";
+import { LoadingButton } from "@mui/lab";
+import CodeEditor from '@uiw/react-textarea-code-editor';
+import { Facility } from "../../Services/facilities";
 
 type Props = {
     mode: ViewModes
@@ -21,126 +27,70 @@ const DatasetView = ({mode}: Props) => {
     const { get, post, patch, loading } = useFetch();
 
     const { projectId, datasetId } = useParams();
+    
+    const projectData = useGetProjectQuery(projectId as string).data
+    
+    const datasetData = useGetDatasetQuery(datasetId as string).data
+    
+    const [ data, setData ] = useState<Dataset>({name: "", description: "", schema: {id: "", name: ""}, project: {id: "", name: ""}, metadata: {}} as Dataset);
 
-    const [ data, setData ] = useState<DatasetsData>({dataset: {name: "", description: ""}, form: {data: "{}"}, template: {uischeme: "", scheme: ""}} as DatasetsData);
-    const [ formDataString, setFormDataString ] = useState({})
+    const schema = useGetSchemaQuery(projectData?.default_dataset_schema.id ?? "").data
+    
+    useEffect(() => {
+        if ((mode===ViewModes.Edit||mode===ViewModes.View) && datasetData && projectData){
+            setData(datasetData)
+        }
+        else{
+            const dataset_schema = projectData?.default_dataset_schema.id
+            setData({...data, project: projectData as Project, schema: dataset_schema || ""})
+        }
+    }, [datasetData, projectData])
+
     const [ error, setError ] = useState<boolean>(false)
 
     const [ editorMode, setEditorMode ] = useState<"form"|"editor">("form")
-    const toggleEditor = useCallback(() => setEditorMode((prevState) => prevState==="form" ? "editor" : "form"), [])
-
-    useEffect(() => {
-        (async () => {
-          await get(`/nodes/${projectId}`)
-            .then((response: ProjectsData): ProjectsData => {
-              setData((prevState) => ({
-                ...prevState,
-                project: response
-              }));
-              return response
-            })
-            .then((r) => get(`/templates/${r.default_template}`))
-            .then((response) => {
-              setData((prevState) => ({
-                ...prevState,
-                template: response
-              }));
-            })
-            .catch((error) => {
-              console.log(error)
-            });
-            if (mode===ViewModes.View || mode===ViewModes.Edit){
-                await get(`/nodes/${datasetId}`)
-                .then((response) => {
-                    setData((prevState) => ({
-                        ...prevState,
-                        dataset: response
-                    }));
-                })
-                .then(() => {
-                    return get(`/form?node=${datasetId}`);
-                })
-                .then((response) => {
-                    setData((prevState) => ({
-                        ...prevState,
-                        form: response
-                    }))
-                    return JSON.parse(response.data)
-                })
-                .then((formData) => {
-                    setFormDataString(formData)
-                })
-                .catch((error) => {
-                    setError(true)
-                    console.log(error)
-                });
-            }
-        })()
-    }, [datasetId, projectId, get, mode]);
-
-    const saveForm = (): void => {
-        switch(mode){
-            case ViewModes.Edit:
-                patch(`/nodes/${datasetId}`, {name: data.dataset.name, description: data.dataset.description})
-                .then((response) => (patch(`/form/${data.form.id}`, {...data.form}))
-                .then((response) => {
-                    navigate(`/projects/${projectId}/datasets/${datasetId}`, {replace: true})
-                }))
-                break;
-            case ViewModes.New:
-                post(`/nodes`, {
-                    name: data.dataset.name, 
-                    description: data.dataset.description, 
-                    default_template: data.project.default_template, 
-                    upper: data.project.id
-                })
-                .then((response) => {
-                    return [response.id, post(`/form/`, {data: data.form.data, node: response.id, used_template: data.template.id})]
-                })
-                .then(([id, response]) => {console.log(response); navigate(`/projects/${projectId}/datasets/${id}`)})
-                break;
-        }
+    const toggleEditor = () => {
+        setEditorMode((prevState) => prevState==="form" ? "editor" : "form")
     }
 
-    const handleChange = (inputId: ProjectDataStateKeys | keyof FormData, dataset: keyof DatasetsData, e: any): void => {
+    const [ addDataset ] = useAddDatasetMutation()
+    const [ updateDataset ] = useUpdateDatasetMutation()
+
+    const [ loadingButtonState, setLoadingButtonState ] = useState<boolean>(false)
+    const saveForm = (): void => {
+        let updatedDataset;
+        setLoadingButtonState(true);
+        switch(mode){
+            case ViewModes.Edit:
+                updatedDataset = updateDataset({...data, schema: schema?.id, project: typeof data.project == "string" ? data.project : data.project.id})
+                break;
+            case ViewModes.New:
+                updatedDataset = addDataset({...data, schema: schema?.id, project: typeof data.project == "string" ? data.project : data.project.id})
+                break;
+        }
+        updatedDataset?.then((response) => {
+        setLoadingButtonState(false)
+        navigate(`/projects/${projectId}/datasets/${(response as {data: Dataset}).data.id}`)
+        })
+    }
+
+    const handleChange = (inputId: ProjectDataStateKeys | keyof FormData, e: any): void => {
         if(!inputId){ 
             return 
         }
         setData({
             ...data,
-            [dataset]: {
-                ...data[dataset],
-                [inputId]: e.target.value
-            }
+            [inputId]: e
         })
     }
 
-    useEffect(() => {
-        setData((prevState) => {
-            return {
-                ...prevState,
-                form: {
-                    ...prevState.form,
-                    data: JSON.stringify(formDataString)
-                },
-            }
-        })
-    }, [formDataString])
-
-    useEffect(() => {
-        try{
-            setFormDataString(JSON.parse(data.form.data))
-        } catch (e) {
-            console.log(e, data.form.data)
-            setFormDataString({})
-        }
-    }, [data.form.data])
-
+    const transform = useMemo(() => JSON.stringify(data.metadata, undefined, 4), [data.metadata])
+    
     const downloadMetadata = (): void => {
         const element = document.createElement("a");
-        const file = new Blob([stringify(JSON.parse(data.form.data))], {type: 'text/plain'});
+        const file = new Blob([stringify(data.metadata)], {type: 'text/plain'});
         element.href = URL.createObjectURL(file);
-        element.download = `${data.dataset.name || data.dataset.id}-${(new Date()).toISOString()}.metadata.yaml`;
+        element.download = `${data.name || data.id}-${(new Date()).toISOString()}.metadata.yaml`;
         document.body.appendChild(element); // Required for this to work in FireFox
         element.click();
     }
@@ -148,10 +98,19 @@ const DatasetView = ({mode}: Props) => {
     if (!loading){
         return (
             <Box>
-                <ContentHeader title={`Dataset: ${mode}`} actions={
+                <ContentHeader<Dataset & Facility> title={`Dataset: ${mode}`} actions={
                             mode===ViewModes.View ? (<Button variant={"contained"} size="medium" endIcon={<Edit />} onClick={() => navigate(`/projects/${projectId}/datasets/${datasetId}/edit`)}>
                                 Edit
                             </Button>) : <></>
+                        }
+                        metadata={
+                            mode === ViewModes.View ? [
+                                { id: "name", value: projectData?.name ?? "", label: "Project Name", icon: <Assignment /> },
+                                { id: "abbreviation", value: projectData?.facility.abbreviation ?? "", label: "Facility abbreviation", icon: <HomeRepairService /> },
+                                { id: "created", value: data.created || "", label: "Created At", icon: <AccessTime />, renderCell: (value) => (new Date(value).toLocaleString()) },
+                                { id: "created_by", value: data.created_by?.full_name || "", label: "Author", icon: <AccountCircle /> },
+                            ] :
+                            []
                         }>
                     <Stack direction="row" justifyContent="center" alignItems="baseline" gap={2}>
                         <TextField
@@ -161,8 +120,8 @@ const DatasetView = ({mode}: Props) => {
                             fullWidth
                             required
                             variant="filled"
-                            value={data.dataset.name}
-                            onChange={(e) => handleChange("name", "dataset", e)}
+                            value={data.name}
+                            onChange={(e) => handleChange("name", e.target.value)}
                             sx={{maxWidth: "33.33%", background: "#FFF"}}
                             disabled={mode===ViewModes.View}
                             />
@@ -171,8 +130,8 @@ const DatasetView = ({mode}: Props) => {
                             label="Dataset description"
                             fullWidth
                             variant="filled"
-                            value={data.dataset.description}
-                            onChange={(e) => handleChange("description", "dataset", e)}
+                            value={data.description}
+                            onChange={(e) => handleChange("description", e.target.value)}
                             sx={{maxWidth: "66.67%", background: "#FFF"}}
                             disabled={mode===ViewModes.View}
                             />
@@ -192,34 +151,41 @@ const DatasetView = ({mode}: Props) => {
                         </Alert>
                     ) : <></> }
                     {editorMode==='form' ? (
-                        data.template.scheme && data.template.uischeme ? (
-                            <FormsWrapped  readonly={mode===ViewModes.View} schema={data.template.scheme} uischema={data.template.uischeme} data={formDataString} setData={setFormDataString} />
-                        ) : <>S</>
+                        schema && schema.uischema ? (
+                            <FormsWrapped readonly={mode===ViewModes.View} schema={schema.schema} uischema={schema.uischema} data={data.metadata} setData={(value) => handleChange("metadata", value)} />
+                        ) : <><FormsWrapperSkeleton></FormsWrapperSkeleton></>
                     ) : (
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            label="Metadata"
-                            fullWidth
-                            multiline
-                            rows={20}
-                            required
-                            variant="filled"
-                            value={data.form.data}
-                            onChange={(e) => handleChange("data", "form", e)}
-                            sx={{maxWidth: "100%", background: "#FFF"}}
-                            disabled={mode===ViewModes.View}
-                            />
+                        <CodeEditor
+                            value={transform}
+                            readOnly={mode===ViewModes.View}
+                            language="js"
+                            placeholder="Please enter JS code."
+                            onChange={(e) => handleChange("metadata", JSON.parse(e.target.value))}
+                            padding={15}
+                            style={{
+                                width: "100%",
+                                fontSize: 14,
+                                backgroundColor: "#FFF",
+                                fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                            }}
+                        />        
                     )}
                 </ContentCard>
                 <ContentCard paperProps={{elevation: 0}} sx={{mb: 2, p: 0}}>
                     <Stack gap={2} direction="row" justifyContent="flex-start">
                         {mode===ViewModes.View ? <></> : (
-                            <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
+                            <LoadingButton
+                                loading={loadingButtonState}
+                                loadingPosition="end"
+                                endIcon={<Save />}
+                                variant="contained"
+                                size="large"
+                                onClick={() => saveForm()}
+                            >
                                 Save
-                            </Button>
+                            </LoadingButton>
                         )}
-                        <Button  disabled={data.form.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                        <Button disabled={/*data.metadata==="{}"*/undefined} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
                             Download metadata
                         </Button>
                     </Stack>
@@ -274,13 +240,20 @@ const DatasetView = ({mode}: Props) => {
                     <Stack gap={2} direction="row" justifyContent="flex-start">
                         <Skeleton width={"5%"} height={"4em"}>
                         {mode===ViewModes.View ? <></> : (
-                            <Button variant="contained" size="large" endIcon={<Save />} onClick={() => saveForm()}>
+                            <LoadingButton
+                                loading={loadingButtonState}
+                                loadingPosition="end"
+                                endIcon={<Save />}
+                                variant="contained"
+                                size="large"
+                                onClick={() => saveForm()}
+                            >
                                 Save
-                            </Button>
+                            </LoadingButton>
                         )}
                         </Skeleton>
                         <Skeleton>
-                            <Button  disabled={data.form?.data==="{}"} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                            <Button variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
                                 Download metadata
                             </Button>
                         </Skeleton>

@@ -6,8 +6,8 @@ import RatingControl from '../RatingControl';
 import ratingControlTester from '../ratingControlTester';
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SaveRounded, TextDecreaseRounded, TextIncreaseRounded, UndoRounded, VisibilityRounded } from "@mui/icons-material";
-import FormsWrapped from "./FormsWrapped";
-import { TemplatesData } from "../types/global";
+import FormsWrapped, { loadJSON } from "./FormsWrapped";
+import { SchemasData } from "../types/global";
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import { validate } from "@jsonforms/core";
 import ContentHeader from "./ContentHeader";
@@ -25,20 +25,20 @@ const FullscreenTextArea = styled("textarea")(({ theme }) => ({
 export type TemplateEditorState = {
   name: string,
   description: string,
-  scheme: string,
-  uischeme: string,
+  schema: string,
+  uischema: string,
   id?: string
 }
 
 type TemplateEditorProps = {
-  data: TemplatesData,
-  setData: Dispatch<SetStateAction<TemplatesData>>,
+  data: SchemasData,
+  setData: Dispatch<SetStateAction<SchemasData>>,
   open: boolean,
   closeSelf: () => void,
   id?: string
 }
 
-type EditorMode = "scheme" | "ui" | "both"
+type EditorMode = "schema" | "ui" | "both"
 
 const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProps): JSX.Element => {
 
@@ -48,29 +48,29 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
     { tester: ratingControlTester, renderer: RatingControl },
   ];
 
-  const [schemeTextArea, setSchemeTextArea] = useState<string>(data.scheme)
-  const [uiTextArea, setUiTextArea] = useState<string>(data.uischeme)
+  const [schemaTextArea, setSchemeTextArea] = useState<string>(JSON.stringify(data.schema))
+  const [uiTextArea, setUiTextArea] = useState<string>(JSON.stringify(data.uischema))
 
   const [textSize, setTextSize] = useState<number>(14)
-  const [editorMode, setEditorMode] = useState<EditorMode>(uiTextArea === "{}" ? "scheme" : "both")
+  const [editorMode, setEditorMode] = useState<EditorMode>(uiTextArea === "{}" ? "schema" : "both")
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
-    setSchemeTextArea(data.scheme)
-    setUiTextArea(data.uischeme)
-  }, [data.scheme, data.uischeme])
+    setSchemeTextArea(JSON.stringify(data.schema, undefined, 4))
+    setUiTextArea(JSON.stringify(data.uischema, undefined, 4))
+  }, [data.schema, data.uischema])
 
   const saveForm = () => {
     setData({
       ...data,
-      scheme: schemeTextArea,
-      uischeme: uiTextArea,
+      schema: loadJSON(schemaTextArea),
+      uischema: loadJSON(uiTextArea),
     })
     closeSelf()
   }
 
   const refreshPreview = () => {
-    console.log(validateSchema(JSON.parse(schemeTextArea), {}));
+    console.log(validateSchema(JSON.parse(schemaTextArea), {}));
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -105,8 +105,8 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
                     setEditorMode(value)
                 }}
               >
-                <ToggleButton value="scheme">Scheme</ToggleButton>
-                <ToggleButton value="ui">UI scheme</ToggleButton>
+                <ToggleButton value="schema">Scheme</ToggleButton>
+                <ToggleButton value="ui">UI schema</ToggleButton>
                 <ToggleButton value="both">Side-by-side</ToggleButton>
               </ToggleButtonGroup>
               <ButtonGroup size="small" variant="outlined">
@@ -133,7 +133,7 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
           <Box height="100%" width="75%" display="flex">
             <Box width="100%" display={editorMode === "ui" ? "none" : "flex"}>
               <CodeEditor
-                value={schemeTextArea}
+                value={schemaTextArea}
                 language="js"
                 placeholder="Please enter JS code."
                 onChange={(e) => {setSchemeTextArea(e.target.value); refreshPreview()}}
@@ -146,12 +146,12 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
                 }}
               />
               {/* <FullscreenTextArea
-                value={schemeTextArea}
+                value={schemaTextArea}
                 sx={{ fontSize: textSize }}
                 spellCheck={false}
                 onChange={(e) => {setSchemeTextArea(e.target.value); refreshPreview()}} /> Add tab indent support */}
             </Box>
-            <Box width="100%" display={editorMode === "scheme" ? "none" : "flex"}>
+            <Box width="100%" display={editorMode === "schema" ? "none" : "flex"}>
               <CodeEditor
                 value={uiTextArea}
                 language="js"
@@ -179,7 +179,7 @@ const TemplateEditor = ({data, setData, open, closeSelf, id}: TemplateEditorProp
                 <CircularProgress size={80} />
               </Box>
             ) : (
-              <FormsWrapped data={{}} setData={() => {}} schema={schemeTextArea} uischema={uiTextArea}/>
+              <FormsWrapped data={{}} setData={() => {}} schema={loadJSON(schemaTextArea)} uischema={loadJSON(uiTextArea)}/>
             )}
           </Box>
         </Box>
