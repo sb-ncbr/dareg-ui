@@ -12,6 +12,7 @@ import { Box, Button, ButtonProps, Dialog, Divider, IconButton, InputAdornment, 
 import { ExplorerItem } from "../../types/global"
 import { File, Files, useGetFilesQuery } from "../../Services/files"
 import MyIconButton from "./MyIconButton"
+import EmptyIcon from "../../Components/EmptyIcon"
 
 
 // const data:{info: ExplorerItem, content: ExplorerItem[]} = {
@@ -348,7 +349,7 @@ const FilesActiveArea = (props: {
   const [searchFocus, setSearchFocus] = useState(false);
   const [itemDetail, setItemDetail] = useState(true);
 
-  if (data) {
+  if (false && data) {
       return (
       <>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
@@ -563,6 +564,8 @@ const FilesActiveArea = (props: {
 
 
       </>)
+  } else if (data && ((data as any).content).length > 0) {
+    return <EmptyIcon>No files available</EmptyIcon>
   } else {
     return <div>loading</div>
   }
