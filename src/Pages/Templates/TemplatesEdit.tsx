@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
-import { DesignServices, Save } from "@mui/icons-material";
+import { AppRegistration, DesignServices, EditNote, Save } from "@mui/icons-material";
 import TemplateEditor from "../../Components/TemplateEditor";
 import { useEffect, useState } from "react";
 import FormsWrapped from "../../Components/FormsWrapped";
@@ -12,6 +12,7 @@ import { ViewModes } from "../../types/enums";
 import { useAddSchemaMutation, useGetSchemaQuery, useUpdateSchemaMutation } from "../../Services/schemas";
 import { LoadingButton } from "@mui/lab";
 import { useTranslation } from "react-i18next";
+import VisualEditor from "../../Components/VisualEditor";
 
 
 type TemplateEditorStateKeys = keyof SchemasData | 'full-editor';
@@ -27,6 +28,8 @@ const TemplatesNew = ({mode}: Props) => {
     const { templateId } = useParams();
     
     const [templateEditorState, setTemplateEditorState] = useState<boolean>(false)
+
+    const [visualEditorState, setVisualEditorState] = useState<boolean>(false)
 
     const [ loadingButtonState, setLoadingButtonState ] = useState<boolean>(false)
     
@@ -126,12 +129,19 @@ const TemplatesNew = ({mode}: Props) => {
                 </Button> */}
                 <Button onClick={() => openEditor("full-editor")}>
                     <Paper sx={{p:5}}>
-                        <DesignServices fontSize="large" />
-                        <Typography sx={{fontWeight: "bold"}} variant="body1">{t('TemplatesEdit.templatesEditor')}</Typography>
+                        <EditNote fontSize="large" />
+                        <Typography sx={{fontWeight: "bold"}} variant="body1">{t('TemplatesEdit.textEditor')}</Typography>
+                    </Paper>
+                </Button>
+                <Button onClick={() => setVisualEditorState(true)}>
+                    <Paper sx={{p:5}}>
+                        <AppRegistration fontSize="large" />
+                        <Typography sx={{fontWeight: "bold"}} variant="body1">{t('TemplatesEdit.visualEditor')}</Typography>
                     </Paper>
                 </Button>
             </Stack>
             <TemplateEditor data={data} setData={setData} open={templateEditorState} closeSelf={closeEditor} />
+            <VisualEditor data={data} open={visualEditorState} closeSelf={() => setVisualEditorState(false)} />
         </ContentCard>
 
         <ContentCard title={t('TemplatesEdit.preview')}>
