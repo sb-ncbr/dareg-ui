@@ -1,22 +1,21 @@
 import React, { useCallback, useState } from "react";
-//import { makeStyles } from "@material-ui/core/styles";
+//import { makeStyles } from "@mui/styles";
 import { useDropzone } from "react-dropzone";
 //import QPTDATLogo from "../assets/header-image.png";
 import FormRenderer from "../components/FormRenderer";
-import Button from "@material-ui/core/Button";
-import { IconButton, TextField } from "@material-ui/core";
-import Divider from "@material-ui/core/Divider";
+import Button from "@mui/material/Button";
+import { IconButton, TextField } from "@mui/material";
+import Divider from "@mui/material/Divider";
 import { FormContext } from "../FormContext";
 import array2object from "../components/utils/array2object";
 import object2array from "../components/utils/object2array";
-import { Menu, MenuItem } from "@material-ui/core";
-import DownloadIcon from "@material-ui/icons/GetApp";
+import { Menu, MenuItem } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/GetApp";
 import set from "set-value";
 import getValue from "../components/utils/getValue";
 import CryptoJS from "crypto-js";
 import deleteKeySchema from "../components/utils/deleteKeySchema";
 import validateAgainstSchema from "../components/utils/validateAgainstSchema";
-import CreateELabFTWExperimentDialog from "../components/CreateELabFTWExperimentDialog";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,11 +30,9 @@ import fillValueWithEmptyString from "../components/utils/fillValueWithEmptyStri
 import convData2FormData from "../components/utils/convData2FormData";
 import FormReviewBeforeSubmit from "../components/FormReviewBeforeSubmit";
 import changeKeywords from "../components/utils/changeKeywords";
-//import QPTDATLogo from "../assets/adamant-header-5.svg";
-import QPTDATLogo from "../assets/adamant-header-5.svg";
 import createDescriptionListFromJSON from "../components/utils/createDescriptionListFromJSON";
-import HelpIcon from "@material-ui/icons/HelpOutlineRounded";
-import { Tooltip } from "@material-ui/core";
+import HelpIcon from "@mui/icons-material/HelpOutlineRounded";
+import { Tooltip } from "@mui/material";
 import validateSchemaAgainstSpecification from "../components/utils/validateSchemaAgainstSpecification";
 import { Autocomplete } from "@mui/material";
 import getPaths from "../components/utils/getPaths";
@@ -115,7 +112,6 @@ const AdamantMain = () => {
   const [tags, setTags] = useState([]);
   const [retrievedTags, setRetrievedTags] = useState([]);
   const [SEMSelectedDevice, setSEMSelectedDevice] = useState("");
-  const [HeaderImage, setHeaderImage] = useState(QPTDATLogo);
   const [openFormReviewDialog, setOpenFormReviewDialog] = useState(false);
   const [openJobRequestDialog, setOpenJobRequestDialog] = useState(false);
   const [jobRequestSchemas, setJobRequestSchemas] = useState([]);
@@ -151,117 +147,26 @@ const AdamantMain = () => {
     "object",
   ];
 
-  // check if the front-end is connected to backend at all
+  // check if the front-end is connected to backend at all - it is not
   useEffect(() => {
-    let $ = require("jquery");
-    $.ajax({
-      type: "GET",
-      url: "/api/check_mode",
-      success: function (status) {
-        console.log("Connection to server is established. Online mode");
-        setJobRequestSchemas(status["jobRequestSchemaList"]);
-        console.log(status["jobRequestSchemaList"]);
-        setSubmitTextList(status["submitButtonText"]);
-        setOnlineMode(true);
-        toast.success(
-          <>
-            <div>
-              <strong>Connection to server is established.</strong>
-            </div>
-          </>,
-          {
-            toastId: "connectionSuccess",
-          }
-        );
-      },
-      error: function () {
-        console.log(
-          "Unable to establish connection to server. Offline mode. Submit feature is disabled."
-        );
-        setOnlineMode(false);
-
-        // use available schema as a place holder
-        setSchemaNameList([
-          "",
-          "all-types.json",
-          "demo-schema.json",
-          "example-experiment-schema.json",
-          "example-request-schema.json",
-          "plasma-mds.json",
-        ]);
-        setSchemaList([
-          null,
-          SchemaOne,
-          SchemaTwo,
-          SchemaThree,
-          SchemaFour,
-          SchemaFive,
-        ]);
-
-        toast.warning(
-          <>
-            <div>
-              <strong>Unable to establish connection to server.</strong>
-            </div>
-            <div>Submit feature is disabled.</div>
-          </>,
-          {
-            toastId: "connectionWarning",
-          }
-        );
-      },
-    });
+    setSchemaNameList([
+      "",
+      "all-types.json",
+      "demo-schema.json",
+      "example-experiment-schema.json",
+      "example-request-schema.json",
+      "plasma-mds.json",
+    ]);
+    setSchemaList([
+      null,
+      SchemaOne,
+      SchemaTwo,
+      SchemaThree,
+      SchemaFour,
+      SchemaFive,
+    ]);
   }, []);
 
-  // get schemas from server when onlinemode is true
-  useEffect(() => {
-    // if online mode then get available schemas from server
-    if (onlineMode === true) {
-      let $ = require("jquery");
-      $.ajax({
-        type: "GET",
-        url: "/api/get_schemas",
-        success: function (status) {
-          console.log("SUCCESS");
-
-          // do this to preserver the order
-          let sch = [];
-          status["schema"].forEach((element) => {
-            sch.push(JSON.parse(element));
-          });
-
-          setSchemaList(sch);
-          setSchemaNameList(status["schemaName"]);
-        },
-        error: function () {
-          console.log("ERROR");
-          toast.warning(
-            "Error while fetching the schemas. Using basic list of schemas.",
-            {
-              toastId: "fetchingSchemasError",
-            }
-          );
-          // if unable to fetch the schemas then use the basic list of schemas
-          setSchemaNameList([
-            "",
-            "all-types.json",
-            "demo-schema.json",
-            "example-experiment-schema.json",
-            "example-request-schema.json",
-            "plasma-mds.json",
-          ]);
-          setSchemaList([
-            null,
-            SchemaOne,
-            SchemaTwo,
-            SchemaThree,
-            SchemaFour,
-            SchemaFive,
-          ]);
-        },
-      });
-    }
-  }, [onlineMode]);
 
   // handle select schema on change
   const handleSelectSchemaOnChange = (schemaName) => {
@@ -315,19 +220,15 @@ const AdamantMain = () => {
       if (jobRequestSchemas.includes(convertedSchema["title"])) {
         try {
           //let SEMlogo = require("../assets/sem-header-picture.png");
-          //setHeaderImage(SEMlogo["default"]);
-          setHeaderImage(QPTDATLogo);
           setEditMode(false);
           setSubmitText(
             submitTextList[jobRequestSchemas.indexOf(convertedSchema["title"])]
           );
         } catch (error) {
           console.log(error);
-          setHeaderImage(QPTDATLogo);
           setEditMode(true);
         }
       } else {
-        setHeaderImage(QPTDATLogo);
         setEditMode(true);
       }
 
@@ -372,8 +273,6 @@ const AdamantMain = () => {
           if (jobRequestSchemas.includes(obj["title"])) {
             try {
               //let SEMlogo = require("../assets/sem-header-picture.png");
-              //setHeaderImage(SEMlogo["default"]);
-              setHeaderImage(QPTDATLogo);
               setEditMode(false);
               setSubmitText(
                 submitTextList[
@@ -382,11 +281,9 @@ const AdamantMain = () => {
               );
             } catch (error) {
               console.log(error);
-              setHeaderImage(QPTDATLogo);
               setEditMode(true);
             }
           } else {
-            setHeaderImage(QPTDATLogo);
             setEditMode(true);
           }
 
@@ -442,7 +339,6 @@ const AdamantMain = () => {
 
   // clear schema on-click handle
   const clearSchemaOnClick = () => {
-    setHeaderImage(QPTDATLogo);
     setDisable(true);
     setRenderReady(false);
     setSchema(null);
@@ -487,19 +383,15 @@ const AdamantMain = () => {
     if (jobRequestSchemas.includes(obj["title"])) {
       try {
         //let SEMlogo = require("../assets/sem-header-picture.png");
-        //setHeaderImage(SEMlogo["default"]);
-        setHeaderImage(QPTDATLogo);
         setEditMode(false);
         setSubmitText(
           submitTextList[jobRequestSchemas.findIndex(convertedSchema["title"])]
         );
       } catch (error) {
         console.log(error);
-        setHeaderImage(QPTDATLogo);
         setEditMode(true);
       }
     } else {
-      setHeaderImage(QPTDATLogo);
       setEditMode(true);
     }
 
@@ -898,226 +790,6 @@ const AdamantMain = () => {
     handleClose();
   };
 
-  // get available tags from elabftw
-  const getTagsELabFTW = () => {
-    var $ = require("jquery");
-    $.ajax({
-      type: "POST",
-      url: "/api/get_tags",
-      dataType: "json",
-      data: {
-        eLabURL: eLabURL,
-        eLabToken: token,
-      },
-      success: function (status) {
-        console.log("Tags retrieved successfully");
-        //let arr = [];
-        //for (let i = 0; i < status.length; i++) {
-        //  arr.push(status[i]["tag"]);
-        //}
-        setRetrievedTags(status);
-        toast.success(`Successfully retrieved the tags!`, {
-          toastId: "fetchingTagsSuccess",
-        });
-      },
-      error: function (status) {
-        console.log("Failed to retrieve tags");
-        console.log(status);
-        toast.error(`Failed to get the tags!\nMaybe wrong url or token?`, {
-          toastId: "fetchingTagsError",
-        });
-      },
-    });
-  };
-
-  // create an experiment in elabftw based on the schema and data
-  const createExperimentELabFTW = () => {
-    // validate the data first using ajv
-    //let content = { ...jsonData };
-    let convSchemaData = { ...convertedSchema };
-    let content = convData2FormData(
-      JSON.parse(JSON.stringify(convSchemaData["properties"]))
-    );
-
-    let contentSchema = { ...schema };
-
-    // get rid of empty values in content
-    content = removeEmpty(content);
-    if (content === undefined) {
-      content = {};
-    }
-    console.log("content", content);
-    //console.log("loadedFiles", loadedFiles)
-
-    /*
-    // get the paths where the uploaded files are from content
-    let fileEntries = []
-    for (let i=0; i<loadedFiles.length; i++) {
-      let file = loadedFiles[i]
-      let fileName = file["name"]
-      let fileType = file["type"]
-      let fileSize = file["size"]
-      //console.log(file["name"])
-      fileEntries.push(`fileupload:${fileType};${fileName};${fileSize}`)
-    }
-    //console.log(fileEntries)
-    let paths = []
-    for (let i=0; i<fileEntries.length; i++) {
-      let path = getPaths(content, fileEntries[i])
-      paths.push(path)
-    }
-    console.log(paths)
-
-    // read files from loadedFiles then insert it to the content
-    */
-
-    //
-    // validate jsonData against its schema before submission
-    //
-    const [valid, messages] = validateAgainstSchema(
-      content,
-      JSON.parse(JSON.stringify(contentSchema))
-    );
-    setErrorStuffUponValidation(messages);
-    if (!valid | (Object.keys(content).length === 0)) {
-      toast.error(
-        <>
-          <div>
-            <strong>Form data is not valid.</strong>
-          </div>
-          <div style={{ paddingBottom: "10px" }}>Check your inputs!</div>
-          {messages.map((item, index) => {
-            return <div key={index}>{index + 1 + ". " + item.message}</div>;
-          })}
-        </>,
-        {
-          autoClose: 10000,
-          toastId: "formDataError",
-        }
-      );
-      // clear states
-      setToken("");
-      setExperimentTitle("");
-      setTags([]);
-      return;
-    }
-    // call create experiment api
-    console.log("tags:", tags);
-    var $ = require("jquery");
-    $.ajax({
-      type: "POST",
-      url: "/api/create_experiment",
-      async: false,
-      dataType: "json",
-      data: {
-        javascript_data: JSON.stringify(content),
-        schema: JSON.stringify(contentSchema),
-        eLabURL: eLabURL,
-        eLabToken: token,
-        title: experimentTitle,
-        body: descriptionList,
-        tags: JSON.stringify(tags),
-      },
-      success: function (status) {
-        console.log("SUCCESS");
-        console.log(status);
-
-        // close submit dialog
-        setOpenCreateElabFTWExperimentDialog(false);
-        toast.success(
-          `Successfully created an experiment with id: ${status["experimentId"]}!`,
-          {
-            toastId: "createExperimentSuccess",
-          }
-        );
-
-        // clear states
-        setToken("");
-        setExperimentTitle("");
-        setRetrievedTags([]);
-        setTags([]);
-      },
-      error: function (status) {
-        console.log("ERROR");
-        console.log(status);
-
-        // close submit dialog
-        setOpenCreateElabFTWExperimentDialog(false);
-        toast.error(
-          `Failed to create an experiment!\nMaybe wrong url or token?`,
-          {
-            toastId: "createExperimentError",
-          }
-        );
-        // clear states
-        setToken("");
-        setExperimentTitle("");
-        setRetrievedTags([]);
-        setTags([]);
-      },
-    });
-  };
-
-  // submit sem job request
-  const submitJobRequest = () => {
-    let convSchemaData = { ...convertedSchema };
-    let content = convData2FormData(
-      JSON.parse(JSON.stringify(convSchemaData["properties"]))
-    );
-
-    let contentSchema = { ...schema };
-
-    // get rid of empty values in content
-    content = removeEmpty(content);
-    if (content === undefined) {
-      content = {};
-    }
-
-    var $ = require("jquery");
-    $.ajax({
-      type: "POST",
-      url: "/api/submit_job_request",
-      async: false,
-      dataType: "json",
-      data: {
-        javascript_data: JSON.stringify(content),
-        schema: JSON.stringify(contentSchema),
-        body: descriptionList,
-      },
-      success: function (status) {
-        if (status["response"] === 200) {
-          console.log("SUCCESS");
-          console.log(status);
-
-          // close submit dialog
-          setOpenJobRequestDialog(false);
-          toast.success(`${status.responseText}`, {
-            toastId: "jobRequestSubmitSuccess",
-          });
-        } else {
-          console.log("ERROR");
-          console.log(status);
-
-          // close submit dialog
-          setOpenJobRequestDialog(false);
-          toast.error(`${status.responseText}`, {
-            toastId: "jobRequestSubmitError",
-          });
-        }
-      },
-      error: function (status) {
-        console.log("ERROR");
-        console.log(status);
-
-        // close submit dialog
-        setOpenJobRequestDialog(false);
-        toast.error(`${status.responseText}`, {
-          toastId: "jobRequestSubmitError",
-        });
-      },
-    });
-  };
-
   const handleOnClickProceedButton = () => {
     // Create elab ftw description list and store it to the description list state
     let convSch = { ...convertedSchema };
@@ -1285,11 +957,6 @@ const AdamantMain = () => {
         }}
       >
         <div style={{ paddingBottom: "5px" }}>
-          <img
-            style={{ height: "100px", borderRadius: "5px" }}
-            alt="header"
-            src={HeaderImage !== undefined ? HeaderImage : QPTDATLogo}
-          />
           {!inputMode ? (
             <div
               style={{
@@ -1568,23 +1235,6 @@ const AdamantMain = () => {
         </div>
         <div style={{ padding: "10px", color: "grey" }}>ADAMANT v1.2.0</div>
       </FormContext.Provider>
-      <CreateELabFTWExperimentDialog
-        setTags={setTags}
-        tags={tags}
-        setRetrievedTags={setRetrievedTags}
-        retrievedTags={retrievedTags}
-        setExperimentTitle={setExperimentTitle}
-        createExperimentELabFTW={createExperimentELabFTW}
-        setToken={setToken}
-        token={token}
-        setELabURL={setELabURL}
-        eLabURL={eLabURL}
-        setOpenCreateElabFTWExperimentDialog={
-          setOpenCreateElabFTWExperimentDialog
-        }
-        openCreateElabFTWExperimentDialog={openCreateElabFTWExperimentDialog}
-        getTagsELabFTW={getTagsELabFTW}
-      />
       {openFormReviewDialog ? (
         <FormReviewBeforeSubmit
           onlineMode={onlineMode}
@@ -1595,7 +1245,7 @@ const AdamantMain = () => {
             setOpenCreateElabFTWExperimentDialog,
             setOpenJobRequestDialog,
           }}
-          submitFunctions={{ submitJobRequest }}
+          submitFunctions={() => {}}
           submitText={submitText}
         />
       ) : null}

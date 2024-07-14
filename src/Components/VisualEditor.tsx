@@ -3,6 +3,7 @@ import ContentHeader from "./ContentHeader";
 import { useTranslation } from "react-i18next";
 import { SchemasData } from "../types/global";
 import { SaveRounded, UndoRounded } from "@mui/icons-material";
+import AdamantMain from "../Pages/Templates/Adamant/pages/AdamantMain";
 
 interface VisualEditorProps {
     open: boolean,
@@ -32,6 +33,7 @@ const VisualEditor = ({open, closeSelf, data}: VisualEditorProps) => {
                 backAction={closeSelf}
             >
             </ContentHeader>
+            <AdamantMain/>
         </Dialog>
     )
 }
