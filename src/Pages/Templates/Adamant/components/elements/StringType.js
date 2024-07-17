@@ -83,9 +83,10 @@ const StringType = ({ adamant_field_error, adamant_error_description, minLength,
                 setFieldValue("")
             } else {
                 try {
-                    let semOperatorDeviceList = require("../../assets/sem-operator-device-list.json")
-                    setFieldValue("")
-                    setFieldEnumerate(semOperatorDeviceList[SEMSelectedDevice])
+                    throw new Error('Error');
+                    //let semOperatorDeviceList = require("../../assets/sem-operator-device-list.json")
+                    //setFieldValue("")
+                    //setFieldEnumerate(semOperatorDeviceList[SEMSelectedDevice])
                 }
                 catch (error) {
                     console.log(error)
