@@ -85,7 +85,7 @@ const removeEmpty = (obj) => {
   return Object.keys(obj).length > 0 || obj instanceof Array ? obj : undefined;
 };
 
-const AdamantMain = () => {
+const AdamantMain = ({data, isVisible}) => {
   // state management
   const [disable, setDisable] = useState(true);
   const [schemaMessage, setSchemaMessage] = useState(null);
@@ -167,6 +167,17 @@ const AdamantMain = () => {
     ]);
   }, []);
 
+  useEffect(() => {
+    if (isVisible) {
+      if (Object.keys(data.schema).length === 0) {
+        createSchemaFromScratch()
+      }
+      else {
+        handleSelectSchemaOnChange("Input")
+      }
+    }
+  }, [isVisible])
+
 
   // handle select schema on change
   const handleSelectSchemaOnChange = (schemaName) => {
@@ -187,7 +198,7 @@ const AdamantMain = () => {
     console.log("selected schema:", schemaName);
     setSelectedSchemaName(schemaName);
 
-    let selectedSchema = schemaList[schemaNameList.indexOf(schemaName)];
+    let selectedSchema = data.schema; //schemaList[schemaNameList.indexOf(schemaName)];
 
     // reset everything when selectedSchema is empty
     if (selectedSchema === null) {
@@ -235,6 +246,7 @@ const AdamantMain = () => {
       // create form data
       let formData = createFormDataBlueprint(selectedSchema["properties"]);
       setJsonData(formData);
+      renderOnClick();
     } catch (error) {
       console.log(error);
       // update states

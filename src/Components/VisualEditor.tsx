@@ -33,7 +33,7 @@ const VisualEditor = ({open, closeSelf, data}: VisualEditorProps) => {
                 backAction={closeSelf}
             >
             </ContentHeader>
-            <AdamantMain/>
+            <AdamantMain data={data as any} isVisible={open as any}/>
         </Dialog>
     )
 }
