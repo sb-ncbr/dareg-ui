@@ -141,7 +141,7 @@ const TemplatesNew = ({mode}: Props) => {
                 </Button>
             </Stack>
             <TemplateEditor data={data} setData={setData} open={templateEditorState} closeSelf={closeEditor} />
-            <VisualEditor data={data} open={visualEditorState} closeSelf={() => setVisualEditorState(false)} />
+            <VisualEditor data={data} setData={setData} open={visualEditorState} closeSelf={() => setVisualEditorState(false)} />
         </ContentCard>
 
         <ContentCard title={t('TemplatesEdit.preview')}>

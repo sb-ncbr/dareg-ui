@@ -32,7 +32,7 @@ const darkThemeOptions: ThemeOptions = {
     palette: {
         mode: 'dark',
         primary: {main: "#2b8600"},
-        secondary: {main: "#54604d"},
+        secondary: {main: "#e9ece7"},
         superGreen: {
             bg: '#1A3600',
             border: '#4F7E13',

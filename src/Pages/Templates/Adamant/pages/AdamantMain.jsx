@@ -85,7 +85,7 @@ const removeEmpty = (obj) => {
   return Object.keys(obj).length > 0 || obj instanceof Array ? obj : undefined;
 };
 
-const AdamantMain = ({data, isVisible}) => {
+const AdamantMain = ({data, isVisible, setData}) => {
   // state management
   const [disable, setDisable] = useState(true);
   const [schemaMessage, setSchemaMessage] = useState(null);
@@ -640,6 +640,10 @@ const AdamantMain = ({data, isVisible}) => {
       console.log("Current form data:", jData);
     }
   };
+
+  useEffect(() => {
+    setData({...data, schema: schema})
+  }, [schema])
 
   // handle download json schema
   const handleDownloadJsonSchema = () => {
