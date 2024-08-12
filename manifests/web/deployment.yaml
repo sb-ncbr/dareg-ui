@@ -15,8 +15,6 @@ spec:
       labels:
         role: dareg-frontend-${APP_ID}
     spec:
-      imagePullSecrets:
-      - name: gitlab-coffee-auth
       securityContext:
         runAsGroup: 1000
         runAsUser: 1000
