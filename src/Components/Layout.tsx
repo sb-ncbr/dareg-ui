@@ -1,10 +1,6 @@
-import { Box, CssBaseline, Divider, List, Stack, ThemeProvider, Typography, createTheme, useMediaQuery } from '@mui/material';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import { Box, Stack } from '@mui/material';
 import LeftBar from './LeftBar';
-import { Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import Settings from '../Pages/Settings';
-import ProjectsList from '../Pages/Projects/ProjectList';
-import TemplateList from '../Pages/Templates/TemplateList';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 /*const views: {name: string, component: FC, args: object}[] = [
   {name: "projects", component: ListView, args: {projectView: true}},

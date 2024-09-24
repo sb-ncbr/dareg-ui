@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
-import { PaletteOptions, Palette } from '@mui/material/styles/createPalette';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './Components/Layout';
 import Login from './Pages/Login';
@@ -30,7 +28,6 @@ import { useGetProfileQuery } from './Services/profile';
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: light)')
 
-  const profile = useGetProfileQuery(1)
   const toTheme = (theme: "dark"|"light") => theme==="dark" ? darkTheme : lightTheme
 
   const getUser = () => {
@@ -40,6 +37,10 @@ const App = () => {
       }
     return User.fromStorageString(oidcStorage);
   }
+
+  const profile = useGetProfileQuery(1, {skip: !getUser()})
+
+  const finalTheme = useMemo(() => profile.isSuccess && profile.data?.results[0].default_theme!=="system" ? toTheme(profile.data?.results[0].default_theme) : (prefersDarkMode ? darkTheme : lightTheme), [profile.isSuccess, profile.data, prefersDarkMode])
 
   const options = {
     interceptors: {
@@ -67,7 +68,7 @@ const App = () => {
     <Provider url={config.REACT_APP_BASE_API_URL} options={options}>
       <BrowserRouter>
         <CssBaseline/>
-        <ThemeProvider theme={profile.isSuccess && profile.data?.results[0].default_theme!=="system" ? toTheme(profile.data?.results[0].default_theme) : (prefersDarkMode ? darkTheme : lightTheme)}>
+        <ThemeProvider theme={finalTheme}>
               <Routes>
                 <Route element={<AuthenticatedRoute />}>
                   <Route path='/' element={<Layout />} >
@@ -75,15 +76,15 @@ const App = () => {
 
                     <Route path='collections'>
                       <Route index element={<ProjectsList />} />
-                      <Route path='new' element={<ProjectEdit mode={ViewModes.New} />} />
+                      <Route path='new/:tab' element={<ProjectEdit mode={ViewModes.New} />} />
                       <Route path=':projectId' element={<ProjectEdit mode={ViewModes.View} />} />
-                      <Route path=':projectId/edit' element={<ProjectEdit mode={ViewModes.Edit} />} />
+                      <Route path=':projectId/edit/:tab' element={<ProjectEdit mode={ViewModes.Edit} />} />
                       <Route path=':projectId/:tab' element={<ProjectEdit mode={ViewModes.View} />} />
                       <Route path=':projectId/datasets' element={<Navigate to="../" relative="path" />} />
-                      <Route path=':projectId/datasets/new' element={<DatasetView mode={ViewModes.New} />} />
+                      <Route path=':projectId/datasets/new/:tab' element={<DatasetView mode={ViewModes.New} />} />
                       <Route path=':projectId/datasets/:datasetId' element={<DatasetView mode={ViewModes.View} />} />
                       <Route path=':projectId/datasets/:datasetId/:tab' element={<DatasetView mode={ViewModes.View} />} />
-                      <Route path=':projectId/datasets/:datasetId/edit' element={<DatasetView mode={ViewModes.Edit} />} />
+                      <Route path=':projectId/datasets/:datasetId/edit/:tab' element={<DatasetView mode={ViewModes.Edit} />} />
                     </Route>
 
                     <Route path='datasets'>
