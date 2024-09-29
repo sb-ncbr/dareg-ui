@@ -37,13 +37,13 @@ const DatasetView = ({mode}: Props) => {
 
     const navigate = useNavigate();
 
-    const { projectId, datasetId, tab } = useParams();
+    const { projectId, datasetId } = useParams();
 
     const projectData = useGetProjectQuery(projectId as string).data
     
     const {data: datasetData, isLoading: datasetLoading} = useGetDatasetQuery(datasetId as string, {skip: mode===ViewModes.New})
 
-    const [ tabContent, setTabContent ] = useState<string>(tab ? tab as string : "metadata")
+    const [ tabContent, setTabContent ] = useState<string>("metadata")
     
     const [ data, setData ] = useState<Dataset>({name: "", description: "", schema: projectData?.default_dataset_schema ? projectData?.default_dataset_schema.id : "", project: {id: "", name: ""}, metadata: {}, shares: {}} as Dataset);
     
@@ -81,6 +81,7 @@ const DatasetView = ({mode}: Props) => {
         setLoadingButtonState(true);
         const { id, name, description, schema, project, metadata } = data;
         const datasetRequest: DatasetRequest = { name, description, schema: typeof schema === "string" ? schema : schema.id, project: typeof project === "string" ? project : project.id, metadata }
+        if (!formCorrect) return;
         switch(mode){
             case ViewModes.Edit:
                 updatedDataset = updateDataset({...data, schema: schema as string, project: typeof data.project == "string" ? data.project : data.project.id, shares: currentShares})
@@ -91,7 +92,7 @@ const DatasetView = ({mode}: Props) => {
         }
         updatedDataset?.then((response) => {
         setLoadingButtonState(false)
-        navigate(`/collections/${projectId}/datasets/${(response as {data: Dataset}).data.id}/${tabContent}`)
+        navigate(`/collections/${projectId}/datasets/${(response as {data: Dataset}).data.id}`)
         })
     }
 
@@ -116,7 +117,8 @@ const DatasetView = ({mode}: Props) => {
         element.click();
     }
 
-    const [formCorrect, setFormCorrect] = useState(false);
+    const [errors, setErrors] = useState<any>([])
+    const formCorrect: boolean = useMemo(() => errors.length===0, [errors])
 
     const [autoRefresh, setAutoRefresh] = useState(true)
 
@@ -171,15 +173,15 @@ const DatasetView = ({mode}: Props) => {
                     <ContentCard>
                         <TabList onChange={(e, newValue) => {
                                 setTabContent(newValue)
-                                window.history.replaceState(null, "CEITEC Dataset Register", `/collections/${projectId}/datasets/${datasetId}/${newValue}`)
+                                // window.history.replaceState(null, "CEITEC Dataset Register", `/collections/${projectId}/datasets/${datasetId}/${newValue}`)
                             }} 
                                 aria-label="lab API tabs example"
                             >
                             <Tab label={t('DatasetView.metadata')} value={"metadata"} />
                             <Tab label={t('DatasetView.files')} value={"files"} />
-                            <Tab label={t('DatasetView.preShare')} value={"preshare"} />
+                            {/* <Tab label={t('DatasetView.preShare')} value={"preshare"} /> */}
                             <Tab label={t('DatasetView.settings')} value={"settings"} />
-                            <Tab label={t('DatasetView.publish')} value={"publish"} />
+                            {/* <Tab label={t('DatasetView.publish')} value={"publish"} /> */}
                         </TabList>
                     </ContentCard>
                     <TabPanel value="metadata" sx={{p:0}}>
@@ -198,7 +200,7 @@ const DatasetView = ({mode}: Props) => {
                             ) : <></> }
                             {editorMode==='form' ? (
                                 schema && schema.uischema ? (
-                                    <FormsWrapped setErrors={(errors) => setFormCorrect(errors.length===0)} readonly={mode===ViewModes.View} schema={schema.schema} uischema={schema.uischema} data={data.metadata} setData={(value) => handleChange("metadata", value)} />
+                                    <FormsWrapped setErrors={setErrors} readonly={mode===ViewModes.View} schema={schema.schema} uischema={schema.uischema} data={data.metadata} setData={(value) => handleChange("metadata", value)} />
                                 ) : <><FormsWrapperSkeleton></FormsWrapperSkeleton></>
                             ) : (
                                 <CodeEditor
@@ -292,12 +294,13 @@ const DatasetView = ({mode}: Props) => {
                                 endIcon={<Save />}
                                 variant="contained"
                                 size="large"
+                                disabled={!formCorrect}
                                 onClick={() => saveForm()}
                             >
                                 {t('DatasetView.save')}
                             </LoadingButton>
                         )}
-                        {tabContent==="0" ? <Button disabled={/*data.metadata==="{}"*/undefined} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
+                        {tabContent==="0" ? <Button disabled={undefined} variant="contained" size="large" endIcon={<DataObject />} onClick={() => downloadMetadata()}>
                         {t('DatasetView.downloadMetadata')}
                         </Button> : null} 
                     </Stack>

@@ -2,9 +2,10 @@ import { materialCells, materialRenderers } from '@jsonforms/material-renderers'
 import RatingControl from '../RatingControl';
 import ratingControlTester from '../ratingControlTester';
 import { JsonForms, JsonFormsInitStateProps } from '@jsonforms/react';
-import { useMemo, useState } from 'react';
+import { Key, useMemo, useState } from 'react';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
-import { Skeleton, Stack } from '@mui/material';
+import { Skeleton, Stack, Typography } from '@mui/material';
+import { ErrorObject } from 'ajv';
 
 const renderers = [
   ...materialRenderers,
@@ -30,6 +31,8 @@ type FormsWrappedProps = {
 
 const FormsWrapped = ({schema, uischema, data, setData, setErrors, ...other}: FormsWrappedProps): JSX.Element => {
 
+  const [localErrors, setLocalErrors] = useState<any>(undefined)
+
   //const JSschema = useMemo(() => loadJSON(schema), [schema])
   //const JSschemaui = useMemo(() => loadJSON(uischema), [uischema])
 
@@ -41,10 +44,25 @@ const FormsWrapped = ({schema, uischema, data, setData, setErrors, ...other}: Fo
         data={data}
         renderers={renderers}
         cells={materialCells}
-        onChange={({ errors, data }) => {setData(data); if (setErrors) setErrors(errors)}}
+        onChange={({ errors, data }) => {setData(data); if (setErrors) {setErrors(errors); setLocalErrors(errors)} }}
         validationMode='ValidateAndShow'
         {...other}
         />
+        {/* {localErrors && localErrors.length > 0 && 
+          <Stack direction="column" spacing={1} sx={{mt: 3, mb: 3}} color="red">
+              <Typography variant="h5">Errors</Typography>
+              <ul>
+                  {localErrors.map((error: ErrorObject, index: Key) => {
+                      // For some reason `error.instancePath` was crashing my build
+                      // so I had to stringify and parse it to get the value :(
+                      const err = JSON.parse(JSON.stringify(error));
+                      return(
+                          <li key={index}>{err.instancePath}: {err.message}</li>
+                      )}
+                  )}
+              </ul>
+          </Stack>
+        } */}
     </>
   )
 };

@@ -25,7 +25,7 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
     const { t } = useTranslation()
 
     const navigate = useNavigate();
-    const { projectId, tab } = useParams();
+    const { projectId } = useParams();
 
     const {data: facilities} = useGetFacilitiesQuery(1) // TODO: Implement pagination
     
@@ -34,7 +34,7 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
     
     const templateData = useGetSchemaQuery(data.default_dataset_schema as string).data
 
-    const [ tabContent, setTabContent ] = useState<string>(mode===ViewModes.New ? "settigns" : tab ? tab as string : "datasets")
+    const [ tabContent, setTabContent ] = useState<string>(mode===ViewModes.New ? "settings" : "datasets")
 
     const [ page, setPage ] = useState(1)
     const {data: datasets} = useGetDatasetsQuery({page: page, projId: projectId}, {skip: projectId===undefined})
@@ -81,7 +81,7 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
         }
         updatedProject?.then((response) => {
         setLoadingButtonState(false)
-        navigate(`/collections/${(response as {data: {id: string}}).data.id}/${tabContent}`)
+        navigate(`/collections/${(response as {data: {id: string}}).data.id}`)
         })
     }
 
