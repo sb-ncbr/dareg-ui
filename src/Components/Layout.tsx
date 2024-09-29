@@ -19,7 +19,7 @@ const Layout = () => {
         <Grid size={{xs: 12, md: 2, lg: 2}}>
           <LeftBar setSection={(to: string) => navigate(`/${to}`)} />
         </Grid>
-        <Grid size={{xs: 12, md: 10, lg: 10}}>
+        <Grid size={{xs: 12, md: 10, lg: 10}} sx={{p: "0 1em"}}>
         {/* <Box pl={2} pr={2}> */}
           <Outlet/>
         {/* </Box> */}
