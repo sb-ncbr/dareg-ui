@@ -74,7 +74,7 @@ const DaregTable = <T, >({ columns, data, loading = false, page = 1, setPage = (
                     onChange={(e) => setSearchTerm(e.target.value)}
                     sx={{ mb: 2 }}
                 />
-                <Table sx={{ minWidth: 650 }} aria-label="simple table" {...other}>
+                <Table sx={{ minWidth: 650, tableLayout: "fixed" }} aria-label="simple table" {...other}>
                     <TableHead>
                         <TableRow>
                             {columns.map((column) => (
