@@ -1,9 +1,12 @@
-import { Box, Card, CardContent, CardMedia, CircularProgress, Divider, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, CardMedia, CircularProgress, Divider, LinearProgress, Typography } from "@mui/material";
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
-import ceitec_logo from '../ceitec_logo.png'
 import { setCredentials } from "../Reducers/authSlice";
 import { User } from "oidc-client-ts";
+import einfraLogo from '../Static/e-INFRA_logo_RGB_lilek.png';
+import LoadingButton from "@mui/lab/LoadingButton";
+import { useEffect } from "react";
+
 
 type UserStateCallback = {
     auth_request_id: string
@@ -23,23 +26,22 @@ const OIDCCallback = () => {
         }
     };
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Perform any action after 1 second if needed
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [auth]);
+
     return (
-        !auth.isLoading && auth.isAuthenticated ? (
+        !auth.isLoading && auth.isAuthenticated && !auth.activeNavigator ? (
                 <Navigate to={redirect} />
             ) : (
-            <Card variant="outlined" sx={{ width: 400 }}>
-                <CardContent>
-                <CardMedia
-                    component="img"
-                    image={ceitec_logo}
-                    />
-                    <Typography align='center'>DAREG - Dataset Registry</Typography>
-                    <Divider variant='middle' sx={{mt: 2, mb:2 }}></Divider>
-                    <Box sx={{ display: 'flex' }}>
-                        <CircularProgress />
-                    </Box>
-                </CardContent>
-            </Card>
+                <><Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth disabled>
+                    Signin in progress...
+                </Button><LinearProgress />
+                </>
             )
     )
 }

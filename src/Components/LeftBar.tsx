@@ -1,8 +1,8 @@
-import { Avatar, Box, CardMedia, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material';
+import { Avatar, Box, CardMedia, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material';
 import { BackupTableRounded, ExitToAppRounded, FolderCopyRounded, LibraryBooksRounded } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import { useTranslation } from 'react-i18next';
-import ceitec_logo from '../ceitec_logo.png'
+import ceitec_logo from '../Static/ceitec_logo.png'
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
 import { useGetProfileQuery } from '../Services/profile';
@@ -42,13 +42,14 @@ const LeftBar = (props: {setSection: (value: string) => void}) => {
     <Stack direction="row" height="100vh">
       <Box padding={4} pt={2} height="100vh" justifyContent="space-between" display="flex" flexDirection="column">
         <List disablePadding>
-          <Box sx={{ width: 250, ml: -1, mr: -1, mb: 2}}>
+          <img src={ceitec_logo} width={250} />
+          {/* <Box sx={{ width: 250, ml: -1, mr: -1, mb: 2}}>
             <CardMedia
               component="img"
               image={ceitec_logo}
               width={300}
             />
-          </Box>
+          </Box> */}
           {profile.data?.results[0].any_facilities || profile.data?.results[0].any_projects ?
             <ListItem disablePadding>
               <ListItemButton selected={location.pathname.startsWith('/collections') || location.pathname==="/"} onClick={() => props.setSection("collections")}>

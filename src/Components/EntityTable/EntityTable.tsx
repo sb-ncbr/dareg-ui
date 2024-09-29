@@ -1,15 +1,16 @@
 import { Table, TableBody, TableCell, TableHead, TableRow, Skeleton, TableProps, TableFooter, TablePagination, TextField } from '@mui/material';
-import { Key, ReactFragment, useEffect, useState } from 'react';
+import { Key, ReactElement, ReactFragment, useEffect, useState } from 'react';
 import { DaregAPIResponse } from '../../types/global';
 import { Dataset } from '../../Services/datasets';
 import { useTranslation } from 'react-i18next';
+import { GridRenderCellParams, GridRowEntry } from '@mui/x-data-grid';
 
 export interface Column<T> {
     id: keyof T | 'actions';
     label: string;
     minWidth?: number;
     align?: 'right' | 'left' | 'center';
-    renderCell?: (params: any) => ReactFragment;
+    renderCell?: (params: any) => ReactElement;
 }
 
 interface Data {
@@ -92,7 +93,7 @@ const DaregTable = <T, >({ columns, data, loading = false, page = 1, setPage = (
                                         const value = row[column.id as keyof T];
                                         return (
                                             <TableCell key={column.id as string} align={column.align}>
-                                                {column.renderCell ? column.renderCell(row) : value}
+                                                <>{column.renderCell ? column.renderCell(row) : value}</>
                                             </TableCell>
                                         );
                                     })}

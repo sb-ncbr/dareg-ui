@@ -1,4 +1,5 @@
 import { Box, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import LeftBar from './LeftBar';
 import { Outlet, useNavigate } from 'react-router-dom';
 
@@ -13,14 +14,18 @@ const Layout = () => {
   const navigate = useNavigate()
 
   return (
-    <Stack width={"100vw"} height={"100vh"} overflow={"scroll"} direction="row" bgcolor={"background.default"} color={"text.primary"}>
-      <LeftBar setSection={(to: string) => navigate(`/${to}`)} />
-      <Stack direction={"row"} flexGrow={1} justifyContent="center">
-        <Box pl={2} pr={2} flexGrow={1} flex={1} maxWidth={1800} overflow="auto">
+    <Grid container>
+      {/* <Stack height={"100vh"} direction="row" bgcolor={"background.default"} color={"text.primary"}> */}
+        <Grid size={{xs: 12, md: 2, lg: 2}}>
+          <LeftBar setSection={(to: string) => navigate(`/${to}`)} />
+        </Grid>
+        <Grid size={{xs: 12, md: 10, lg: 10}}>
+        {/* <Box pl={2} pr={2}> */}
           <Outlet/>
-        </Box>
-      </Stack>
-    </Stack>
+        {/* </Box> */}
+        </Grid>
+      {/* </Stack> */}
+    </Grid>
   );
 }
 

@@ -35,6 +35,10 @@ const App = () => {
     if (!oidcStorage) {
         return null;
       }
+    const user = User.fromStorageString(oidcStorage);
+    if (user.expired) {
+      return null;
+    }
     return User.fromStorageString(oidcStorage);
   }
 
@@ -76,19 +80,15 @@ const App = () => {
 
                     <Route path='collections'>
                       <Route index element={<ProjectsList />} />
-                      <Route path='new/:tab' element={<ProjectEdit mode={ViewModes.New} />} />
+                      <Route path='new' element={<ProjectEdit mode={ViewModes.New} />} />
                       <Route path=':projectId' element={<ProjectEdit mode={ViewModes.View} />} />
-                      <Route path=':projectId/edit/:tab' element={<ProjectEdit mode={ViewModes.Edit} />} />
-                      <Route path=':projectId/:tab' element={<ProjectEdit mode={ViewModes.View} />} />
+                      <Route path=':projectId/edit' element={<ProjectEdit mode={ViewModes.Edit} />} />
+                      <Route path=':projectId' element={<ProjectEdit mode={ViewModes.View} />} />
                       <Route path=':projectId/datasets' element={<Navigate to="../" relative="path" />} />
-                      <Route path=':projectId/datasets/new/:tab' element={<DatasetView mode={ViewModes.New} />} />
+                      <Route path=':projectId/datasets/new' element={<DatasetView mode={ViewModes.New} />} />
                       <Route path=':projectId/datasets/:datasetId' element={<DatasetView mode={ViewModes.View} />} />
-                      <Route path=':projectId/datasets/:datasetId/:tab' element={<DatasetView mode={ViewModes.View} />} />
-                      <Route path=':projectId/datasets/:datasetId/edit/:tab' element={<DatasetView mode={ViewModes.Edit} />} />
-                    </Route>
-
-                    <Route path='datasets'>
-                      <Route index element={<DatasetList />} />
+                      <Route path=':projectId/datasets/:datasetId' element={<DatasetView mode={ViewModes.View} />} />
+                      <Route path=':projectId/datasets/:datasetId/edit' element={<DatasetView mode={ViewModes.Edit} />} />
                     </Route>
 
                     <Route path='datasets'>
@@ -107,7 +107,7 @@ const App = () => {
                 </Route>
                 <Route element={<LoginLayout />} >
                   <Route path='login' element={<Login/>} />
-                  <Route path="/auth" element={< OIDCCallback />} />
+                  <Route path="/auth" element={<OIDCCallback />} />
                 </Route>
               </Routes>
         </ThemeProvider>

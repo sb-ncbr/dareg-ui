@@ -7,6 +7,7 @@ import { WebStorageStateStore } from 'oidc-client-ts';
 import { AuthProvider } from 'react-oidc-context';
 import { Provider } from 'react-redux';
 import { store } from './Services/store';
+import { createRoot } from 'react-dom/client';
 
 const oidcConfig = {
   authority: config.REACT_APP_OIDC_AUTHORITY,
@@ -49,14 +50,18 @@ const theme = createTheme({
   },
 });
 
-ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <AuthProvider {...oidcConfig}>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </AuthProvider>
-  </ThemeProvider>,
-  document.getElementById('root')
-);
+  const MainApp = () => {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider {...oidcConfig}>
+          <Provider store={store}>
+            <App />
+          </Provider>
+        </AuthProvider>
+      </ThemeProvider>
+    );
+  }
+  const container = document.getElementById('root')
+  const root = createRoot(container!)
+  root.render(<MainApp />)

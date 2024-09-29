@@ -19,7 +19,6 @@ const FilesHeadItem = (props: {
     <Box display="flex" sx={props?.sx as any} flexDirection="row" justifyContent={props.anchor==="right"?"flex-end":"flex-start"}>
       <Link
         underline="none"
-        color={(theme) => theme.palette.text.primary}
         component="button"
         fontSize={15}
         onClick={props.onClick}
@@ -32,6 +31,7 @@ const FilesHeadItem = (props: {
             transform:
               props.sort === 'down' ? 'rotate(0deg)' : 'rotate(180deg)',
           },
+          color: (theme) => theme.palette.text.primary,
           '&:hover': { '& svg': { opacity: 1 } },
         }}
         >

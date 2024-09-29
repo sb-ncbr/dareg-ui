@@ -1,7 +1,7 @@
 import { Button, Table, TableCell, TableRow, Grid, Typography, Stack, Divider, Box } from '@mui/material';
 import { useTranslation } from "react-i18next";
 import { useAuth } from "react-oidc-context";
-import ceitecLogo from "../ceitec_logo.png"
+import ceitecLogo from "../Static/ceitec_logo.png"
 import useAvatar from '../Utils/useAvatar';
 import { User } from 'oidc-client-ts';
 import ContentHeader from '../Components/ContentHeader';

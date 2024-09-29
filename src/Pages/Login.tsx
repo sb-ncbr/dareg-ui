@@ -1,8 +1,9 @@
-import { Button, Card, CardContent, CardMedia, Divider, Grid, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { useAuth, hasAuthParams } from 'react-oidc-context';
-import ceitec_logo from '../ceitec_logo.png'
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import useLocalStorage from '../Utils/useLocalStorage';
+import einfraLogo from '../Static/e-INFRA_logo_RGB_lilek.png';
 
 const Login = () => {
 
@@ -11,7 +12,12 @@ const Login = () => {
   const r = "dareg-"+(Math.random() + 1).toString(36).substring(7);
   const [_, setAuthNonce] = useLocalStorage(r, "none");
 
+  const navigate = useNavigate();
+
   const initLogin = () => {
+    if (auth.isAuthenticated && !auth.activeNavigator) {
+        navigate(location?.state?.from || "/");
+    }
     if (!hasAuthParams() &&
         !auth.isAuthenticated && !auth.activeNavigator && !auth.isLoading) {
             const auth_state = {
@@ -25,24 +31,12 @@ const Login = () => {
   };
 
   return (
-    <Grid container direction={'row'} alignItems={'flex-start'}>
-      <Grid item xs={12} md={3} >
-        <Card variant="outlined" sx={{ m:1, height: '100%', mt: 10 }}>
-          <CardContent>
-            <CardMedia
-              component="img"
-              image={ceitec_logo}
-            />
-            <Typography variant='h5' align='center'>DAREG - Dataset Registry</Typography>
-            <Divider variant='middle' sx={{ mt: 2, mb: 2 }}></Divider>
-            <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>Log-in using CEITEC ID</Button>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} md={9} sx={{ height: '100vh', backgroundRepeat: "no-repeat", backgroundSize: "cover", backgroundImage: `url(https://www.ceitec.eu/data/documents/images/thumb/41532-13-ulozeno-dkf-1600x0-c0.jpeg)` }}>
-        <p>a</p>
-      </Grid>
-    </Grid>
+    <>
+      <Typography variant='body1' align='center'>Sign in using</Typography>
+      <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>
+        <img src={einfraLogo} style={{ width: "150px" }} alt='e-INFRA CZ logo'/>
+      </Button>
+    </>
   );
 }
 

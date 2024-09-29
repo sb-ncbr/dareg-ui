@@ -232,9 +232,9 @@ const DatasetView = ({mode}: Props) => {
                             <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} />
                         </ContentCard>
                     </TabPanel>
-                    <TabPanel value="preshare" sx={{p:0}}>
+                    {/* <TabPanel value="preshare" sx={{p:0}}>
                         <PreShareTab/>
-                    </TabPanel>
+                    </TabPanel> */}
                     <TabPanel value="settings" sx={{p:0}}>
                         <ContentCard title={"Dataset lifecycle settings"}>
                             <>
@@ -273,7 +273,7 @@ const DatasetView = ({mode}: Props) => {
                             <PermissionsTable perms={mode===ViewModes.Edit ? data.perms : "viewer"} currentShares={currentShares} setCurrentShares={setCurrentShares}/>
                         : null }
                     </TabPanel>
-                    <TabPanel value="publish" sx={{p:0}}>
+                    {/* <TabPanel value="publish" sx={{p:0}}>
                         {doi ?
                             <PublishTab
                                 doi={doi as Doi}
@@ -281,7 +281,7 @@ const DatasetView = ({mode}: Props) => {
                                 formCorrect={formCorrect}
                             />
                         : null}
-                    </TabPanel>
+                    </TabPanel> */}
                 </TabContext>
                 <ContentCard paperProps={{variant: "elevation", elevation: 0}} sx={{mb: 2, p: 0}}>
                     <Stack gap={2} direction="row" justifyContent="flex-start">

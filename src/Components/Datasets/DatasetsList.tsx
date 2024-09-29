@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -28,8 +28,8 @@ const columns: GridColDef[] = [
       description: 'This column has a value getter and is not sortable.',
       sortable: false,
       width: 160,
-      valueGetter: (params: GridValueGetterParams) =>
-        `${params.row.firstName || ''} ${params.row.lastName || ''}`,
+      valueGetter: (value, row) =>
+        `${row.firstName || ''} ${row.lastName || ''}`,
     },
   ];
   

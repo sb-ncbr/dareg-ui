@@ -163,7 +163,7 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
                     <ContentCard>
                         <TabList onChange={(e, newValue) => {
                                 setTabContent(newValue)
-                                window.history.replaceState(null, "CEITEC Dataset Register", `/collections/${projectId}/${newValue}`)
+                                mode!==ViewModes.New ? window.history.replaceState(null, "CEITEC Dataset Register", `/collections/${projectId}/${newValue}`) : window.history.replaceState(null, "CEITEC Dataset Register", `/collections/new/${newValue}`)
                             }}
                                 aria-label="lab API tabs example"
                             >
