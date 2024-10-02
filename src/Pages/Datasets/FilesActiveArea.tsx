@@ -135,6 +135,7 @@ const convertFilesToData = (files: Files): { info: ExplorerItem, content: Explor
     name: name[1],
     size: size[1],
     upper: parent_id[1],
+    type: type[1]
   };
 
   let content: ExplorerItem[] = [];
@@ -152,6 +153,7 @@ const convertFilesToData = (files: Files): { info: ExplorerItem, content: Explor
         name: name[1],
         size: size[1],
         upper: parent_id[1],
+        type: type[1]
       } as unknown as ExplorerItem
     }) ?? [];
   }
@@ -234,7 +236,7 @@ const FilesActiveArea = (props: {
   // Returns a human readable time label
   const displayTime = (milliseconds: number) => {
     // Hack to fix timezone
-    milliseconds = milliseconds + 2*60*60*1000
+    milliseconds = milliseconds - 2*60*60*1000
     const seconds = Math.floor(milliseconds / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
@@ -301,10 +303,10 @@ const FilesActiveArea = (props: {
         lastSelect.current = -1
       }
     }
-    else if (e.key==="Enter") {
-      e.preventDefault()
-      setRenameItemModalVisible(true)
-    }
+    // else if (e.key==="Enter") {
+    //   e.preventDefault()
+    //   setRenameItemModalVisible(true)
+    // }
   }
 
   // Selecting items using mouse + ctrl/cmd or shift
@@ -327,13 +329,21 @@ const FilesActiveArea = (props: {
       }
     }
     else if (e.detail === 2) {
-      console.log("Single click", item)
-      setCurrentFolderId(item.id)
-      if (item.size===-1) {
+      console.log("Double click", item)
+      if (item.type==="DIR") {
         props.changeId(item.id)
+        setCurrentFolderId(item.id)
         setSelectedItems([])
         lastSelect.current = -1
+      } else {
+        console.log("Download file", item)
       }
+      // setCurrentFolderId(item.id)
+      // if (item.size===-1) {
+      //   props.changeId(item.id)
+      //   setSelectedItems([])
+      //   lastSelect.current = -1
+      // }
     }
     else {
       setSelectedItems([item])

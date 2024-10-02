@@ -91,7 +91,8 @@ export type ExplorerItem = {
     upper: string,
     addDate: number, 
     modDate: number,
-    size: number
+    size: number,
+    type: string
 }
 
 export type UserData = {
