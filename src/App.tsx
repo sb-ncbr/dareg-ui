@@ -44,7 +44,7 @@ const App = () => {
 
   const profile = useGetProfileQuery(1, {skip: !getUser()})
 
-  const finalTheme = useMemo(() => profile.isSuccess && profile.data?.results[0].default_theme!=="system" ? toTheme(profile.data?.results[0].default_theme) : (prefersDarkMode ? darkTheme : lightTheme), [profile.isSuccess, profile.data, prefersDarkMode])
+  const finalTheme = useMemo(() => profile.isSuccess && profile.data?.results[0].default_theme!=="system" ? toTheme(profile.data?.results[0].default_theme) : lightTheme, [profile.isSuccess, profile.data])
 
   const options = {
     interceptors: {

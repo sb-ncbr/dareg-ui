@@ -545,9 +545,6 @@ const FilesActiveArea = (props: {
                   <Typography variant="body1">{t('FilesActiveArea.size')}:</Typography>
                   <Typography variant="body1">{displaySize(selectedItems[0].size)}</Typography>
                 </Stack>
-
-                <img src="https://lekarnacz.vshcdn.net/upload/dn/a-/dna-deoxyribonukleova-kyselina-zaklad-zivota-2362830-700x467-fit.jpg" alt="W3Schools.com"/>
-
               </Stack>
             </Stack>
           : null}

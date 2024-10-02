@@ -363,7 +363,7 @@ i18n
             editor: "Editor",
             viewer: "Pouze čtení",
             lastActivity: "Poslední aktivita",
-            permissions: "Práva přístupu",
+            permissions: "Oprávnění",
             transferOwnership: "Změnit vlastníka",
             addUser: "Přidat uživatele/skupinu",
             account: "Účet",

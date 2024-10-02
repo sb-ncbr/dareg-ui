@@ -180,7 +180,7 @@ const DatasetView = ({mode}: Props) => {
                             <Tab label={t('DatasetView.metadata')} value={"metadata"} />
                             <Tab label={t('DatasetView.files')} value={"files"} />
                             {/* <Tab label={t('DatasetView.preShare')} value={"preshare"} /> */}
-                            <Tab label={t('DatasetView.settings')} value={"settings"} />
+                            <Tab label={t('PermissionsTable.permissions')} value={"permissions"} />
                             {/* <Tab label={t('DatasetView.publish')} value={"publish"} /> */}
                         </TabList>
                     </ContentCard>
@@ -234,27 +234,10 @@ const DatasetView = ({mode}: Props) => {
                             <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} />
                         </ContentCard>
                     </TabPanel>
-                    {/* <TabPanel value="preshare" sx={{p:0}}>
-                        <PreShareTab/>
-                    </TabPanel> */}
-                    <TabPanel value="settings" sx={{p:0}}>
-                        <ContentCard title={"Dataset lifecycle settings"}>
-                            <>
-                                    <TextField 
-                                        label="Dataset ID"
-                                        value={data.id}
-                                        disabled={true}
-                                        fullWidth
-                                        sx={{mb:2}}/>
-                                    <TextField 
-                                        label="Dataset Retention"
-                                        value={"3m"}
-                                        helperText="How long should the dataset be kept on hot storage?"
-                                        disabled={true}
-                                        fullWidth
-                                        sx={{mb:2}}/>
-                            </>
-                        </ContentCard>
+                    <TabPanel value="permissions" sx={{p:0}}>
+                        {mode!==ViewModes.New && Object.keys(data.shares).length !== 0 ? 
+                            <PermissionsTable perms={mode===ViewModes.Edit ? data.perms : "viewer"} currentShares={currentShares} setCurrentShares={setCurrentShares}/>
+                        : null }
                         <ContentCard title={"Onedata settings"}>
                             <>
                                 <TextField 
@@ -271,19 +254,7 @@ const DatasetView = ({mode}: Props) => {
                                     sx={{mb:2}}/>
                             </>
                         </ContentCard>
-                        {mode!==ViewModes.New && Object.keys(data.shares).length !== 0 ? 
-                            <PermissionsTable perms={mode===ViewModes.Edit ? data.perms : "viewer"} currentShares={currentShares} setCurrentShares={setCurrentShares}/>
-                        : null }
                     </TabPanel>
-                    {/* <TabPanel value="publish" sx={{p:0}}>
-                        {doi ?
-                            <PublishTab
-                                doi={doi as Doi}
-                                filesData={filesData}
-                                formCorrect={formCorrect}
-                            />
-                        : null}
-                    </TabPanel> */}
                 </TabContext>
                 <ContentCard paperProps={{variant: "elevation", elevation: 0}} sx={{mb: 2, p: 0}}>
                     <Stack gap={2} direction="row" justifyContent="flex-start">
