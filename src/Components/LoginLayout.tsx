@@ -24,6 +24,8 @@ const LoginLayout = () => {
             <Typography variant='h6' align='center'>Dataset Registry</Typography>
             <Divider variant='middle' sx={{ mt: 2, mb: 2 }}></Divider>
               <Outlet />
+              <Divider variant='middle' sx={{ mt: 2, mb: 2 }}></Divider>
+              <Typography variant='body2' align='center'>CF BioDATA CEITEC - booking.support@ceitec.cz</Typography>
             </Paper>
           </Grid>
         </Grid>

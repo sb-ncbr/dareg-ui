@@ -36,8 +36,6 @@ const Login = () => {
       <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>
         <img src={einfraLogo} style={{ width: "100px" }} alt='e-INFRA CZ logo'/>
       </Button>
-      <Divider variant='middle' sx={{ mt: 2, mb: 2 }}></Divider>
-      <Typography variant='body2' align='center'>CF BioDATA CEITEC - booking.support@ceitec.cz</Typography>
     </>
   );
 }
