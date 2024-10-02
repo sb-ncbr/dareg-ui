@@ -233,6 +233,8 @@ const FilesActiveArea = (props: {
 
   // Returns a human readable time label
   const displayTime = (milliseconds: number) => {
+    // Hack to fix timezone
+    milliseconds = milliseconds + 2*60*60*1000
     const seconds = Math.floor(milliseconds / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
