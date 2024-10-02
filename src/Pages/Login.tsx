@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button, Divider, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { useAuth, hasAuthParams } from 'react-oidc-context';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
@@ -34,8 +34,10 @@ const Login = () => {
     <>
       <Typography variant='body1' align='center'>Sign in using</Typography>
       <Button sx={{ mt: 1 }} size="large" variant="outlined" fullWidth onClick={() => initLogin()}>
-        <img src={einfraLogo} style={{ width: "150px" }} alt='e-INFRA CZ logo'/>
+        <img src={einfraLogo} style={{ width: "100px" }} alt='e-INFRA CZ logo'/>
       </Button>
+      <Divider variant='middle' sx={{ mt: 2, mb: 2 }}></Divider>
+      <Typography variant='caption' align='center'>CF BioDATA CEITEC - booking.support@ceitec.cz</Typography>
     </>
   );
 }
