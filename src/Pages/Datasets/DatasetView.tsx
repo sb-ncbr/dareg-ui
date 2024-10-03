@@ -265,7 +265,7 @@ const DatasetView = ({mode}: Props) => {
                                 endIcon={<Save />}
                                 variant="contained"
                                 size="large"
-                                disabled={!formCorrect}
+                                disabled={false}
                                 onClick={() => saveForm()}
                             >
                                 {t('DatasetView.save')}
