@@ -81,7 +81,7 @@ const DatasetView = ({mode}: Props) => {
         setLoadingButtonState(true);
         const { id, name, description, schema, project, metadata } = data;
         const datasetRequest: DatasetRequest = { name, description, schema: typeof schema === "string" ? schema : schema.id, project: typeof project === "string" ? project : project.id, metadata }
-        if (!formCorrect) return;
+        // if (!formCorrect) return;
         switch(mode){
             case ViewModes.Edit:
                 updatedDataset = updateDataset({...data, schema: schema as string, project: typeof data.project == "string" ? data.project : data.project.id, shares: currentShares})
