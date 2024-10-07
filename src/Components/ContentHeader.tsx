@@ -1,7 +1,6 @@
-import { or } from "@jsonforms/core"
-import { AccessTime, AccountCircle, ArrowBackRounded, HomeRepairService } from "@mui/icons-material"
+import { ArrowBackRounded } from "@mui/icons-material"
 import { Paper, Stack, IconButton, Typography, SxProps, Avatar, Box, Tooltip } from "@mui/material"
-import { ReactFragment } from "react"
+import { ReactNode } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 type ContentHeaderProps<T> = {
@@ -17,7 +16,7 @@ export interface ContentHeaderMetadata<T> {
     id: keyof T | 'actions';
     label: string;
     icon: JSX.Element;
-    renderCell?: (params: any) => ReactFragment;
+    renderCell?: (params: any) => ReactNode;
     value: string;
 }
 

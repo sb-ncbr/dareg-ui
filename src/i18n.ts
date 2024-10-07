@@ -146,7 +146,8 @@ i18n
             openOnedata: "Open folder in Onedata",
             onedataSettings: "Onedata settings",
             save: "Save",
-            downloadMetadata: "Download metadata"
+            downloadMetadata: "Download metadata",
+            noShare: "Dataset is not shared, save changes to create a share."
           },
           PreShareTab: {
             preShare: "Pre-share",
@@ -416,7 +417,8 @@ i18n
             openOnedata: "Otevřít složku ve Onedata",
             onedataSettings: "Onedata nastavení",
             save: "Uložit",
-            downloadMetadata: "Stáhnout metadata"
+            downloadMetadata: "Stáhnout metadata",
+            noShare: "Dataset není sdílen, uložte změny pro vytvoření sdílení."
           },
           PreShareTab: {
             preShare: "Sdílení",

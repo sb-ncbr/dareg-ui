@@ -1,17 +1,16 @@
-import { AccessTime, AccountCircle, Assignment, Cancel, CheckCircle, ContentPaste, DataObject, Delete, Edit, GroupAdd, HomeRepairService, Save, Share } from "@mui/icons-material";
-import { Alert, Box, Button, Checkbox, Dialog, DialogContent, Divider, FormControl, FormControlLabel, FormGroup, Grid2, IconButton, Input, InputAdornment, InputLabel, Link, ListItemText, MenuItem, OutlinedInput, Paper, Select, SelectChangeEvent, Skeleton, Stack, Step, StepContent, StepLabel, Stepper, Switch, Tab, TextField, Tooltip, Typography } from "@mui/material";
+import { AccessTime, AccountCircle, Assignment, ContentPaste, DataObject, Edit, HomeRepairService, Save, Share } from "@mui/icons-material";
+import { Alert, Box, Button, FormControlLabel, FormGroup, Grid2, IconButton, InputAdornment, Link, Stack, Switch, Tab, TextField, Tooltip, Typography } from "@mui/material";
 import ContentHeader from "../../Components/ContentHeader";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ContentCard from "../../Components/ContentCard";
 import FormsWrapped, { FormsWrapperSkeleton } from "../../Components/FormsWrapped";
-import useFetch from "use-http";
 import { ProjectDataStateKeys } from "../Projects/ProjectEdit";
 import { stringify } from 'yaml'
-import { DaregAPIMinimalNestedObject, FormData, SharesList } from "../../types/global";
+import { FormData, SharesList } from "../../types/global";
 import { ViewModes } from "../../types/enums";
 import { Dataset, DatasetRequest, useAddDatasetMutation, useGetDatasetQuery, useUpdateDatasetMutation } from "../../Services/datasets";
-import { Schema, useGetSchemaQuery, useGetSchemasQuery } from "../../Services/schemas";
+import { useGetSchemaQuery, useGetSchemasQuery } from "../../Services/schemas";
 import { Project, useGetProjectQuery } from "../../Services/projects";
 import { LoadingButton, TabContext, TabList, TabPanel } from "@mui/lab";
 import CodeEditor from '@uiw/react-textarea-code-editor';
@@ -147,7 +146,7 @@ const DatasetView = ({mode}: Props) => {
                                 { id: "abbreviation", value: projectData?.facility.abbreviation ?? "", label: t('DatasetView.facilityAbbreviation'), icon: <HomeRepairService /> },
                                 { id: "created", value: data.created || "", label: t('DatasetView.createdAt'), icon: <AccessTime />, renderCell: (value) => (new Date(value).toLocaleString()) },
                                 { id: "created_by", value: data.created_by?.full_name || "", label: t('DatasetView.author'), icon: <AccountCircle /> },
-                                { id: "onedata_share_id", value: data.onedata_share_id || "", label: "Public share", icon: <Share />, renderCell: (value) => value ? <Link href={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${value}`} target="_blank" rel="noreferrer">Open share</Link> : "No public share" },
+                                { id: "onedata_share_id", value: data.onedata_share_id || "", label: "Public share", icon: <Share />, renderCell: (value) => value ? <Link href={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${value}`} target="_blank" rel="noreferrer">Open share</Link> : <Typography>No public share</Typography> },
                             ] :
                             []
                         }>
@@ -267,30 +266,36 @@ const DatasetView = ({mode}: Props) => {
                     </TabPanel>
                     <TabPanel value="preshare" sx={{p:0}}>
                         <ContentCard title={"Public share"}>
-                            <Grid2>
-                                <Typography variant="body1">Share this dataset with a public link. Anyone with the link will be able to view the dataset and each of the files. They will don't have permissions to modify the files.</Typography>
-                                <Typography variant="body1">Copy the following link</Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, mb: 2 }}>
-                                    <TextField
-                                        label="Public share link"
-                                        value={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`}
-                                        focused={true}
-                                        variant="outlined"
-                                        fullWidth
-                                        slotProps={{
-                                            input: {
-                                                endAdornment: <InputAdornment position="end">
-                                                    <Tooltip title={coppied ? "Copied!" : "Copy to clipboard"} arrow open={true} placement="left">
-                                                        <IconButton onClick={() => copyToClipboard(`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`)}>
-                                                            <ContentPaste />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </InputAdornment>
-                                            }
-                                        }}
-                                    />
-                                </Box>
-                            </Grid2>
+                            {data.onedata_share_id ? (
+                                <Grid2>
+                                    <Typography variant="body1">Share this dataset with a public link. Anyone with the link will be able to view the dataset and each of the files. They will don't have permissions to modify the files.</Typography>
+                                    <Typography variant="body1">Copy the following link</Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, mb: 2 }}>
+                                        <TextField
+                                            label="Public share link"
+                                            value={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`}
+                                            focused={true}
+                                            variant="outlined"
+                                            fullWidth
+                                            slotProps={{
+                                                input: {
+                                                    endAdornment: <InputAdornment position="end">
+                                                        <Tooltip title={coppied ? "Copied!" : "Copy to clipboard"} arrow open={true} placement="left">
+                                                            <IconButton onClick={() => copyToClipboard(`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`)}>
+                                                                <ContentPaste />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </InputAdornment>
+                                                }
+                                            }}
+                                        />
+                                    </Box>
+                                </Grid2>
+                            ) : (
+                                <Alert severity="warning">
+                                    {t('DatasetView.noShare')}
+                                </Alert>
+                            )}
                         </ContentCard>
                     </TabPanel>
                 </TabContext>
