@@ -125,6 +125,8 @@ const DatasetView = ({mode}: Props) => {
 
     }
 
+    const onedata_folder_link = useMemo(() => `${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}ozw/onezone/i#/onedata/spaces/${projectData?.onedata_space_id}/data?options=dir.${datasetData?.onedata_visit_id}`, [projectData, datasetData])
+
     const [errors, setErrors] = useState<any>([])
     const formCorrect: boolean = useMemo(() => errors.length===0, [errors])
 
@@ -235,12 +237,12 @@ const DatasetView = ({mode}: Props) => {
                                 <FormGroup>
                                     <FormControlLabel sx={{ width: 135 }} control={<Switch defaultChecked size="small" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />} label={t('DatasetView.autoRefresh')} />
                                 </FormGroup>
-                                <Button variant="contained" size="small" onClick={() => window.open(`${config.REACT_APP_BASE_ONEZONE_URL}/i#/onedata/spaces/${projectData?.onedata_space_id}/data?options=dir.${datasetData?.onedata_file_id}`, "_blank")}>
+                                <Button variant="contained" size="small" onClick={() => window.open(`${onedata_folder_link}`, "_blank")}>
                                     {t('DatasetView.openOnedata')}
                                 </Button>
                             </>
                         }>
-                            <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} />
+                            <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} onedata_folder_link={onedata_folder_link} />
                         </ContentCard>
                     </TabPanel>
                     <TabPanel value="permissions" sx={{p:0}}>

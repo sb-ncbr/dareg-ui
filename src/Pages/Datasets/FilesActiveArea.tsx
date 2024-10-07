@@ -13,6 +13,7 @@ import { ExplorerItem } from "../../types/global"
 import { File, Files, useGetFilesQuery } from "../../Services/files"
 import MyIconButton from "./MyIconButton"
 import { useTranslation } from "react-i18next"
+import emptyFolder from "./empty.png"
 
 
 // const data:{info: ExplorerItem, content: ExplorerItem[]} = {
@@ -214,6 +215,7 @@ const FilesActiveArea = (props: {
   id: string,
   changeId: (id: string) => void,
   autoRefresh: boolean,
+  onedata_folder_link: string,
   //isSelector: boolean | undefined
 }) => {
   const { t } = useTranslation()
@@ -500,8 +502,22 @@ const FilesActiveArea = (props: {
               }
             </Stack>
             <Stack direction="column" height={1} overflow={"auto"} sx={{ userSelect: "none", WebkitUserSelect: "none" }}>
-
-              {sortedItems.map((item, index) =>
+              {sortedItems.length === 0 ? (
+                <>
+                  <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" height="100%">
+                    <img src={emptyFolder} alt="Empty" style={{ width: 150, height: 150 }}/>
+                    <Typography variant="h6" sx={{ textAlign: "center", color: (theme) => theme.palette.text.secondary, mt: 2 }}>
+                      This dataset has no files.
+                    </Typography>
+                    <Typography variant="body1" sx={{ textAlign: "center", color: (theme) => theme.palette.text.secondary, mt: 2, mb: 2 }}>
+                      Upload files by visiting Onedata file browser.
+                    </Typography>
+                    <Button variant="contained" sx={{ width: "20%" }} size="small" onClick={() => window.open(`${props.onedata_folder_link}`, "_blank")}>
+                      {t('DatasetView.openOnedata')}
+                    </Button>
+                  </Box>
+                </>
+              ) : (sortedItems.map((item, index) =>
                 <>
                   <div onClick={(e) => handleClick(e, item, index)}>
                     <Divider/>
@@ -523,7 +539,7 @@ const FilesActiveArea = (props: {
                     </Box>
                   </div>
                 </>
-              )}
+              ))}
               <div onClick={() => setSelectedItems([])} style={{ flex: 1 }}/>
             </Stack>
           </div>

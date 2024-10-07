@@ -39,7 +39,7 @@ const DaregTable = <T, >({ columns, data, loading = false, page = 1, setPage = (
         if (searchTerm.length === 0){
             setFiltered(data?.results)
         } else {
-          const filtered = data.results.filter((item: any) => item.name.includes(searchTerm) || item.description.includes(searchTerm))
+          const filtered = data.results.filter((item: any) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.description.toLowerCase().includes(searchTerm.toLowerCase()))
           setFiltered(filtered)
         }
       }, [searchTerm, data])

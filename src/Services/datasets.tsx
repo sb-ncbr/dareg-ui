@@ -10,6 +10,7 @@ export type Dataset = DaregAPIObjectBase & {
   tags: string[],
   onedata_file_id: string,
   onedata_share_id: string,
+  onedata_visit_id: string,
   doi: string,
 }
 
