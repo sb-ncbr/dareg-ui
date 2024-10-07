@@ -1,5 +1,5 @@
-import { AccessTime, AccountCircle, Assignment, Cancel, CheckCircle, ContentPaste, DataObject, Delete, Edit, GroupAdd, HomeRepairService, Save } from "@mui/icons-material";
-import { Alert, Box, Button, Checkbox, Dialog, DialogContent, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, Input, InputAdornment, InputLabel, Link, ListItemText, MenuItem, OutlinedInput, Paper, Select, SelectChangeEvent, Skeleton, Stack, Step, StepContent, StepLabel, Stepper, Switch, Tab, TextField, Typography } from "@mui/material";
+import { AccessTime, AccountCircle, Assignment, Cancel, CheckCircle, ContentPaste, DataObject, Delete, Edit, GroupAdd, HomeRepairService, Save, Share } from "@mui/icons-material";
+import { Alert, Box, Button, Checkbox, Dialog, DialogContent, Divider, FormControl, FormControlLabel, FormGroup, Grid2, IconButton, Input, InputAdornment, InputLabel, Link, ListItemText, MenuItem, OutlinedInput, Paper, Select, SelectChangeEvent, Skeleton, Stack, Step, StepContent, StepLabel, Stepper, Switch, Tab, TextField, Tooltip, Typography } from "@mui/material";
 import ContentHeader from "../../Components/ContentHeader";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,10 +22,8 @@ import TemplateSelect from "../../Components/TemplateSelect";
 import PermissionsTable from "../../Components/PermissionsContainer/PermissionsTable";
 import SkeletonView from "../../Components/SkeletonView";
 import { useTranslation } from "react-i18next";
-import { Doi, useGetDoiQuery } from "../../Services/dois";
+import { useGetDoiQuery } from "../../Services/dois";
 import { useGetFilesQuery } from "../../Services/files";
-import PublishTab from "./PublishTab";
-import PreShareTab from "./PreShareTab";
 
 type Props = {
     mode: ViewModes
@@ -117,6 +115,17 @@ const DatasetView = ({mode}: Props) => {
         element.click();
     }
 
+    const [ coppied, setCoppied ] = useState<boolean>(false)
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCoppied(true)
+            setTimeout(() => {
+                setCoppied(false)
+            }, 3000)
+        })
+
+    }
+
     const [errors, setErrors] = useState<any>([])
     const formCorrect: boolean = useMemo(() => errors.length===0, [errors])
 
@@ -138,6 +147,7 @@ const DatasetView = ({mode}: Props) => {
                                 { id: "abbreviation", value: projectData?.facility.abbreviation ?? "", label: t('DatasetView.facilityAbbreviation'), icon: <HomeRepairService /> },
                                 { id: "created", value: data.created || "", label: t('DatasetView.createdAt'), icon: <AccessTime />, renderCell: (value) => (new Date(value).toLocaleString()) },
                                 { id: "created_by", value: data.created_by?.full_name || "", label: t('DatasetView.author'), icon: <AccountCircle /> },
+                                { id: "onedata_share_id", value: data.onedata_share_id || "", label: "Public share", icon: <Share />, renderCell: (value) => value ? <Link href={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${value}`} target="_blank" rel="noreferrer">Open share</Link> : "No public share" },
                             ] :
                             []
                         }>
@@ -179,7 +189,7 @@ const DatasetView = ({mode}: Props) => {
                             >
                             <Tab label={t('DatasetView.metadata')} value={"metadata"} />
                             <Tab label={t('DatasetView.files')} value={"files"} />
-                            {/* <Tab label={t('DatasetView.preShare')} value={"preshare"} /> */}
+                            <Tab label={"Public share"} value={"preshare"} />
                             <Tab label={t('PermissionsTable.permissions')} value={"permissions"} />
                             {/* <Tab label={t('DatasetView.publish')} value={"publish"} /> */}
                         </TabList>
@@ -253,6 +263,34 @@ const DatasetView = ({mode}: Props) => {
                                     fullWidth
                                     sx={{mb:2}}/>
                             </>
+                        </ContentCard>
+                    </TabPanel>
+                    <TabPanel value="preshare" sx={{p:0}}>
+                        <ContentCard title={"Public share"}>
+                            <Grid2>
+                                <Typography variant="body1">Share this dataset with a public link. Anyone with the link will be able to view the dataset and each of the files. They will don't have permissions to modify the files.</Typography>
+                                <Typography variant="body1">Copy the following link</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, mb: 2 }}>
+                                    <TextField
+                                        label="Public share link"
+                                        value={`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`}
+                                        focused={true}
+                                        variant="outlined"
+                                        fullWidth
+                                        slotProps={{
+                                            input: {
+                                                endAdornment: <InputAdornment position="end">
+                                                    <Tooltip title={coppied ? "Copied!" : "Copy to clipboard"} arrow open={true} placement="left">
+                                                        <IconButton onClick={() => copyToClipboard(`${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}share/${data.onedata_share_id}`)}>
+                                                            <ContentPaste />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }
+                                        }}
+                                    />
+                                </Box>
+                            </Grid2>
                         </ContentCard>
                     </TabPanel>
                 </TabContext>

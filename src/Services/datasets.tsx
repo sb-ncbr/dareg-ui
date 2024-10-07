@@ -9,6 +9,7 @@ export type Dataset = DaregAPIObjectBase & {
   project: string | DaregAPIMinimalNestedObject
   tags: string[],
   onedata_file_id: string,
+  onedata_share_id: string,
   doi: string,
 }
 
