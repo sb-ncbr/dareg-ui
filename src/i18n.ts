@@ -86,7 +86,8 @@ i18n
             name: "Name",
             organization: "Organization",
             email: "E-mail",
-            logged: "Logged in as"
+            logged: "Logged in as",
+            last_login: "Last login"
           },
           PermissionsTable: {
             owner: "Owner",
@@ -126,7 +127,7 @@ i18n
           },
           DatasetView: {
             edit: "Edit",
-            projectName: "Project name",
+            projectName: "Collection name",
             facilityAbbreviation: "Facility abbreviation",
             createdAt: "Created at",
             author: "Author",
@@ -357,7 +358,8 @@ i18n
             name: "Jméno",
             organization: "Organizace",
             email: "E-mail",
-            logged: "Přihlášen pomoci"
+            logged: "Přihlášen pomoci",
+            last_login: "Poslední přihlášení"
           },
           PermissionsTable: {
             owner: "Vlastník",
@@ -397,7 +399,7 @@ i18n
           },
           DatasetView: {
             edit: "Upravit",
-            projectName: "Název projektu",
+            projectName: "Název kolekce",
             facilityAbbreviation: "Zkratka facility",
             createdAt: "Vytvořeno",
             author: "Autor",

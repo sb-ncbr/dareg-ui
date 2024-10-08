@@ -42,9 +42,7 @@ const LeftBar = (props: {setSection: (value: string) => void}) => {
     <Stack direction="row" height="100vh">
       <Box padding={4} pt={2} height="100vh" justifyContent="space-between" display="flex" flexDirection="column">
         <List disablePadding>
-          <img src={ceitec_logo} style
-          
-          ={{width: "100%"}} />
+          <img src={ceitec_logo} style={{width: "100%"}} />
           {/* <Box sx={{ width: 250, ml: -1, mr: -1, mb: 2}}>
             <CardMedia
               component="img"

@@ -23,6 +23,7 @@ import SkeletonView from "../../Components/SkeletonView";
 import { useTranslation } from "react-i18next";
 import { useGetDoiQuery } from "../../Services/dois";
 import { useGetFilesQuery } from "../../Services/files";
+import useDocumentTitle from "../../Utils/useDocumentTitle";
 
 type Props = {
     mode: ViewModes
@@ -134,6 +135,8 @@ const DatasetView = ({mode}: Props) => {
 
     const { data: filesData } = useGetFilesQuery({ dataset_id: datasetId as string, file_id: null })
 
+    useDocumentTitle(data.name, "Dataset", mode)
+
     if (!datasetLoading){
         return (
             <Box>
@@ -163,17 +166,27 @@ const DatasetView = ({mode}: Props) => {
                             value={data.name}
                             onChange={(e) => handleChange("name", e.target.value)}
                             sx={{maxWidth: "33.33%", background: (theme) => theme.palette.background.paper}}
-                            disabled={mode===ViewModes.View}
+                            // disabled={mode===ViewModes.View}
+                            slotProps={{
+                                input: {
+                                    readOnly: mode===ViewModes.View
+                                }
+                            }}
                             />
                         <TextField
                             margin="dense"
                             label={t('DatasetView.datasetDescription')}
                             fullWidth
+                            required
                             variant="outlined"
                             value={data.description}
                             onChange={(e) => handleChange("description", e.target.value)}
                             sx={{maxWidth: "66.67%", backgroundColor: (theme) => theme.palette.background.paper}}
-                            disabled={mode===ViewModes.View}
+                            slotProps={{
+                                input: {
+                                    readOnly: mode===ViewModes.View
+                                }
+                            }}
                             />
                     </Stack>
                     {mode===ViewModes.New && schemas ?

@@ -17,6 +17,7 @@ import DateTimeFormatter from "../../Components/DateTimeFormatter";
 import PermissionsTable from "../../Components/PermissionsContainer/PermissionsTable";
 import SkeletonView from "../../Components/SkeletonView";
 import { useTranslation } from "react-i18next";
+import useDocumentTitle from "../../Utils/useDocumentTitle";
 
 export type ProjectDataStateKeys = keyof ProjectsData;
 
@@ -106,6 +107,8 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
         )}
     ]
 
+    useDocumentTitle(data.name, "Collection", mode)
+
     if (!projectDataLoading){
         return (
             <Box>
@@ -144,8 +147,12 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
                             variant="outlined"
                             value={data?.name}
                             onChange={(e) => handleChange("name", e)}
-                            sx={{maxWidth: "33.33%", background: (theme) => theme.palette.background.paper}}
-                            disabled={mode===ViewModes.View}
+                            sx={[{maxWidth: "33.33%", background: (theme) => theme.palette.background.paper}, mode===ViewModes.View ? {cursor: "pointer"} : {}]}
+                            slotProps={{
+                                input: {
+                                    readOnly: mode===ViewModes.View
+                                }
+                            }}
                             />
                         <TextField
                             margin="dense"
@@ -155,7 +162,11 @@ const ProjectEdit = ({mode}: {mode: ViewModes}) => {
                             value={data?.description}
                             onChange={(e) => handleChange("description", e)}
                             sx={{maxWidth: "66.67%", background: (theme) => theme.palette.background.paper}}
-                            disabled={mode===ViewModes.View}
+                            slotProps={{
+                                input: {
+                                    readOnly: mode===ViewModes.View
+                                }
+                            }}
                             />
                     </Stack>
                 </ContentHeader>

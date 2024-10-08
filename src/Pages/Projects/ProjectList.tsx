@@ -9,6 +9,7 @@ import { DaregAPIResponse } from '../../types/global';
 import { Project, useGetProjectsQuery } from '../../Services/projects';
 import DateTimeFormatter from '../../Components/DateTimeFormatter';
 import { useTranslation } from 'react-i18next';
+import useDocumentTitle from '../../Utils/useDocumentTitle';
 
 const ProjectsList = () => {
   const { t } = useTranslation()
@@ -27,6 +28,8 @@ const ProjectsList = () => {
       <Button variant="contained" size="small" onClick={() => navigate(`/collections/${params.id}`)}>{t('ProjectList.view')}</Button>
     )}
   ]
+
+  useDocumentTitle(t('ProjectList.collections'), "", "")
 
   return (
     <Box>

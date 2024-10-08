@@ -24,7 +24,7 @@ const oidcConfig = {
     userinfo_endpoint: config.REACT_APP_OIDC_METADATA_userinfo_endpoint,
     end_session_endpoint: config.REACT_APP_OIDC_METADATA_end_session_endpoint,
   },
-  automaticSilentRenew: false,
+  automaticSilentRenew: true,
   checkSessionIntervalInSeconds: 3600,
   userStore: new WebStorageStateStore({ store: window.sessionStorage }),
 };

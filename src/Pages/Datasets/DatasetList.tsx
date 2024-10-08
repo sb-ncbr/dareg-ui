@@ -11,6 +11,7 @@ import { Project, useGetProjectsQuery } from '../../Services/projects';
 import { Dataset, DatasetsResponse, useGetDatasetsQuery } from '../../Services/datasets';
 import DateTimeFormatter from '../../Components/DateTimeFormatter';
 import { useTranslation } from 'react-i18next';
+import useDocumentTitle from '../../Utils/useDocumentTitle';
 
 const DatasetList = () => {
 
@@ -31,6 +32,7 @@ const DatasetList = () => {
     )}
   ]
 
+  useDocumentTitle('Dataset', "", t('DatasetList.datasets'))
   return (
     <Box>
       <ContentHeader title={t('DatasetList.datasets')} actions={<></>}>

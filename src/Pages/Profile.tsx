@@ -1,4 +1,4 @@
-import { Button, Table, TableCell, TableRow, Grid, Typography, Stack, Divider, Box } from '@mui/material';
+import { Button, Table, TableCell, TableRow, Grid, Typography, Stack, Divider, Box, Grid2 } from '@mui/material';
 import { useTranslation } from "react-i18next";
 import { useAuth } from "react-oidc-context";
 import ceitecLogo from "../Static/ceitec_logo.png"
@@ -32,9 +32,12 @@ const Profile = () => {
         <ContentHeader title={"Profile"}>
         </ContentHeader>
         <ContentCard title={`${t('auth.welcome')} ${auth.user?.profile.given_name},`}>
-            <Stack alignItems={"center"} direction={"row"} spacing={3} divider={<Divider orientation="vertical" flexItem />}>
-                {avatarComponent}
-                <Table>
+            <Grid2 container spacing={1}>
+                <Grid2 size={{xs: 12, sm: 4, md: 2}} sx={{margin: "0 auto"}}>
+                    {avatarComponent}   
+                </Grid2>
+                <Grid2 size={{xs: 12, sm: 8, md: 10}}>
+                    <Table>
                         <TableRow>
                             <TableCell>
                                 {t('profile.name')}      
@@ -61,15 +64,28 @@ const Profile = () => {
                         </TableRow>    
                         <TableRow>
                             <TableCell>
+                                {t('profile.last_login')}   
+                            </TableCell>    
+                            <TableCell>
+                                {new Date(data?.last_login || "").toLocaleString()}
+                                
+                            </TableCell>    
+                        </TableRow>    
+                        <TableRow>
+                            <TableCell>
                                 {t('profile.logged')}   
                             </TableCell>    
                             <TableCell>
-                                <img width="160px" style={{verticalAlign: "middle", marginRight: 10}} src={ceitecLogo} />
-                                <Button variant="outlined" color="error" onClick={() => auth.signoutRedirect()}>{t('auth.logout')}</Button>
+                                <Stack direction="row" spacing={1} alignItems={"center"}>
+                                    <Typography>{auth?.user?.profile.sub}</Typography>
+                                    <img width="160px" style={{verticalAlign: "middle", marginRight: 10}} src={ceitecLogo} />
+                                    <Button variant="outlined" color="error" onClick={() => auth.signoutRedirect()}>{t('auth.logout')}</Button>
+                                </Stack>
                             </TableCell>
                         </TableRow>    
                     </Table>
-            </Stack>
+                </Grid2>
+            </Grid2>
         </ContentCard>
         {profile.isSuccess ?
             <ContentCard title='Settings'>

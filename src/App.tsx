@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -24,6 +24,8 @@ import { ViewModes } from './types/enums';
 import DatasetList from './Pages/Datasets/DatasetList';
 import { darkTheme, lightTheme } from './theme';
 import { useGetProfileQuery } from './Services/profile';
+import { useAuth } from 'react-oidc-context';
+import authSlice from './Reducers/authSlice';
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: light)')
@@ -58,7 +60,7 @@ const App = () => {
       "Content-Type": "application/json"
     },
     cachePolicy: CachePolicies.NO_CACHE,
-    retries: 1,
+    retries: 2,
     retryOn: async ({ error, response }: any) => {
       return error || (response && response.status >= 300)
     },
@@ -67,6 +69,28 @@ const App = () => {
       return Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000)
     }
   }
+
+  const auth = useAuth();
+
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     const user = getUser();
+  //     console.log("Checking token expiration.");
+  //     if (user && user.expired) {
+  //       console.log("User expired, trying to refresh token");
+  //       const auth = useAuth();
+  //       auth.signinSilent();
+  //     }
+  //   }, 60000); // Check every 60 seconds
+
+  //   return () => clearInterval(timer);
+  //   }, [])
+
+  useEffect(() => {
+    auth.events.addUserLoaded((user) => {
+      console.log("User loaded", user);
+    })
+  }, []);
 
   return (
     <Provider url={config.REACT_APP_BASE_API_URL} options={options}>

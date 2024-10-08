@@ -1,9 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableRow, Skeleton, TableProps, TableFooter, TablePagination, TextField } from '@mui/material';
-import { Key, ReactElement, ReactFragment, useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { DaregAPIResponse } from '../../types/global';
-import { Dataset } from '../../Services/datasets';
 import { useTranslation } from 'react-i18next';
-import { GridRenderCellParams, GridRowEntry } from '@mui/x-data-grid';
 
 export interface Column<T> {
     id: keyof T | 'actions';
@@ -61,7 +59,6 @@ const DaregTable = <T, >({ columns, data, loading = false, page = 1, setPage = (
     // data = { results: [] } as unknown as DaregAPIResponse<T>;
 
     if (!loading && data) {
-        console.log(data)
         return (
             <>
                 <TextField
@@ -150,7 +147,7 @@ const DaregTable = <T, >({ columns, data, loading = false, page = 1, setPage = (
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {[...Array(3)].map((_, i) => (
+                        {[...Array(5)].map((_, i) => (
                             <TableRow hover role="checkbox" tabIndex={-1} key={`skeleton-${i}`}>
                                 {columns.map((column) => (
                                     <TableCell key={column.id as string} align={column.align}>
