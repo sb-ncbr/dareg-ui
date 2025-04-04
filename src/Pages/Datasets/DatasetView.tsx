@@ -202,7 +202,7 @@ const DatasetView = ({mode}: Props) => {
                                 aria-label="lab API tabs example"
                             >
                             <Tab label={t('DatasetView.metadata')} value={"metadata"} />
-                            {/* <Tab label={t('DatasetView.files')} value={"files"} /> */}
+                            <Tab label={t('DatasetView.files')} value={"files"} />
                             <Tab label={"Public share"} value={"preshare"} />
                             <Tab label={t('PermissionsTable.permissions')} value={"permissions"} />
                             {/* <Tab label={t('DatasetView.publish')} value={"publish"} /> */}
