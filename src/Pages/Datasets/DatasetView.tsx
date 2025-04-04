@@ -202,7 +202,7 @@ const DatasetView = ({mode}: Props) => {
                                 aria-label="lab API tabs example"
                             >
                             <Tab label={t('DatasetView.metadata')} value={"metadata"} />
-                            <Tab label={t('DatasetView.files')} value={"files"} />
+                            {/* <Tab label={t('DatasetView.files')} value={"files"} /> */}
                             <Tab label={"Public share"} value={"preshare"} />
                             <Tab label={t('PermissionsTable.permissions')} value={"permissions"} />
                             {/* <Tab label={t('DatasetView.publish')} value={"publish"} /> */}
@@ -255,7 +255,8 @@ const DatasetView = ({mode}: Props) => {
                                 </Button>
                             </>
                         }>
-                            <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} onedata_folder_link={onedata_folder_link} />
+                            <></>
+                            {/* <FilesActiveArea id={datasetId || ""} changeId={() => {}} autoRefresh={autoRefresh} onedata_folder_link={onedata_folder_link} /> */}
                         </ContentCard>
                     </TabPanel>
                     <TabPanel value="permissions" sx={{p:0}}>
