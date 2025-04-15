@@ -126,7 +126,7 @@ const DatasetView = ({mode}: Props) => {
 
     }
 
-    const onedata_folder_link = useMemo(() => `${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}ozw/onezone/i#/onedata/spaces/${projectData?.onedata_space_id}/data?options=dir.${datasetData?.onedata_visit_id}`, [projectData, datasetData])
+    const onedata_folder_link = useMemo(() => `${config.REACT_APP_BASE_ONEZONE_PRETTY_URL}ozw/onezone/i#/onedata/spaces/${datasetData?.onedata_space_id}/data?options=dir.${datasetData?.onedata_visit_id}`, [projectData, datasetData])
 
     const [errors, setErrors] = useState<any>([])
     const formCorrect: boolean = useMemo(() => errors.length===0, [errors])
