@@ -1,0 +1,2 @@
+- Vyhladavanie pomocou metadat
+- 
