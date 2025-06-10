@@ -13,7 +13,7 @@ declare module "next-auth" {
             name: string;
             email: string;
         } & DefaultSession["user"];
-        accessToken?: string; // ✅ Add accessToken to session
+        accessToken?: string;
     }
 
     interface User extends DefaultUser {
@@ -24,6 +24,8 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
     interface JWT extends DefaultJWT {
         username: string;
-        accessToken?: string; // ✅ Add accessToken to JWT
+        accessToken?: string;
+        accessTokenExpires?: number;
+        refreshToken?: string;
     }
 }

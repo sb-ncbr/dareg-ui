@@ -67,6 +67,7 @@ export class ApiService {
      * API endpoint that allows dataset to be viewed or edited.
      * @param data The data for the request.
      * @param data.page A page number within the paginated result set.
+     * @param data.project ID of the project to filter datasets by.
      * @returns PaginatedDatasetResponseList
      * @throws ApiError
      */
@@ -75,7 +76,8 @@ export class ApiService {
             method: 'GET',
             url: '/api/v1/datasets/',
             query: {
-                page: data.page
+                page: data.page,
+                project: data.project
             }
         });
     }

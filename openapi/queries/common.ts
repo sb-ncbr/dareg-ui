@@ -12,9 +12,10 @@ export const UseApiServiceGetApiSchemaKeyFn = ({ format, lang }: {
 export type ApiServiceGetApiV1DatasetsDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1Datasets>>;
 export type ApiServiceGetApiV1DatasetsQueryResult<TData = ApiServiceGetApiV1DatasetsDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
 export const useApiServiceGetApiV1DatasetsKey = "ApiServiceGetApiV1Datasets";
-export const UseApiServiceGetApiV1DatasetsKeyFn = ({ page }: {
+export const UseApiServiceGetApiV1DatasetsKeyFn = ({ page, project }: {
   page?: number;
-} = {}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1DatasetsKey, ...(queryKey ?? [{ page }])];
+  project?: string;
+} = {}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1DatasetsKey, ...(queryKey ?? [{ page, project }])];
 export type ApiServiceGetApiV1DatasetsByIdDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1DatasetsById>>;
 export type ApiServiceGetApiV1DatasetsByIdQueryResult<TData = ApiServiceGetApiV1DatasetsByIdDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
 export const useApiServiceGetApiV1DatasetsByIdKey = "ApiServiceGetApiV1DatasetsById";

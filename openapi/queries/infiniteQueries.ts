@@ -3,8 +3,10 @@
 import { InfiniteData, UseInfiniteQueryOptions, useInfiniteQuery } from "@tanstack/react-query";
 import { ApiService } from "../requests/services.gen";
 import * as Common from "./common";
-export const useApiServiceGetApiV1DatasetsInfinite = <TData = InfiniteData<Common.ApiServiceGetApiV1DatasetsDefaultResponse>, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ }: {} = {}, queryKey?: TQueryKey, options?: Omit<UseInfiniteQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useInfiniteQuery({
-  queryKey: Common.UseApiServiceGetApiV1DatasetsKeyFn({}, queryKey), queryFn: ({ pageParam }) => ApiService.getApiV1Datasets({ page: pageParam as number }) as TData, initialPageParam: "1", getNextPageParam: response => (response as {
+export const useApiServiceGetApiV1DatasetsInfinite = <TData = InfiniteData<Common.ApiServiceGetApiV1DatasetsDefaultResponse>, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ project }: {
+  project?: string;
+} = {}, queryKey?: TQueryKey, options?: Omit<UseInfiniteQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useInfiniteQuery({
+  queryKey: Common.UseApiServiceGetApiV1DatasetsKeyFn({ project }, queryKey), queryFn: ({ pageParam }) => ApiService.getApiV1Datasets({ page: pageParam as number, project }) as TData, initialPageParam: "1", getNextPageParam: response => (response as {
     nextPage: string;
   }).nextPage, ...options
 });

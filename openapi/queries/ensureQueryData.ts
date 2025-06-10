@@ -7,9 +7,10 @@ export const ensureUseApiServiceGetApiSchemaData = (queryClient: QueryClient, { 
   format?: "json" | "yaml";
   lang?: "af" | "ar" | "ar-dz" | "ast" | "az" | "be" | "bg" | "bn" | "br" | "bs" | "ca" | "ckb" | "cs" | "cy" | "da" | "de" | "dsb" | "el" | "en" | "en-au" | "en-gb" | "eo" | "es" | "es-ar" | "es-co" | "es-mx" | "es-ni" | "es-ve" | "et" | "eu" | "fa" | "fi" | "fr" | "fy" | "ga" | "gd" | "gl" | "he" | "hi" | "hr" | "hsb" | "hu" | "hy" | "ia" | "id" | "ig" | "io" | "is" | "it" | "ja" | "ka" | "kab" | "kk" | "km" | "kn" | "ko" | "ky" | "lb" | "lt" | "lv" | "mk" | "ml" | "mn" | "mr" | "ms" | "my" | "nb" | "ne" | "nl" | "nn" | "os" | "pa" | "pl" | "pt" | "pt-br" | "ro" | "ru" | "sk" | "sl" | "sq" | "sr" | "sr-latn" | "sv" | "sw" | "ta" | "te" | "tg" | "th" | "tk" | "tr" | "tt" | "udm" | "uk" | "ur" | "uz" | "vi" | "zh-hans" | "zh-hant";
 } = {}) => queryClient.ensureQueryData({ queryKey: Common.UseApiServiceGetApiSchemaKeyFn({ format, lang }), queryFn: () => ApiService.getApiSchema({ format, lang }) });
-export const ensureUseApiServiceGetApiV1DatasetsData = (queryClient: QueryClient, { page }: {
+export const ensureUseApiServiceGetApiV1DatasetsData = (queryClient: QueryClient, { page, project }: {
   page?: number;
-} = {}) => queryClient.ensureQueryData({ queryKey: Common.UseApiServiceGetApiV1DatasetsKeyFn({ page }), queryFn: () => ApiService.getApiV1Datasets({ page }) });
+  project?: string;
+} = {}) => queryClient.ensureQueryData({ queryKey: Common.UseApiServiceGetApiV1DatasetsKeyFn({ page, project }), queryFn: () => ApiService.getApiV1Datasets({ page, project }) });
 export const ensureUseApiServiceGetApiV1DatasetsByIdData = (queryClient: QueryClient, { id }: {
   id: string;
 }) => queryClient.ensureQueryData({ queryKey: Common.UseApiServiceGetApiV1DatasetsByIdKeyFn({ id }), queryFn: () => ApiService.getApiV1DatasetsById({ id }) });

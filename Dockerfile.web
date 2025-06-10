@@ -1,0 +1,32 @@
+FROM node:20.15-bookworm-slim AS base
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm install -g pnpm
+ENV PNPM_HOME="/root/.pnpm-home"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN mkdir -p ${PNPM_HOME}
+
+RUN apt-get update && apt-get install -y git ca-certificates --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
+FROM base AS installer
+ENV NEXT_TELEMETRY_DISABLED=1
+WORKDIR /app
+COPY pnpm-lock.yaml package.json ./
+COPY postcss.config.mjs tailwind.config.js next.config.ts ./
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build
+
+FROM node:20.15-bookworm-slim AS runner
+
+ENV NODE_ENV="local"
+
+RUN groupadd --system --gid 1001 nodejs \
+    && useradd --system --uid 1001 --gid nodejs nextjs
+WORKDIR /app
+COPY --chown=nextjs:nodejs --from=installer /app/.next/standalone ./
+COPY --chown=nextjs:nodejs --from=installer /app/public ./public
+COPY --chown=nextjs:nodejs --from=installer /app/.next/static ./.next/static
+USER nextjs
+ENV NEXT_TELEMETRY_DISABLED=1
+EXPOSE 5000
+CMD ["node", "/app/server.js"]

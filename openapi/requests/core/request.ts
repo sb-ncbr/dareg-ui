@@ -308,12 +308,10 @@ export const catchErrorCodes = (options: ApiRequestOptions, result: ApiResult): 
 export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions<T>, axiosClient: AxiosInstance = axios): CancelablePromise<T> => {
 	return new CancelablePromise(async (resolve, reject, onCancel) => {
 		try {
-
 			const url = getUrl(config, options);
 			const formData = getFormData(options);
 			const body = getRequestBody(options);
 			const headers = await getHeaders(config, options);
-			
 
 			if (!onCancel.isCancelled) {
 				let response = await sendRequest<T>(config, options, url, body, formData, headers, onCancel, axiosClient);
