@@ -1,24 +1,25 @@
 "use client";
 
-import React from "react";
-import { useSession } from "next-auth/react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+import React, { useRef, useLayoutEffect, useState } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { TypographyH2 } from "@/components/typography/typography-h2";
-import { useApiServiceGetApiV1ProfileById } from "../../../openapi/queries";
+import { useApiServiceGetApiV1Profile } from "../../../openapi/queries";
 import Image from "next/image";
+import { Profile } from "../../../openapi/requests";
+import { DateFormater } from "@/components/date_formatter/date-formatter";
+import BoundingBox from "@/components/bounding-box/bounding-box";
+import { Button } from "@/components/ui/button";
+import { LogOutIcon } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
+
+const cellPadding = "px-6 py-5"; // Adjust all cell paddings here
 
 const ProfilePage = () => {
   const { data: session, status } = useSession();
-  const { data: profile, isLoading } = useApiServiceGetApiV1ProfileById({
-    id: session?.user?.id ?? "",
-  });
+  const { data: profileDataResponse } = useApiServiceGetApiV1Profile();
+
   if (status === "loading") {
     return <p>Loading...</p>;
   }
@@ -27,50 +28,91 @@ const ProfilePage = () => {
     return <p>You need to log in to view this page.</p>;
   }
 
-  console.log("Session Data", session);
-  console.log("User Data", profile);
-
   const user = session?.user;
+  const profile: Profile | undefined = profileDataResponse?.results?.[0];
 
-  const profileData = [
-    { label: "Name", value: user?.name || "N/A" },
-    { label: "Organization", value: "Masaryk University" },
-    { label: "E-mail", value: user?.email || "N/A" },
-    { label: "Last login", value: profile?.last_login || "N/A" },
-    { label: "Logged in as", value: user?.email || "N/A" },
-  ];
+  // Dynamic image sizing
+  const tableRef = useRef<HTMLDivElement>(null);
+  const [imageSize, setImageSize] = useState(96);
+
+  useLayoutEffect(() => {
+    if (tableRef.current) {
+      setImageSize(Math.max(48, Math.min(tableRef.current.offsetHeight, 256)));
+    }
+  }, [profile, user]);
 
   return (
-    <div className="container mx-auto p-6">
-      <TypographyH2 text="Profile"></TypographyH2>
-      <div className="flex items-center mb-6">
-        {user?.image && (
-          <div className="mt-8 flex justify-center">
+    <div>
+      <Breadcrumbs />
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <TypographyH2 text="Profile" />
+        </div>
+        <div className="flex items-center">
+          <Button variant={"default"} onClick={() => signOut()}>
+            <div className="flex items-center">
+              <LogOutIcon className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </div>
+          </Button>
+        </div>
+      </div>
+      <div className="flex items-start mb-6 gap-8">
+        {profile?.avatar && (
+          <div className="flex justify-center items-center mt-12">
             <Image
+              width={imageSize}
+              height={imageSize}
               src={profile?.avatar || "user.image"}
               alt="Profile Picture"
-              className="h-24 w-24 rounded-full"
+              className="rounded-full object-cover"
+              style={{
+                minWidth: 48,
+                minHeight: 48,
+                maxWidth: 256,
+                maxHeight: 256,
+              }}
             />
           </div>
         )}
-        <div className="rounded-lg p-6 bg-white shadow">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Field</TableHead>
-                <TableHead>Value</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {profileData.map((row) => (
-                <TableRow key={row.label}>
-                  <TableCell>{row.label}</TableCell>
-                  <TableCell>{row.value}</TableCell>
+        <BoundingBox>
+          <div className="rounded-lg bg-white shadow flex-1" ref={tableRef}>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className={cellPadding}>Name</TableCell>
+                  <TableCell className={cellPadding}>
+                    {user?.name || "N/A"}
+                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                <TableRow>
+                  <TableCell className={cellPadding}>Organization</TableCell>
+                  <TableCell className={cellPadding}>
+                    Masaryk University
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className={cellPadding}>E-mail</TableCell>
+                  <TableCell className={cellPadding}>
+                    {user?.email || "N/A"}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className={cellPadding}>Last login</TableCell>
+                  <TableCell className={cellPadding}>
+                    <DateFormater dateString={profile?.last_login ?? ""} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className={cellPadding}>Logged in as</TableCell>
+                  <TableCell className={cellPadding}>
+                    {user?.email || "N/A"}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </BoundingBox>
       </div>
     </div>
   );

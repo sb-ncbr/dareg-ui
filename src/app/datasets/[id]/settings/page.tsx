@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   useApiServiceGetApiV1DatasetsById,
   useApiServiceGetApiV1Users,
+  useApiServicePatchApiV1DatasetsById,
 } from "../../../../../openapi/queries";
 import { Button } from "@/components/ui/button";
 import { TypographyH2 } from "@/components/typography/typography-h2";
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
+import { toast } from "react-toastify";
+import { PatchedDataset } from "../../../../../openapi/requests";
 
 export default function SettingsPage() {
   const { id } = useParams();
@@ -113,6 +116,42 @@ export default function SettingsPage() {
     handlePermissionChange,
     removeShare,
   });
+
+  const permisssionMutation = useApiServicePatchApiV1DatasetsById({
+    onSuccess: () => {
+      setOriginalShares(shares.map((s) => ({ ...s })));
+      setHasChanges(false);
+      toast.success("Permissions updated successfully!");
+    },
+  });
+
+  const handleSave = async () => {
+    try {
+      const updatedFields: Partial<PatchedDataset> = {};
+
+      if (JSON.stringify(shares) !== JSON.stringify(originalShares)) {
+        updatedFields.shares = shares.map((s) => ({
+          id: s.id,
+          name: s.name,
+          perms: s.perms,
+        }));
+      }
+
+      if (Object.keys(updatedFields).length === 0) {
+        toast.warning("No changes to save.");
+        return;
+      }
+
+      await permisssionMutation.mutateAsync({
+        id: id as string,
+        requestBody: updatedFields,
+      });
+    } catch (error: any) {
+      toast.error(
+        "Failed to save changes. Please try again. Error: \n" + error.message
+      );
+    }
+  };
 
   return (
     <main className="mb-10 max-w-[70vh]">
@@ -244,10 +283,14 @@ export default function SettingsPage() {
             variant="default"
             size="xl"
             onClick={() => {
-              /* Save logic here */
+              handleSave();
             }}
           >
-            Save Changes
+            {permisssionMutation.isPending ? (
+              <span className="animate-pulse ml-1">Saving...</span>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       )}

@@ -8,7 +8,6 @@ import { TypographyH3 } from "@/components/typography/typography-h3";
 import { Button } from "@/components/ui/button";
 import { ToastContainer, toast } from "react-toastify";
 import { ChevronLeft, ClipboardCopy, Settings } from "lucide-react";
-import { jsonSchemaToZod } from "json-schema-to-zod";
 import {
   useApiServiceDeleteApiV1ProjectsById,
   useApiServiceGetApiV1DatasetsById,
@@ -22,6 +21,7 @@ import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
 import FormsWrapped from "@/components/forms/form-wraper/forms-wraped";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 import BoundingBox from "@/components/bounding-box/bounding-box";
+import { DateFormater } from "@/components/date_formatter/date-formatter";
 
 const DATASET_SHARE_URL = "https://onedata.e-infra.cz/share/";
 
@@ -275,7 +275,7 @@ const DatasetDetails: React.FC = () => {
             label="Created At"
             margin="normal"
             fullWidth
-            value={<DateFormatter date={dataset.created_at} />}
+            value={<DateFormater dateString={dataset.created} />}
             disabled
           />
           <TextField

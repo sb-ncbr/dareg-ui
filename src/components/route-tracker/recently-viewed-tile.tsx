@@ -17,7 +17,7 @@ export function RecentlyViewedTile({
     <Link href={url} className="flex flex-col items-center">
       <Card className="w-[200px]">
         <CardContent>
-          <div className="w-12 h-12 flex items-center justify-center text-primary">
+          <div className="w-10 h-10 flex items-center justify-center text-primary">
             {icon}
           </div>
         </CardContent>

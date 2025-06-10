@@ -94,12 +94,12 @@ export function AppSidebar() {
             <TypographySidebar text="Profile" />
           </div>
         </SidebarMenuItem>
-        <SidebarMenuItem onClick={() => router.push("/settings")}>
+        {/* <SidebarMenuItem onClick={() => router.push("/settings")}>
           <div className="flex items-center">
             <Settings className="h-5 w-5 mr-6" />
             <TypographySidebar text="Settings" />
           </div>
-        </SidebarMenuItem>
+        </SidebarMenuItem> */}
         <SidebarMenuItem onClick={handleLogout}>
           <div className="flex items-center">
             <LogOutIcon className="h-5 w-5 mr-6" />

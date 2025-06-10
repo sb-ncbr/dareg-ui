@@ -59,7 +59,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token: process.env.NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT,
             userinfo: process.env.NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT,
             profile(profile) {
-                console.log('User logged in', { userId: profile.sub });
                 return {
                     id: profile.sub,
                     username: profile.sub?.toLowerCase(),
@@ -98,7 +97,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return await refreshAccessToken(token);
         },
         async session({ session, token }) {
-            session.user.id = session.user.id;
             session.user.username = token.username;
             session.accessToken = token.accessToken;
             return session;

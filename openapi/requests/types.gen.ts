@@ -222,6 +222,7 @@ export type PatchedDataset = {
     readonly created_by?: number | null;
     readonly modified_by?: number | null;
     project?: string;
+    shares?: SharesList;
     schema?: string | null;
     tags?: Array<(string)>;
 };
