@@ -7,7 +7,12 @@ import { TypographyH2 } from "@/components/typography/typography-h2";
 import { TypographyH3 } from "@/components/typography/typography-h3";
 import { Button } from "@/components/ui/button";
 import { ToastContainer, toast } from "react-toastify";
-import { ChevronLeft, ClipboardCopy, Settings } from "lucide-react";
+import {
+  ChevronLeft,
+  ClipboardCopy,
+  Settings,
+  TestTubeDiagonal,
+} from "lucide-react";
 import {
   useApiServiceDeleteApiV1ProjectsById,
   useApiServiceGetApiV1DatasetsById,
@@ -21,7 +26,9 @@ import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
 import FormsWrapped from "@/components/forms/form-wraper/forms-wraped";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 import BoundingBox from "@/components/bounding-box/bounding-box";
-import { DateFormater } from "@/components/date_formatter/date-formatter";
+import { formatDate } from "@/utils/date-formater";
+import { TypographyH4 } from "@/components/typography/typography-h4";
+import { TypographyP } from "@/components/typography/typography-p";
 
 const DATASET_SHARE_URL = "https://onedata.e-infra.cz/share/";
 
@@ -218,6 +225,9 @@ const DatasetDetails: React.FC = () => {
     return <div>No dataset found.</div>;
   }
 
+  console.log("Dataset Details Rendered", dataset);
+  console.log("Schema Data", schemaData);
+
   return (
     <div>
       <div>
@@ -245,6 +255,18 @@ const DatasetDetails: React.FC = () => {
       </div>
       <BoundingBox>
         <div className="mb-10 max-w-[70vh]">
+          <div>
+            <Button
+              variant={"default"}
+              className="flex items-center justify-between mb-4"
+              onClick={() => router.push(`/datasets/${id}/experiments`)}
+            >
+              <TypographyP
+                text={`Browse Experiments (` + dataset.experiments.length + ")"}
+              />
+              <TestTubeDiagonal className="h-4 w-4" />
+            </Button>
+          </div>
           <TextField
             label="Name"
             value={name}
@@ -275,14 +297,14 @@ const DatasetDetails: React.FC = () => {
             label="Created At"
             margin="normal"
             fullWidth
-            value={<DateFormater dateString={dataset.created} />}
+            value={formatDate(dataset.created)}
             disabled
           />
           <TextField
             label="Created By"
             margin="normal"
             fullWidth
-            value={dataset.created_by.full_name || ""}
+            value={dataset?.created_by?.full_name ?? ""}
             disabled
           />
           <TextField
@@ -325,7 +347,7 @@ const DatasetDetails: React.FC = () => {
             disabled
           />
 
-          <div className="mt-8">
+          <div className="mt-4">
             {isSchemaLoading ? (
               <div>
                 <SkeletonTable></SkeletonTable>

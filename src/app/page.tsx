@@ -26,8 +26,7 @@ export default function DashboardPage() {
       <div className="flex items-center gap-4 mb-6">
         <TypographyH2 text="Dashboard" />
       </div>
-      <div className="flex items-center gap-4 mb-6">
-      </div>
+      <div className="flex items-center gap-4 mb-6"></div>
       <BoundingBox className="max-w-full w-full h-[80vh]">
         <div className="grid grid-rows-[1fr_2fr] grid-cols-4 gap-6 h-full">
           {/* Top left: Recently Viewed */}
@@ -49,16 +48,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
           {/* Bottom left: Bottom Left */}
-          <Card className="col-span-1 row-span-1 h-full">
+          {/* <Card className="col-span-1 row-span-1 h-full">
             <CardHeader>
               <CardTitle>Stats</CardTitle>
             </CardHeader>
             <CardContent className="h-full">
-              {/* Your bottom left info here */}
             </CardContent>
-          </Card>
-          {/* Bottom right: Recent Datasets */}
-          <Card className="col-span-3 row-span-1 h-full">
+          </Card> */}
+          <Card className="col-span-4 row-span-1 h-full">
             <CardHeader>
               <CardTitle>Recent Datasets</CardTitle>
             </CardHeader>

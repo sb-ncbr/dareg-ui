@@ -5,6 +5,11 @@ import { RecentlyViewedTile } from "./recently-viewed-tile";
 import { FileText, LayoutPanelTop, Library, Newspaper } from "lucide-react";
 import { Icon } from "../common/icons";
 import { recentPagesService } from "@/services/recent-pages-service";
+import {
+  useApiServiceGetApiV1DatasetsById,
+  useApiServiceGetApiV1ProjectsById,
+  useApiServiceGetApiV1SchemasById,
+} from "../../../openapi/queries";
 
 export const iconMap: Record<RecentlyViewedItem["icon"], React.ReactNode> = {
   dataset: <FileText className="h-full w-full" />,
@@ -13,30 +18,34 @@ export const iconMap: Record<RecentlyViewedItem["icon"], React.ReactNode> = {
   default: <Newspaper className="h-full w-full" />,
 };
 
-const getTitleFromPath = (pathname: string): string => {
+function useRecentlyViewedTitleAndName(pathname: string): {
+  typeTitle: string;
+  detailName?: string;
+} {
+  // Dataset detail
   if (pathname.startsWith("/datasets/") && pathname.split("/").length > 2) {
-    return "Dataset Detail";
+    const id = pathname.split("/")[2];
+    const { data } = useApiServiceGetApiV1DatasetsById({ id });
+    return { typeTitle: "Dataset:", detailName: data?.name };
   }
-  if (pathname.startsWith("/datasets")) {
-    return "Datasets";
-  }
-  if (pathname.startsWith("/projects/") && pathname.split("/").length > 2) {
-    return "Project Detail";
-  }
-  if (pathname.startsWith("/projects")) {
-    return "Projects";
-  }
+  // Collection detail
   if (pathname.startsWith("/collections/") && pathname.split("/").length > 2) {
-    return "Collection Detail";
+    const id = pathname.split("/")[2];
+    const { data } = useApiServiceGetApiV1ProjectsById({ id });
+    return { typeTitle: "Collection:", detailName: data?.name };
   }
-  if (pathname.startsWith("/collections")) {
-    return "Collections";
+  // Template detail
+  if (pathname.startsWith("/templates/") && pathname.split("/").length > 2) {
+    const id = pathname.split("/")[2];
+    const { data } = useApiServiceGetApiV1SchemasById({ id });
+    return { typeTitle: "Template:", detailName: data?.name };
   }
-  if (pathname.startsWith("/templates")) {
-    return "Templates";
-  }
-  return "Page";
-};
+  // List pages
+  if (pathname.startsWith("/datasets")) return { typeTitle: "Datasets" };
+  if (pathname.startsWith("/collections")) return { typeTitle: "Collections" };
+  if (pathname.startsWith("/templates")) return { typeTitle: "Templates" };
+  return { typeTitle: "Page" };
+}
 
 export function RecentlyViewedList() {
   const items: RecentlyViewedItem[] = recentPagesService.getRecentPages();
@@ -44,14 +53,18 @@ export function RecentlyViewedList() {
 
   return (
     <div className="flex flex-row gap-4 overflow-x-auto py-2">
-      {items.map((item, idx) => (
-        <RecentlyViewedTile
-          key={idx}
-          title={getTitleFromPath(item.url)}
-          icon={iconMap[item.icon]}
-          url={item.url}
-        ></RecentlyViewedTile>
-      ))}
+      {items.map((item, idx) => {
+        const title = useRecentlyViewedTitleAndName(item.url);
+        return (
+          <RecentlyViewedTile
+            key={idx}
+            title={title.typeTitle}
+            detailName={title.detailName}
+            icon={iconMap[item.icon]}
+            url={item.url}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -10,7 +10,7 @@ import SearchBar from "../tokenized-search/tokenized-search";
 
 export function SiteHeader() {
   return (
-    <header className="bg-background sticky top-0 z-40 w-full border-b px-5">
+    <header className="bg-background sticky top-0 z-40 w-full border-b px-5 ">
       <div className="container flex w-full items-center space-x-4 justify-between sm:justify-between sm:space-x-0 sm:min-w-full">
         <SidebarTrigger></SidebarTrigger>
         <div className="flex-1 flex justify-center items-center min-w-0">

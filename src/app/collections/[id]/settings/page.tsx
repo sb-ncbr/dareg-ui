@@ -32,9 +32,7 @@ import TemplateSelectSSR from "@/components/select/template-select";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { Label } from "@/components/ui/label";
 import { toast, ToastContainer } from "react-toastify";
-import { ProjectsData } from "@/types/global";
 import { PatchedProject, User } from "../../../../../openapi/requests";
-import { set } from "zod";
 
 export default function CollectionSettingsPage() {
   const { id } = useParams();

@@ -3,10 +3,10 @@ interface TypographyH4Props {
   variant?: "default" | "ghost";
 }
 
-export function TypographyH4({ text, variant = "default" }: TypographyH4Props) {
+export function TypographyH5({ text, variant = "default" }: TypographyH4Props) {
   return (
     <h4
-      className={`scroll-m-20 text-xl font-semibold tracking-tight${
+      className={`scroll-m-20 text-lg font-semibold tracking-tight${
         variant === "ghost" ? " opacity-60" : ""
       }`}
     >

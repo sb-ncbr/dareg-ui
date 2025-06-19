@@ -24,8 +24,8 @@ export function MuiThemeProviderSync({
           MuiFormControl: {
             styleOverrides: {
               root: {
-                marginTop: "8px",
-                marginBottom: "8px",
+                marginTop: "6px",
+                marginBottom: "6px",
               },
             },
           },

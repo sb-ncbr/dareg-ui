@@ -13,6 +13,8 @@ async function refreshAccessToken(token : any) {
             body: new URLSearchParams({
                 client_id: process.env.NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID!,
                 grant_type: "refresh_token",
+                prompt: "consent",
+                accessType: 'offline',
                 refresh_token: token.refreshToken,
             }),
         });

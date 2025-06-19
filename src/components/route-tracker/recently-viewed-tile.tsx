@@ -6,23 +6,30 @@ interface RecentlyViewedTileProps {
   title: string;
   url: string;
   icon: ReactNode;
+  detailName?: string;
 }
 
 export function RecentlyViewedTile({
   title,
   url,
   icon,
+  detailName,
 }: RecentlyViewedTileProps) {
   return (
     <Link href={url} className="flex flex-col items-center">
-      <Card className="w-[200px]">
+      <Card className="w-[200px] h-[160px] bg-[#eef6eb] dark:bg-[#1d2c1d]">
         <CardContent>
           <div className="w-10 h-10 flex items-center justify-center text-primary">
             {icon}
           </div>
         </CardContent>
-        <CardHeader className="flex flex-row items-center gap-4">
+        <CardHeader className="flex flex-col items-start gap-1 ">
           <CardTitle>{title}</CardTitle>
+          {detailName && (
+            <span className="text-xs text-muted-foreground text-center truncate max-w-[160px]">
+              {detailName}
+            </span>
+          )}
         </CardHeader>
       </Card>
     </Link>

@@ -11,6 +11,7 @@ import {
   useApiServiceGetApiV1Projects,
   useApiServiceGetApiV1ProjectsById,
   useApiServiceGetApiV1SchemasById,
+  useApiServicePostApiV1Datasets,
   useApiServicePostApiV1DatasetsCreateDataset,
 } from "../../../../openapi/queries";
 import { Dataset } from "../../../../openapi/requests";
@@ -63,7 +64,7 @@ const CreateDatasetPage = () => {
     );
   }, [datasetName, datasetDescription, formData]);
 
-  const createDataset = useApiServicePostApiV1DatasetsCreateDataset();
+  const createDataset = useApiServicePostApiV1Datasets();
 
   const handleSave = async () => {
     if (!datasetName.trim()) {
@@ -81,14 +82,17 @@ const CreateDatasetPage = () => {
         description: datasetDescription,
         project: selectedProjectId,
         schema: schema?.id,
-        metadata: formData,
+        metadata: formData, // <-- now it's a string!
       };
+
+      console.log("Creating dataset with data:", newDataset);
 
       await createDataset.mutateAsync({
         requestBody: newDataset as Dataset,
       });
 
       toast.success("Dataset created successfully!");
+      router.push("/datasets");
     } catch (error: any) {
       toast.error("Failed to create dataset: \n" + error.message);
     }
