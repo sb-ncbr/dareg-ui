@@ -20,6 +20,12 @@ import { TypographyP } from "@/components/typography/typography-p";
 import { TypographyH4 } from "@/components/typography/typography-h4";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { ExperimentInfoRow } from "@/components/experiment/experiment-info-row";
+import { ExperimentsFilter } from "@/components/experiment/filtration/experiments-filters";
+import { Experiment } from "../../../../../openapi/requests";
+import ExperimentStateCard from "@/components/experiment/status/state-card";
+import { StatusLottieDot } from "@/components/experiment/status/status-lottie-dot";
+import { TypographyH5 } from "@/components/typography/typography-h5";
+import { ExperimentsFilterState } from "@/components/experiment/types/experiments-filter-state";
 
 export default function DatasetDetailPage() {
   const { id } = useParams();
@@ -31,12 +37,22 @@ export default function DatasetDetailPage() {
     string | null
   >(null);
 
+  const [filter, setFilter] = useState<ExperimentsFilterState>({
+    dateRange: {},
+    sortOrder: "asc",
+    search: "",
+    status: "all",
+  });
+
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
+
   useEffect(() => {
     if (
       dataset?.experiments &&
       dataset.experiments.length > 0 &&
       !selectedExperimentId
     ) {
+      setExperiments(dataset.experiments);
       setSelectedExperimentId(dataset.experiments[0].id);
     }
   }, [dataset, selectedExperimentId]);
@@ -57,10 +73,32 @@ export default function DatasetDetailPage() {
   }
   if (!dataset) return <div>Dataset not found.</div>;
 
-  const experiments = dataset.experiments || [];
   const selectedExperiment = experiments.find(
     (exp: any) => exp.id === selectedExperimentId
   );
+
+  const filteredExperiments = experiments
+    .filter((exp) => {
+      const expDate = new Date(exp?.start_time ?? "");
+      const from = filter.dateRange.from
+        ? new Date(filter.dateRange.from)
+        : null;
+      const to = filter.dateRange.to ? new Date(filter.dateRange.to) : null;
+      if (from && expDate < from) return false;
+      if (to && expDate > to) return false;
+      if (filter.status !== "all" && exp.status !== filter.status) return false;
+      if (
+        filter.search &&
+        !exp?.name?.toLowerCase().includes(filter.search.toLowerCase())
+      )
+        return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aTime = new Date(a.start_time ?? "").getTime();
+      const bTime = new Date(b.start_time ?? "").getTime();
+      return filter.sortOrder === "asc" ? aTime - bTime : bTime - aTime;
+    });
 
   return (
     <div className="flex flex-col h-screen">
@@ -79,25 +117,39 @@ export default function DatasetDetailPage() {
           </div>
         </div>
       </div>
+      <div className="flex items-center">
+        <ExperimentsFilter
+          filterState={filter}
+          onChange={setFilter}
+        ></ExperimentsFilter>
+      </div>
       <ResizablePanelGroup direction="horizontal" className="flex-grow">
-        <ResizablePanel defaultSize={20} minSize={20} className="p-4 border-r">
+        <ResizablePanel defaultSize={30} minSize={20} className="p-4 border-r">
           <div className="h-full flex flex-col gap-8">
             <TypographyH3 text={"Experiments:"}></TypographyH3>
-            <div className="flex flex-col gap-2 overflow-y-auto">
-              {experiments.length > 0 ? (
-                experiments.map((exp: any) => (
+            <div className="h-full flex flex-col gap-2 overflow-y-auto">
+              {filteredExperiments.length > 0 ? (
+                filteredExperiments.map((exp: any) => (
                   <Button
                     key={exp.id}
                     variant={
                       selectedExperimentId === exp.id ? "default" : "outline"
                     }
-                    className="justify-between w-full"
+                    size={"xl"}
+                    className="justify-between w-full}"
                     onClick={() => setSelectedExperimentId(exp.id)}
                   >
-                    <TypographyP text={exp.name} />
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(exp.start_time)}
-                    </span>
+                    <div className="flex items-center gap-2 justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        <StatusLottieDot status={exp.status} size={60} />
+                        <TypographyH5 text={exp.name} />
+                      </div>
+
+                      <TypographyH5
+                        text={formatDate(exp.start_time)}
+                        variant="ghost"
+                      />
+                    </div>
                   </Button>
                 ))
               ) : (
@@ -109,7 +161,7 @@ export default function DatasetDetailPage() {
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={70} minSize={30} className="px-4">
+        <ResizablePanel defaultSize={30} minSize={40} className="px-4">
           <BoundingBox>
             <div className="h-full flex flex-col gap-4">
               <div className="flex items-center gap-4 ">
@@ -144,7 +196,13 @@ export default function DatasetDetailPage() {
                       title={"Status:"}
                       icon={<CircleCheck />}
                       value={selectedExperiment.status ?? "Unknown"}
+                      child={
+                        <ExperimentStateCard
+                          status={selectedExperiment.status ?? ""}
+                        />
+                      }
                     />
+
                     <ExperimentInfoRow
                       title={"Note:"}
                       icon={<Notebook />}

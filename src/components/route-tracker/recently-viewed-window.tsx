@@ -10,6 +10,7 @@ import {
   useApiServiceGetApiV1ProjectsById,
   useApiServiceGetApiV1SchemasById,
 } from "../../../openapi/queries";
+import { RecentlyViewedTileSkeleton } from "./recently-viewed-tile-skeleton";
 
 export const iconMap: Record<RecentlyViewedItem["icon"], React.ReactNode> = {
   dataset: <FileText className="h-full w-full" />,
@@ -49,7 +50,14 @@ function useRecentlyViewedTitleAndName(pathname: string): {
 
 export function RecentlyViewedList() {
   const items: RecentlyViewedItem[] = recentPagesService.getRecentPages();
-  if (!items?.length) return null;
+  if (!items?.length)
+    return (
+      <div className="flex gap-4">
+        {[...Array(3)].map((_, i) => (
+          <RecentlyViewedTileSkeleton key={i} />
+        ))}
+      </div>
+    );
 
   return (
     <div className="flex flex-row gap-4 overflow-x-auto py-2">
