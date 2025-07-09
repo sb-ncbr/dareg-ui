@@ -6,7 +6,12 @@ import { JsonForms, JsonFormsInitStateProps } from "@jsonforms/react";
 import { JSX, useState } from "react";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
 
-const renderers = [...materialRenderers];
+import PaperRenderer, { paperTester } from "@/components/mui/paper-renderer";
+
+const renderers = [
+  ...materialRenderers,
+  { tester: paperTester, renderer: PaperRenderer },
+];
 
 export const loadJSON = (json: string) => {
   try {

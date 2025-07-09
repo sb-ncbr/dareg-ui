@@ -171,13 +171,15 @@ const CreateDatasetPage = () => {
             />
 
             {schema ? (
-              <FormsWrapped
-                setErrors={setErrors}
-                schema={schema.schema as object}
-                uischema={schema.uischema as object}
-                data={formData}
-                setData={(value) => handleChange("metadata", value)}
-              />
+              <div className="mt-4">
+                <FormsWrapped
+                  setErrors={setErrors}
+                  schema={schema.schema as object}
+                  uischema={schema.uischema as object}
+                  data={formData}
+                  setData={(value) => handleChange("metadata", value)}
+                />
+              </div>
             ) : (
               <TypographyP text="Please select a template to create a new dataset." />
             )}

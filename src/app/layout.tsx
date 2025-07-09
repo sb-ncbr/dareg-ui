@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     <RouteTracker />
                     <div className="flex flex-col min-h-screen flex-1">
                       <SiteHeader></SiteHeader>
-                      <main className="flex-1 m-10">{children}</main>
+                      <main className="flex-1 mx-8 my-8">{children}</main>
                     </div>
                   </SidebarProvider>
                 )}

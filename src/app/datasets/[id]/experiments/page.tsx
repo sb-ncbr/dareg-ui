@@ -6,17 +6,23 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
+  ImperativePanelHandle, // Import ImperativePanelHandle
 } from "@/components/ui/resizable";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Import useRef
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
-import { ChevronLeft, CircleCheck, Notebook, Play, Square } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  Notebook,
+  Play,
+  Square,
+} from "lucide-react";
 import { TypographyH2 } from "@/components/typography/typography-h2";
 import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
 import { formatDate, formatDateTime } from "@/utils/date-formater";
 import { useApiServiceGetApiV1DatasetsById } from "../../../../../openapi/queries";
 import { TypographyH3 } from "@/components/typography/typography-h3";
-import { CircularProgress } from "@mui/material";
-import { TypographyP } from "@/components/typography/typography-p";
 import { TypographyH4 } from "@/components/typography/typography-h4";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { ExperimentInfoRow } from "@/components/experiment/experiment-info-row";
@@ -26,6 +32,13 @@ import ExperimentStateCard from "@/components/experiment/status/state-card";
 import { StatusLottieDot } from "@/components/experiment/status/status-lottie-dot";
 import { TypographyH5 } from "@/components/typography/typography-h5";
 import { ExperimentsFilterState } from "@/components/experiment/types/experiments-filter-state";
+import Loading from "../loading";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function DatasetDetailPage() {
   const { id } = useParams();
@@ -45,6 +58,8 @@ export default function DatasetDetailPage() {
   });
 
   const [experiments, setExperiments] = useState<Experiment[]>([]);
+  const [collapsed, setCollapsed] = useState(false); // State to track collapse status
+  const panelRef = useRef<ImperativePanelHandle>(null); // Ref for the ResizablePanel
 
   useEffect(() => {
     if (
@@ -58,18 +73,7 @@ export default function DatasetDetailPage() {
   }, [dataset, selectedExperimentId]);
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </div>
-    );
+    return <Loading />;
   }
   if (!dataset) return <div>Dataset not found.</div>;
 
@@ -100,6 +104,18 @@ export default function DatasetDetailPage() {
       return filter.sortOrder === "asc" ? aTime - bTime : bTime - aTime;
     });
 
+  // Function to toggle the panel's collapsed state
+  const togglePanel = () => {
+    if (panelRef.current) {
+      if (collapsed) {
+        panelRef.current.expand(); // Expand the panel
+      } else {
+        panelRef.current.collapse(); // Collapse the panel
+      }
+      setCollapsed(!collapsed); // Toggle the internal state for UI elements
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <div>
@@ -118,53 +134,132 @@ export default function DatasetDetailPage() {
         </div>
       </div>
       <div className="flex items-center">
-        <ExperimentsFilter
-          filterState={filter}
-          onChange={setFilter}
-        ></ExperimentsFilter>
+        <ExperimentsFilter filterState={filter} onChange={setFilter} />
       </div>
       <ResizablePanelGroup direction="horizontal" className="flex-grow">
-        <ResizablePanel defaultSize={30} minSize={20} className="p-4 border-r">
-          <div className="h-full flex flex-col gap-8">
-            <TypographyH3 text={"Experiments:"}></TypographyH3>
-            <div className="h-full flex flex-col gap-2 overflow-y-auto">
+        <ResizablePanel
+          ref={panelRef} // Attach the ref here
+          defaultSize={20}
+          minSize={5} // Minimum size when expanded (you can still resize it smaller than default but not too small)
+          maxSize={40}
+          collapsible={true} // Enable programmatic collapse/expand
+          collapsedSize={9} // The target size (in percentage) when collapsed. Adjust as needed (e.g., 3-5).
+          className={`py-6 px-2 border-r transition-all duration-300`} // These are for internal padding, panel width is controlled by ResizablePanelGroup
+        >
+          <div className="h-full flex flex-col gap-4">
+            <div
+              className={`flex items-center ${
+                collapsed ? "justify-center" : "justify-between"
+              }`}
+            >
+              {!collapsed && <TypographyH3 text={"Experiments:"} />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className={collapsed ? "mr-4" : "ml-auto"}
+                onClick={togglePanel} // Use the new togglePanel function
+                aria-label={collapsed ? "Expand panel" : "Collapse panel"}
+              >
+                <span
+                  className={`transition-transform duration-300  ${
+                    collapsed ? "rotate-180" : "rotate-0"
+                  }`}
+                  style={{ display: "inline-block" }}
+                >
+                  <ChevronLeft />
+                </span>
+              </Button>
+            </div>
+            <div
+              className={`h-full flex flex-col gap-2 overflow-y-auto ${
+                collapsed ? "items-center px-0" : "" // Apply internal layout adjustments for collapsed state
+              }`}
+            >
               {filteredExperiments.length > 0 ? (
-                filteredExperiments.map((exp: any) => (
-                  <Button
-                    key={exp.id}
-                    variant={
-                      selectedExperimentId === exp.id ? "default" : "outline"
-                    }
-                    size={"xl"}
-                    className="justify-between w-full}"
-                    onClick={() => setSelectedExperimentId(exp.id)}
-                  >
-                    <div className="flex items-center gap-2 justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <StatusLottieDot status={exp.status} size={60} />
-                        <TypographyH5 text={exp.name} />
-                      </div>
-
-                      <TypographyH5
-                        text={formatDate(exp.start_time)}
-                        variant="ghost"
-                      />
+                collapsed ? (
+                  <TooltipProvider>
+                    <div className="flex flex-col py-2 gap-2 items-center">
+                      {filteredExperiments.map((exp: any) => (
+                        <Tooltip key={exp.id}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={
+                                selectedExperimentId === exp.id
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="icon"
+                              className={`flex flex-col items-center justify-center w-12 h-16 p-0 rounded-lg ${
+                                selectedExperimentId === exp.id
+                                  ? "ring-2 ring-primary"
+                                  : ""
+                              }`}
+                              style={{ minWidth: 48, minHeight: 56 }}
+                              onClick={() => setSelectedExperimentId(exp.id)}
+                            >
+                              <StatusLottieDot status={exp.status} size={32} />
+                              <span className="text-xs font-semibold mt-1 my-2 mb-2">
+                                {exp.name?.slice(0, 3) ?? "???"}
+                              </span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-xs">
+                            <div className="flex flex-col gap-1 ">
+                              <span className="font-semibold text-sm">
+                                {exp.status}
+                              </span>
+                              <span className="text-xs break-all text-white">
+                                {exp.name}
+                              </span>
+                              <span className="text-xs text-white">
+                                {formatDate(exp.start_time)}
+                              </span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
                     </div>
-                  </Button>
-                ))
+                  </TooltipProvider>
+                ) : (
+                  filteredExperiments.map((exp: any) => (
+                    <Button
+                      key={exp.id}
+                      variant={
+                        selectedExperimentId === exp.id ? "default" : "outline"
+                      }
+                      size={"xl"}
+                      className="justify-between w-full"
+                      onClick={() => setSelectedExperimentId(exp.id)}
+                    >
+                      <div className="flex items-center gap-2 justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <StatusLottieDot status={exp.status} size={60} />
+                          <TypographyH5 text={exp.name} />
+                        </div>
+                        <TypographyH5
+                          text={formatDate(exp.start_time)}
+                          variant="ghost"
+                        />
+                      </div>
+                    </Button>
+                  ))
+                )
               ) : (
-                <div className="text-xs text-muted-foreground">
-                  No experiments found.
-                </div>
+                // Only show "No experiments found." when not collapsed
+                !collapsed && (
+                  <div className="text-xs text-muted-foreground">
+                    No experiments found.
+                  </div>
+                )
               )}
             </div>
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={30} minSize={40} className="px-4">
+        <ResizablePanel defaultSize={30} minSize={40} className="px-8">
           <BoundingBox>
             <div className="h-full flex flex-col gap-4">
-              <div className="flex items-center gap-4 ">
+              <div className="flex gap-4 ">
                 <TypographyH3 text={"Experiments Details:"}></TypographyH3>
                 <TypographyH3
                   text={selectedExperiment?.name ?? ""}

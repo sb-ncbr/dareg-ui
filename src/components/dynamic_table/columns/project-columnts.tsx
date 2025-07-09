@@ -55,6 +55,7 @@ export const projectColumns = [
   },
   {
     id: "actions",
+    rowType: "collections",
     header: "Actions",
     cell: ({ row }: any) => {
       const rowData = row.original;

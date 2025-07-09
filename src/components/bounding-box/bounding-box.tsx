@@ -14,7 +14,7 @@ const BoundingBox: React.FC<BoundingBoxProps> = ({
 }) => {
   return (
     <div
-      className={cx("max-w-[100vh] mb-4 mt-6 space-y-4", className)}
+      className={cx("max-w-2xl mb-4 mt-6 space-y-4", className)}
       style={style}
     >
       {children}

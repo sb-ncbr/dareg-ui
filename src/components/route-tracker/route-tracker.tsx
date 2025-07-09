@@ -6,6 +6,8 @@ import { recentPagesService } from "@/services/recent-pages-service";
 import { RecentlyViewedItem } from "@/types/recently-viewed/recently-viewed-item";
 
 const getIconType = (pathname: string): RecentlyViewedItem["icon"] => {
+  if (pathname.startsWith("/datasets/") && pathname.includes("/experiments"))
+    return "experiment";
   if (pathname.startsWith("/datasets")) return "dataset";
   if (pathname.startsWith("/templates")) return "template";
   if (pathname.startsWith("/collections")) return "collection";

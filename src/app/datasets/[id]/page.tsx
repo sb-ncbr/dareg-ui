@@ -10,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import {
   ChevronLeft,
   ClipboardCopy,
+  FlaskConical,
   Settings,
   TestTubeDiagonal,
 } from "lucide-react";
@@ -29,6 +30,8 @@ import BoundingBox from "@/components/bounding-box/bounding-box";
 import { formatDate } from "@/utils/date-formater";
 import { TypographyH4 } from "@/components/typography/typography-h4";
 import { TypographyP } from "@/components/typography/typography-p";
+import { TypographyH5 } from "@/components/typography/typography-h5";
+import Loading from "../loading";
 
 const DATASET_SHARE_URL = "https://onedata.e-infra.cz/share/";
 
@@ -203,18 +206,7 @@ const DatasetDetails: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </div>
-    );
+    return <Loading></Loading>;
   }
 
   if (error) {
@@ -254,19 +246,24 @@ const DatasetDetails: React.FC = () => {
         </div>
       </div>
       <BoundingBox>
-        <div className="mb-10 max-w-[70vh]">
+        <div className="mb-10 max-w-xl ">
           <div>
             <Button
               variant={"default"}
               className="flex items-center justify-between mb-4"
               onClick={() => router.push(`/datasets/${id}/experiments`)}
             >
-              <TypographyP
-                text={`Browse Experiments (` + dataset.experiments.length + ")"}
-              />
-              <TestTubeDiagonal className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <FlaskConical size={46} className="h-8 w-8" />
+                <TypographyH5
+                  text={
+                    `Browse Experiments (` + dataset.experiments.length + ")"
+                  }
+                />
+              </div>
             </Button>
           </div>
+
           <TextField
             label="Name"
             value={name}

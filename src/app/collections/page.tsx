@@ -25,7 +25,9 @@ const ProjectsPage = () => {
     return (
       <div>
         <TypographyH2 text={"Collections"} />
-        <SkeletonTable></SkeletonTable>
+        <TableBoundingBox>
+          <SkeletonTable></SkeletonTable>
+        </TableBoundingBox>
       </div>
     );
   }
@@ -37,6 +39,7 @@ const ProjectsPage = () => {
         <TypographyH2 text={"Collections"} />
         <TableBoundingBox>
           <DynamicDataTable
+            rowType="collection"
             data={dataToUse.results || []}
             pageIndex={pageIndex}
             pageCount={pageCount}

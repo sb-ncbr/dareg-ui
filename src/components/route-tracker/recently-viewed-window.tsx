@@ -1,9 +1,13 @@
 import React from "react";
 import { RecentlyViewedItem } from "@/types/recently-viewed/recently-viewed-item";
-import Link from "next/link";
 import { RecentlyViewedTile } from "./recently-viewed-tile";
-import { FileText, LayoutPanelTop, Library, Newspaper } from "lucide-react";
-import { Icon } from "../common/icons";
+import {
+  FileText,
+  FlaskConical,
+  LayoutPanelTop,
+  Library,
+  Newspaper,
+} from "lucide-react";
 import { recentPagesService } from "@/services/recent-pages-service";
 import {
   useApiServiceGetApiV1DatasetsById,
@@ -16,6 +20,7 @@ export const iconMap: Record<RecentlyViewedItem["icon"], React.ReactNode> = {
   dataset: <FileText className="h-full w-full" />,
   collection: <Library className="h-full w-full" />,
   template: <LayoutPanelTop name="template" className="h-full w-full" />,
+  experiment: <FlaskConical className="h-full w-full" />,
   default: <Newspaper className="h-full w-full" />,
 };
 
@@ -26,6 +31,13 @@ function useRecentlyViewedTitleAndName(pathname: string): {
   // Dataset detail
   if (pathname.startsWith("/datasets/") && pathname.split("/").length > 2) {
     const id = pathname.split("/")[2];
+    if (pathname.includes("/experiments")) {
+      const { data } = useApiServiceGetApiV1DatasetsById({ id });
+      return {
+        typeTitle: "Experiments In:",
+        detailName: data?.name,
+      };
+    }
     const { data } = useApiServiceGetApiV1DatasetsById({ id });
     return { typeTitle: "Dataset:", detailName: data?.name };
   }
@@ -41,7 +53,7 @@ function useRecentlyViewedTitleAndName(pathname: string): {
     const { data } = useApiServiceGetApiV1SchemasById({ id });
     return { typeTitle: "Template:", detailName: data?.name };
   }
-  // List pages
+
   if (pathname.startsWith("/datasets")) return { typeTitle: "Datasets" };
   if (pathname.startsWith("/collections")) return { typeTitle: "Collections" };
   if (pathname.startsWith("/templates")) return { typeTitle: "Templates" };

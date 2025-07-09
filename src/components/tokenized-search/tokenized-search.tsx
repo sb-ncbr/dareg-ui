@@ -14,7 +14,7 @@ import {
   CommandItem,
   CommandEmpty,
 } from "@/components/ui/command";
-import { X, Loader2, Search as SearchIcon } from "lucide-react";
+import { X, Loader2, Search as SearchIcon, History, Save } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -32,6 +32,7 @@ import {
   Operator,
   Token,
 } from "../../types/search/search-models";
+import { SearchHistoryService } from "@/services/search-history-service";
 
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
   let timeoutId: NodeJS.Timeout | null;
@@ -157,6 +158,8 @@ export default function SearchBar() {
   const [freeTextQuery, setFreeTextQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverTriggerRef = useRef<HTMLDivElement>(null);
+  const [popoverHistoryMode, setPopoverHistoryMode] = useState(false);
+  const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
 
   const shouldFetchProjects = !!MODEL_MAP["Datasets"]?.filters.find(
     (f) => f.key === "project"
@@ -270,6 +273,7 @@ export default function SearchBar() {
       ]);
       resetFilterBuildingState();
       setIsPopoverOpen(false);
+
       inputRef.current?.focus();
     }
   };
@@ -347,14 +351,27 @@ export default function SearchBar() {
     return "Filter by property or type free-text query...";
   };
 
+  useEffect(() => {
+    if (popoverHistoryMode) {
+      setHistory(SearchHistoryService.getHistory());
+    }
+  }, [popoverHistoryMode]);
+
+  const triggerHistoryPopover = () => {
+    setIsPopoverOpen(true);
+    setPopoverHistoryMode(true);
+  };
+
+  console.log("Current tokens:", tokens);
+
   return (
-    <div className="w-full max-w-4xl lg:w-full mx-5 my-2 sm:w-20 space-y-4">
+    <div className="w-full max-w-4xl lg:w-full mx-5 my-2 sm:w-20 space-y-4 bg-background rounded-md">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
           <div
             ref={popoverTriggerRef}
             className="relative border rounded-md px-3 py-2 flex flex-wrap items-center gap-2 min-h-[44px] cursor-text
-                       focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all duration-200"
+                       focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-background duration-200"
             onClick={() => inputRef.current?.focus()}
           >
             <SearchIcon className="h-5 w-5 text-gray-700 mr-1" />
@@ -428,13 +445,16 @@ export default function SearchBar() {
 
             <input
               ref={inputRef}
-              className="flex-grow focus:outline-none bg-transparent min-w-[100px] text-gray-800 placeholder-gray-400"
+              className="flex-grow focus:outline-none bg-background min-w-[100px] text-gray-800 placeholder-gray-400"
               placeholder={getPlaceholder()}
               value={inputValue}
               onChange={(e) => {
                 setInputValue(e.target.value);
                 if (e.target.value.length > 0 && !isPopoverOpen) {
                   setIsPopoverOpen(true);
+                }
+                if (popoverHistoryMode) {
+                  setPopoverHistoryMode(false); // <-- Hide history when typing starts
                 }
               }}
               onFocus={() => setIsPopoverOpen(true)}
@@ -448,15 +468,21 @@ export default function SearchBar() {
                       !document.activeElement.closest(".popover-content"))
                   ) {
                     setIsPopoverOpen(false);
+                    setPopoverHistoryMode(false);
                   }
                 }, 100);
               }}
               onKeyDown={(e) => {
                 handleBackspace(e);
                 if (e.key === "Enter") {
+                  console.log("Enter pressed with inputValue:", inputValue);
                   e.preventDefault();
-                  if (model && field && operator && inputValue) {
+                  if (tokens.length > 0) {
                     addFinalToken();
+                    setInputValue("");
+                    SearchHistoryService.addSearch(tokens);
+                    setTokens([]);
+                    setIsPopoverOpen(false);
                   } else if (!model && !field && !operator && inputValue) {
                     setFreeTextQuery(inputValue);
                     setInputValue("");
@@ -465,6 +491,10 @@ export default function SearchBar() {
                 }
               }}
             />
+            <History
+              className="h-5 w-5 text-gray-700 mr-1 hover:opacity-70 cursor-pointer"
+              onClick={triggerHistoryPopover}
+            />
           </div>
         </PopoverTrigger>
         <PopoverContent
@@ -472,164 +502,235 @@ export default function SearchBar() {
           onMouseDown={(e) => e.preventDefault()}
           align="start"
         >
-          {(!model || popoverContentState === "select_model") && (
+          {popoverHistoryMode ? (
+            // --- HISTORY MODE ---
             <div className="p-4">
               <div className="text-sm font-semibold mb-2 text-gray-700">
-                Select Model
+                Search History
               </div>
-              <Command className="p-0">
-                <CommandGroup>
-                  {modelSuggestions.length > 0 ? (
-                    modelSuggestions.map((modelLabel) => (
-                      <CommandItem
-                        key={modelLabel}
-                        onSelect={() => {
-                          const modelKey = Object.keys(MODEL_MAP).find(
-                            (key) => MODEL_MAP[key].label === modelLabel
-                          );
-                          if (modelKey) {
-                            setModel(modelKey);
-                            setInputValue("");
-                            inputRef.current?.focus();
-                          }
-                        }}
-                        className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
-                      >
-                        {modelLabel}
-                      </CommandItem>
-                    ))
-                  ) : (
-                    <CommandEmpty className="py-2 text-center text-gray-500">
-                      No models found.
-                    </CommandEmpty>
-                  )}
-                </CommandGroup>
-              </Command>
-            </div>
-          )}
-
-          {model && popoverContentState === "select_field" && (
-            <div className="p-4">
-              <div className="text-sm font-semibold mb-2 text-gray-700">
-                Select Field for{" "}
-                <span className="font-bold text-blue-600">
-                  {MODEL_MAP[model!].label}
-                </span>
-              </div>
-              <Command className="p-0">
-                <CommandGroup>
-                  {fieldOptions.length > 0 ? (
-                    fieldOptions.map((f) => (
-                      <CommandItem
-                        key={f.key}
-                        onSelect={() => {
-                          setField(f);
-                          setInputValue("");
-                          inputRef.current?.focus();
-                        }}
-                        className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
-                      >
-                        {f.label} ({f.inputType})
-                      </CommandItem>
-                    ))
-                  ) : (
-                    <CommandEmpty className="py-2 text-center text-gray-500">
-                      {inputValue.length > 0
-                        ? "No matching fields found."
-                        : "No filterable fields for this model."}
-                    </CommandEmpty>
-                  )}
-                </CommandGroup>
-              </Command>
-            </div>
-          )}
-
-          {field && popoverContentState === "select_operator" && (
-            <div className="p-4">
-              <div className="text-sm font-semibold mb-2 text-gray-700">
-                Select Operator for{" "}
-                <span className="font-bold text-blue-600">{field!.label}</span>
-              </div>
-              <Command className="p-0">
-                <CommandGroup>
-                  {OPERATORS.map((op) => (
-                    <CommandItem
-                      key={op}
-                      onSelect={() => {
-                        setOperator(op);
-                        setInputValue("");
-                        inputRef.current?.focus();
-                      }}
-                      className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
-                    >
-                      {op}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </div>
-          )}
-
-          {operator && popoverContentState === "enter_value" && (
-            <div className="p-4 space-y-3">
-              <div className="text-sm font-semibold text-gray-700">
-                Enter Value for{" "}
-                <span className="font-bold text-blue-600">
-                  {field?.label} {operator}
-                </span>
-              </div>
-
-              {field?.dataSourceKey && (
-                <>
-                  {isLoadingSuggestions && (
-                    <div className="flex items-center justify-center text-sm text-gray-500 py-4">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading
-                      suggestions...
-                    </div>
-                  )}
-                  {!isLoadingSuggestions &&
-                    currentFieldSuggestions &&
-                    currentFieldSuggestions.length > 0 && (
-                      <div>
-                        <div className="text-xs font-semibold mb-1 text-gray-600">
-                          Suggestions:
-                        </div>
-                        <Command className="p-0 max-h-48 overflow-y-auto">
-                          <CommandGroup>
-                            {currentFieldSuggestions.map((sugg) => (
-                              <CommandItem
-                                key={sugg}
-                                onSelect={() => {
-                                  setInputValue(sugg);
-                                  addFinalToken(sugg);
-                                }}
-                                className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
-                              >
-                                {sugg}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </div>
-                    )}
-                  {!isLoadingSuggestions &&
-                    currentFieldSuggestions?.length === 0 &&
-                    inputValue.length > 0 && (
-                      <div className="text-sm text-gray-500 py-2 text-center">
-                        No suggestions found.
-                      </div>
-                    )}
-                </>
+              {history.length === 0 && (
+                <div className="text-gray-500 text-sm">
+                  No search history yet.
+                </div>
               )}
+              <div className="space-y-4">
+                {history.map((search, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between border-b-2 pb-2 mb-2"
+                  >
+                    <div className="flex flex-wrap gap-2 s items-center ">
+                      {search.map((token, i) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border-blue-200 rounded-md text-sm whitespace-nowrap"
+                        >
+                          <span className="font-medium">
+                            {MODEL_MAP[token.model]?.label || token.model}
+                          </span>
+                          .<span className="font-medium">{token.field}</span>{" "}
+                          <span className="text-blue-600">
+                            {token.operator}
+                          </span>{" "}
+                          <span className="font-mono text-blue-900">
+                            {token.displayValue}
+                          </span>
+                        </Badge>
+                      ))}
+                    </div>
 
+                    <div className=" flex items-center justify-center">
+                      <Save className="h-6 w-6 text-gray-700 mr-1 hover:opacity-70 cursor-pointer" />
+                    </div>
+                  </div>
+                ))}
+              </div>
               <Button
-                className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => addFinalToken()}
-                disabled={!inputValue}
+                className="mt-2"
+                onClick={() => {
+                  SearchHistoryService.clearHistory();
+                  setHistory([]);
+                }}
+                variant="destructive"
+                size="sm"
               >
-                Add Filter
+                Clear History
+              </Button>
+              <Button
+                className="mt-2 ml-2"
+                onClick={() => setPopoverHistoryMode(false)}
+                variant="outline"
+                size="sm"
+              >
+                Close
               </Button>
             </div>
+          ) : (
+            // --- NORMAL MODE ---
+            <>
+              {(!model || popoverContentState === "select_model") && (
+                <div className="p-4">
+                  <div className="text-sm font-semibold mb-2 text-gray-700">
+                    Select Model
+                  </div>
+                  <Command className="p-0">
+                    <CommandGroup>
+                      {modelSuggestions.length > 0 ? (
+                        modelSuggestions.map((modelLabel) => (
+                          <CommandItem
+                            key={modelLabel}
+                            onSelect={() => {
+                              const modelKey = Object.keys(MODEL_MAP).find(
+                                (key) => MODEL_MAP[key].label === modelLabel
+                              );
+                              if (modelKey) {
+                                setModel(modelKey);
+                                setInputValue("");
+                                inputRef.current?.focus();
+                              }
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                          >
+                            {modelLabel}
+                          </CommandItem>
+                        ))
+                      ) : (
+                        <CommandEmpty className="py-2 text-center text-gray-500">
+                          No models found.
+                        </CommandEmpty>
+                      )}
+                    </CommandGroup>
+                  </Command>
+                </div>
+              )}
+
+              {model && popoverContentState === "select_field" && (
+                <div className="p-4">
+                  <div className="text-sm font-semibold mb-2 text-gray-700">
+                    Select Field for{" "}
+                    <span className="font-bold text-blue-600">
+                      {MODEL_MAP[model!].label}
+                    </span>
+                  </div>
+                  <Command className="p-0">
+                    <CommandGroup>
+                      {fieldOptions.length > 0 ? (
+                        fieldOptions.map((f) => (
+                          <CommandItem
+                            key={f.key}
+                            onSelect={() => {
+                              setField(f);
+                              setInputValue("");
+                              inputRef.current?.focus();
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                          >
+                            {f.label} ({f.inputType})
+                          </CommandItem>
+                        ))
+                      ) : (
+                        <CommandEmpty className="py-2 text-center text-gray-500">
+                          {inputValue.length > 0
+                            ? "No matching fields found."
+                            : "No filterable fields for this model."}
+                        </CommandEmpty>
+                      )}
+                    </CommandGroup>
+                  </Command>
+                </div>
+              )}
+
+              {field && popoverContentState === "select_operator" && (
+                <div className="p-4">
+                  <div className="text-sm font-semibold mb-2 text-gray-700">
+                    Select Operator for{" "}
+                    <span className="font-bold text-blue-600">
+                      {field!.label}
+                    </span>
+                  </div>
+                  <Command className="p-0">
+                    <CommandGroup>
+                      {OPERATORS.map((op) => (
+                        <CommandItem
+                          key={op}
+                          onSelect={() => {
+                            setOperator(op);
+                            setInputValue("");
+                            inputRef.current?.focus();
+                          }}
+                          className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                        >
+                          {op}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </div>
+              )}
+
+              {operator && popoverContentState === "enter_value" && (
+                <div className="p-4 space-y-3">
+                  <div className="text-sm font-semibold text-gray-700">
+                    Enter Value for{" "}
+                    <span className="font-bold text-blue-600">
+                      {field?.label} {operator}
+                    </span>
+                  </div>
+
+                  {field?.dataSourceKey && (
+                    <>
+                      {isLoadingSuggestions && (
+                        <div className="flex items-center justify-center text-sm text-gray-500 py-4">
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                          Loading suggestions...
+                        </div>
+                      )}
+                      {!isLoadingSuggestions &&
+                        currentFieldSuggestions &&
+                        currentFieldSuggestions.length > 0 && (
+                          <div>
+                            <div className="text-xs font-semibold mb-1 text-gray-600">
+                              Suggestions:
+                            </div>
+                            <Command className="p-0 max-h-48 overflow-y-auto">
+                              <CommandGroup>
+                                {currentFieldSuggestions.map((sugg) => (
+                                  <CommandItem
+                                    key={sugg}
+                                    onSelect={() => {
+                                      setInputValue(sugg);
+                                      addFinalToken(sugg);
+                                    }}
+                                    className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                                  >
+                                    {sugg}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </div>
+                        )}
+                      {!isLoadingSuggestions &&
+                        currentFieldSuggestions?.length === 0 &&
+                        inputValue.length > 0 && (
+                          <div className="text-sm text-gray-500 py-2 text-center">
+                            No suggestions found.
+                          </div>
+                        )}
+                    </>
+                  )}
+
+                  <Button
+                    className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => addFinalToken()}
+                    disabled={!inputValue}
+                  >
+                    Add Filter
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </PopoverContent>
       </Popover>

@@ -31,6 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function inferColumns<TData extends object>(data: TData[]): ColumnDef<TData>[] {
   if (!data || data.length === 0) return [];
@@ -106,6 +108,7 @@ export type DynamicDataTableProps<TData extends object> = {
     columnFilters: ColumnFiltersState;
     columnVisibility: VisibilityState;
   }>;
+  rowType?: "dataset" | "collection" | "template" | "share";
   pageSize?: number;
   pageIndex: number;
   pageCount: number;
@@ -116,6 +119,7 @@ export function DynamicDataTable<TData extends object>({
   data,
   columns,
   initialState,
+  rowType,
   pageSize = 5,
   pageIndex,
   pageCount,
@@ -125,6 +129,23 @@ export function DynamicDataTable<TData extends object>({
     () => columns ?? inferColumns(data),
     [columns, data]
   );
+
+  const router = useRouter();
+
+  const getRowUrl = (row: TData) => {
+    if (rowType === "dataset") return `/datasets/${(row as any).id}`;
+    if (rowType === "collection") return `/collections/${(row as any).id}`;
+    if (rowType === "template") return `/templates/${(row as any).id}`;
+    if (rowType === "share") return `/shares/${(row as any).id}`;
+    return null;
+  };
+
+  const redirectToDetail = (row: any) => () => {
+    const url = getRowUrl(row.original);
+    if (url) {
+      router.push(url);
+    }
+  };
 
   const [sorting, setSorting] = React.useState<SortingState>(
     initialState?.sorting ?? []
@@ -196,12 +217,18 @@ export function DynamicDataTable<TData extends object>({
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
+                onClick={redirectToDetail(row)}
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <Link href={getRowUrl(row.original) || "#"}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </Link>
                   </TableCell>
                 ))}
               </TableRow>

@@ -63,6 +63,7 @@ export function getSharesColumns({
     },
     {
       id: "actions",
+      rowType: "shares",
       header: "",
       cell: ({ row }: any) => {
         const rowData = row.original;

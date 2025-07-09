@@ -19,6 +19,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { datasetColumns } from "@/components/dynamic_table/columns/dataset-columns";
+import Loading from "../loading";
 
 export type ProjectShare = {
   id: number;
@@ -127,18 +128,7 @@ const ProjectDetails: React.FC = () => {
   const dataToUse = datasets || {};
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {

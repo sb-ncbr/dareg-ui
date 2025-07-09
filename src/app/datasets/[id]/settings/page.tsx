@@ -31,6 +31,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 import { toast } from "react-toastify";
 import { PatchedDataset } from "../../../../../openapi/requests";
+import BoundingBox from "@/components/bounding-box/bounding-box";
 
 export default function SettingsPage() {
   const { id } = useParams();
@@ -154,7 +155,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="mb-10 max-w-[70vh]">
+    <BoundingBox>
       <div>
         <Breadcrumbs detailName={dataset?.name} />
       </div>
@@ -294,6 +295,6 @@ export default function SettingsPage() {
           </Button>
         </div>
       )}
-    </main>
+    </BoundingBox>
   );
 }

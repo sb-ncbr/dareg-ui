@@ -38,9 +38,9 @@ const DatasetsPage = () => {
     return (
       <div>
         <TypographyH2 text={"Datasets"} />
-        <BoundingBox>
+        <TableBoundingBox>
           <SkeletonTable />
-        </BoundingBox>
+        </TableBoundingBox>
       </div>
     );
   }
@@ -64,6 +64,7 @@ const DatasetsPage = () => {
       </div>
       <TableBoundingBox>
         <DynamicDataTable
+          rowType="dataset"
           data={dataToUse.results || []}
           pageIndex={pageIndex}
           pageCount={pageCount}

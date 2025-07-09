@@ -62,27 +62,57 @@ export function MuiThemeProviderSync({
           },
           MuiTabs: {
             styleOverrides: {
-              root: {
-                backgroundColor: "#f5f5f5",
-              },
-              indicator: {
-                backgroundColor: "#27272a",
-                height: 4,
-              },
+              root: ({ theme }) => ({
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "var(--sidebar-background)"
+                    : "var(--sidebar)",
+                color:
+                  theme.palette.mode === "dark"
+                    ? "var(--sidebar-foreground)"
+                    : "var(--sidebar-foreground)",
+                minHeight: 48,
+              }),
+              indicator: ({ theme }) => ({
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "var(--sidebar-accent-foreground)"
+                    : "var(--sidebar-accent-foreground)",
+                height: 3,
+              }),
             },
           },
           MuiTab: {
             styleOverrides: {
-              root: {
+              root: ({ theme }) => ({
                 textTransform: "none",
                 fontWeight: 500,
+                color:
+                  theme.palette.mode === "dark"
+                    ? "var(--sidebar-foreground)"
+                    : "var(--sidebar-accent-foreground)", // <-- Use dark green for light theme
+                minHeight: 48,
                 "&.Mui-selected": {
-                  color: "#27272a",
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "var(--sidebar-accent)"
+                      : "var(--sidebar-accent)",
+                  color:
+                    theme.palette.mode === "dark"
+                      ? "var(--sidebar-accent-foreground)"
+                      : "var(--sidebar-accent-foreground)",
                 },
-                "&:not(.Mui-selected)": {
-                  color: "#555",
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "var(--sidebar-accent)"
+                      : "var(--sidebar-accent)",
+                  color:
+                    theme.palette.mode === "dark"
+                      ? "var(--sidebar-accent-foreground)"
+                      : "var(--sidebar-accent-foreground)",
                 },
-              },
+              }),
             },
           },
           MuiTextField: {
@@ -93,6 +123,24 @@ export function MuiThemeProviderSync({
             styleOverrides: {
               root: {
                 width: "100%",
+              },
+            },
+          },
+          MuiCard: {
+            styleOverrides: {
+              root: ({ theme }) => ({
+                backgroundColor:
+                  theme.palette.mode === "dark" ? "#000000" : "#fff", // or your preferred color
+                width: "100%",
+                maxWidth: "100%",
+              }),
+            },
+          },
+          MuiCardContent: {
+            styleOverrides: {
+              root: {
+                width: "570px",
+                padding: "1px", // or your preferred spacing
               },
             },
           },

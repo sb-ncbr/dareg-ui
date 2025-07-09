@@ -17,7 +17,7 @@ export function RecentlyViewedTile({
 }: RecentlyViewedTileProps) {
   return (
     <Link href={url} className="flex flex-col items-center">
-      <Card className="w-[200px] h-[160px] bg-[#eef6eb] dark:bg-[#1d2c1d]">
+      <Card className="w-[200px] h-[160px] bg-sidebar dark:bg-[#1d2c1d]">
         <CardContent>
           <div className="w-10 h-10 flex items-center justify-center text-primary">
             {icon}

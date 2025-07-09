@@ -41,7 +41,7 @@ export function ExperimentsFilter({
   onChange,
 }: ExperimentsFilterProps) {
   return (
-    <div className="flex flex-wrap gap-4 mb-4 items-end">
+    <div className="flex flex-wrap gap-4 mx-4 mb-6 items-end">
       <DoubleRangeCalendarPopover
         value={filterState.dateRange ?? DEFAULT_DATE_RANGE}
         onChange={(range: DateRange) =>

@@ -48,6 +48,7 @@ const TemplatesPage = () => {
 
       <TableBoundingBox>
         <DynamicDataTable
+          rowType="template"
           data={dataToUse || []}
           pageIndex={pageIndex}
           pageCount={pageCount}

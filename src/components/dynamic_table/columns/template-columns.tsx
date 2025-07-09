@@ -59,6 +59,7 @@ export const templateColumns = [
   },
   {
     id: "actions",
+    rowType: "templates",
     header: "Actions",
     cell: ({ row }: any) => {
       const rowData = row.original;

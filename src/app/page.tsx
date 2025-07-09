@@ -65,6 +65,7 @@ export default function DashboardPage() {
               ) : (
                 <DynamicDataTable
                   data={sortedDatasets}
+                  rowType="dataset"
                   columns={datasetColumns}
                   pageSize={5}
                   pageIndex={0}
