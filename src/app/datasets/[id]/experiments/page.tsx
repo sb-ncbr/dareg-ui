@@ -6,7 +6,6 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-  ImperativePanelHandle, // Import ImperativePanelHandle
 } from "@/components/ui/resizable";
 import { useState, useEffect, useRef } from "react"; // Import useRef
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
@@ -39,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ImperativePanelHandle } from "react-resizable-panels";
 
 export default function DatasetDetailPage() {
   const { id } = useParams();
@@ -51,7 +51,7 @@ export default function DatasetDetailPage() {
   >(null);
 
   const [filter, setFilter] = useState<ExperimentsFilterState>({
-    dateRange: {},
+    dateRange: { from: {} as Date, to: {} as Date },
     sortOrder: "asc",
     search: "",
     status: "all",
