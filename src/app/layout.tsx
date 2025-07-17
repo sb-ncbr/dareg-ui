@@ -18,6 +18,7 @@ import { MuiThemeProviderSync } from "@/utils/mui-theme-sync-provider";
 import { InterceptorInitializer } from "@/utils/interceptor-initializer";
 import { RouteTracker } from "@/components/route-tracker/route-tracker";
 import SearchBar from "@/components/tokenized-search/tokenized-search";
+import { UserProfileProvider } from "@/hooks/UserProfileContext";
 
 const metadata: Metadata = {
   title: {
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SessionProvider>
           <InterceptorInitializer />
           <QueryClientProvider client={queryClient}>
+            <UserProfileProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               <MuiThemeProviderSync>
                 {isLoginPage ? (
@@ -69,6 +71,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <TailwindIndicator />
               </MuiThemeProviderSync>
             </ThemeProvider>
+            </UserProfileProvider>
           </QueryClientProvider>
         </SessionProvider>
       </body>
