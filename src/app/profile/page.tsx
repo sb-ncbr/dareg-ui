@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useLayoutEffect, useState } from "react";
+import React, { useRef } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { TypographyH2 } from "@/components/typography/typography-h2";
@@ -11,7 +11,6 @@ import { DateFormater } from "@/components/date_formatter/date-formatter";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon } from "lucide-react";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 
 const cellPadding = "px-6 py-5"; // Adjust all cell paddings here
@@ -19,6 +18,9 @@ const cellPadding = "px-6 py-5"; // Adjust all cell paddings here
 const ProfilePage = () => {
   const { data: session, status } = useSession();
   const { data: profileDataResponse } = useApiServiceGetApiV1Profile();
+
+  // Move hooks to the top level before any early returns
+  const tableRef = useRef<HTMLDivElement>(null);
 
   if (status === "loading") {
     return <p>Loading...</p>;
@@ -30,16 +32,6 @@ const ProfilePage = () => {
 
   const user = session?.user;
   const profile: Profile | undefined = profileDataResponse?.results?.[0];
-
-  // Dynamic image sizing
-  const tableRef = useRef<HTMLDivElement>(null);
-  const [imageSize, setImageSize] = useState(96);
-
-  useLayoutEffect(() => {
-    if (tableRef.current) {
-      setImageSize(Math.max(48, Math.min(tableRef.current.offsetHeight, 256)));
-    }
-  }, [profile, user]);
 
   return (
     <div>
@@ -59,21 +51,23 @@ const ProfilePage = () => {
       </div>
       <div className="flex items-start mb-6 gap-8">
         {profile?.avatar && (
-          <div className="flex justify-center items-center mt-12">
-            <Image
-              width={imageSize}
-              height={imageSize}
+            <div className="flex justify-center items-center mt-12">
+              <Image
+              width={256}
+              height={256}
               src={profile?.avatar || "user.image"}
               alt="Profile Picture"
               className="rounded-full object-cover"
+              blurDataURL={profile?.avatar+"?s=10"}
+              placeholder="blur"
               style={{
                 minWidth: 48,
                 minHeight: 48,
                 maxWidth: 256,
                 maxHeight: 256,
               }}
-            />
-          </div>
+              />
+            </div>
         )}
         <BoundingBox>
           <div className="rounded-lg bg-white shadow flex-1" ref={tableRef}>
