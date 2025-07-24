@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { TypographySidebar } from "../typography/typography-sidebar";
 import Link from "next/link";
 import Image from "next/image";
+import daregLogo from "@/assets/dareg-logo.svg";
 import { useUserProfile } from "@/hooks/UserProfileContext";
 
 const handleLogout = () => {
@@ -34,16 +35,12 @@ export function AppSidebar() {
   const profile = useUserProfile();
   const year = new Date().getFullYear();
   const { data: session, status } = useSession();
-  
+
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2">
-          <img
-            src="/ceitec_logo.png"
-            alt="Logo"
-            className="w-full rounded-full"
-          />
+          <Image src={daregLogo} alt="Logo" className="p-4 opacity-90" />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -97,9 +94,9 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenuItem onClick={() => router.push("/profile")}>
-            <div className="flex items-center">
+          <div className="flex items-center">
             {profile?.avatar ? (
-              <Image 
+              <Image
                 src={profile.avatar}
                 alt="Profile Picture"
                 width={24}
@@ -110,7 +107,7 @@ export function AppSidebar() {
               <UserRound className="h-5 w-5 mr-6" />
             )}
             <TypographySidebar text={session?.user?.name || "Profile"} />
-            </div>
+          </div>
         </SidebarMenuItem>
         {/* <SidebarMenuItem onClick={() => router.push("/settings")}>
           <div className="flex items-center">
@@ -125,7 +122,7 @@ export function AppSidebar() {
           </div>
         </SidebarMenuItem>
         <div className="flex items-center justify-between p-4">
-            <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             © {year}{" "}
             <a
               href="https://ceitec.cz"
@@ -135,7 +132,7 @@ export function AppSidebar() {
             >
               CEITEC Masaryk University
             </a>
-            </p>
+          </p>
         </div>
       </SidebarFooter>
     </Sidebar>

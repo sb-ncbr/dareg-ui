@@ -17,6 +17,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { MuiThemeProviderSync } from "@/utils/mui-theme-sync-provider";
 import { InterceptorInitializer } from "@/utils/interceptor-initializer";
 import { RouteTracker } from "@/components/route-tracker/route-tracker";
+import Head from "next/head";
 import SearchBar from "@/components/tokenized-search/tokenized-search";
 import { UserProfileProvider } from "@/hooks/UserProfileContext";
 
@@ -46,31 +47,37 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <SessionProvider>
           <InterceptorInitializer />
           <QueryClientProvider client={queryClient}>
             <UserProfileProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              <MuiThemeProviderSync>
-                {isLoginPage ? (
-                  <main className="flex min-h-screen items-center justify-center">
-                    {children}
-                  </main>
-                ) : (
-                  <SidebarProvider>
-                    <AppSidebar />
-                    <RouteTracker />
-                    <div className="flex flex-col min-h-screen flex-1">
-                      <SiteHeader></SiteHeader>
-                      <main className="flex-1 mx-8 my-8">{children}</main>
-                    </div>
-                  </SidebarProvider>
-                )}
-                <TailwindIndicator />
-              </MuiThemeProviderSync>
-            </ThemeProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+              >
+                <MuiThemeProviderSync>
+                  {isLoginPage ? (
+                    <main className="flex min-h-screen items-center justify-center">
+                      {children}
+                    </main>
+                  ) : (
+                    <SidebarProvider>
+                      <AppSidebar />
+                      <RouteTracker />
+                      <div className="flex flex-col min-h-screen flex-1">
+                        <SiteHeader></SiteHeader>
+                        <main className="flex-1 mx-8 my-8">{children}</main>
+                      </div>
+                    </SidebarProvider>
+                  )}
+                  <TailwindIndicator />
+                </MuiThemeProviderSync>
+              </ThemeProvider>
             </UserProfileProvider>
           </QueryClientProvider>
         </SessionProvider>
