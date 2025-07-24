@@ -17,7 +17,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { MuiThemeProviderSync } from "@/utils/mui-theme-sync-provider";
 import { InterceptorInitializer } from "@/utils/interceptor-initializer";
 import { RouteTracker } from "@/components/route-tracker/route-tracker";
-import SearchBar from "@/components/tokenized-search/tokenized-search";
+import Head from "next/head";
 
 const metadata: Metadata = {
   title: {
@@ -45,7 +45,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <SessionProvider>
           <InterceptorInitializer />

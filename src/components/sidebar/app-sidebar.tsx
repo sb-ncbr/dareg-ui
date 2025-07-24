@@ -22,6 +22,8 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TypographySidebar } from "../typography/typography-sidebar";
 import Link from "next/link";
+import daregLogo from "../../../public/dareg-logo.png";
+import Image from "next/image";
 
 const handleLogout = () => {
   signOut({ callbackUrl: "/login" });
@@ -33,11 +35,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2">
-          <img
-            src="/ceitec_logo.png"
-            alt="Logo"
-            className="w-full rounded-full"
-          />
+          <Image src={daregLogo} alt="Logo" className="p-4 opacity-90" />
         </div>
       </SidebarHeader>
       <SidebarContent>

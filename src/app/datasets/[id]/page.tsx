@@ -195,13 +195,18 @@ const DatasetDetails: React.FC = () => {
 
   const renderMetadataFields = () => {
     return (
-      <FormsWrapped
-        setErrors={setErrors}
-        schema={schemaData?.schema as object}
-        uischema={schemaData?.uischema as object}
-        data={formData}
-        setData={(value) => handleChange("metadata", value)}
-      />
+      <>
+        <div className="flex items-center justify-between mb-2">
+          <TypographyH3 text="Metadata" />
+        </div>
+        <FormsWrapped
+          setErrors={setErrors}
+          schema={schemaData?.schema as object}
+          uischema={schemaData?.uischema as object}
+          data={formData}
+          setData={(value) => handleChange("metadata", value)}
+        />
+      </>
     );
   };
 

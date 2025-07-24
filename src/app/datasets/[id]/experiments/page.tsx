@@ -51,16 +51,18 @@ export default function DatasetDetailPage() {
   >(null);
 
   const [filter, setFilter] = useState<ExperimentsFilterState>({
-    dateRange: { from: {} as Date, to: {} as Date },
+    dateRange: {
+      from: undefined,
+      to: undefined,
+    },
     sortOrder: "asc",
     search: "",
     status: "all",
   });
 
   const [experiments, setExperiments] = useState<Experiment[]>([]);
-  const [collapsed, setCollapsed] = useState(false); // State to track collapse status
-  const panelRef = useRef<ImperativePanelHandle>(null); // Ref for the ResizablePanel
-
+  const [collapsed, setCollapsed] = useState(false);
+  const panelRef = useRef<ImperativePanelHandle>(null);
   useEffect(() => {
     if (
       dataset?.experiments &&
@@ -104,15 +106,14 @@ export default function DatasetDetailPage() {
       return filter.sortOrder === "asc" ? aTime - bTime : bTime - aTime;
     });
 
-  // Function to toggle the panel's collapsed state
   const togglePanel = () => {
     if (panelRef.current) {
       if (collapsed) {
-        panelRef.current.expand(); // Expand the panel
+        panelRef.current.expand();
       } else {
-        panelRef.current.collapse(); // Collapse the panel
+        panelRef.current.collapse();
       }
-      setCollapsed(!collapsed); // Toggle the internal state for UI elements
+      setCollapsed(!collapsed);
     }
   };
 
@@ -138,13 +139,13 @@ export default function DatasetDetailPage() {
       </div>
       <ResizablePanelGroup direction="horizontal" className="flex-grow">
         <ResizablePanel
-          ref={panelRef} // Attach the ref here
+          ref={panelRef}
           defaultSize={20}
-          minSize={5} // Minimum size when expanded (you can still resize it smaller than default but not too small)
+          minSize={5}
           maxSize={40}
-          collapsible={true} // Enable programmatic collapse/expand
-          collapsedSize={9} // The target size (in percentage) when collapsed. Adjust as needed (e.g., 3-5).
-          className={`py-6 px-2 border-r transition-all duration-300`} // These are for internal padding, panel width is controlled by ResizablePanelGroup
+          collapsible={true}
+          collapsedSize={9}
+          className={`py-6 px-2 border-r transition-all duration-300`}
         >
           <div className="h-full flex flex-col gap-4">
             <div
@@ -157,7 +158,7 @@ export default function DatasetDetailPage() {
                 variant="ghost"
                 size="icon"
                 className={collapsed ? "mr-4" : "ml-auto"}
-                onClick={togglePanel} // Use the new togglePanel function
+                onClick={togglePanel}
                 aria-label={collapsed ? "Expand panel" : "Collapse panel"}
               >
                 <span
@@ -172,7 +173,7 @@ export default function DatasetDetailPage() {
             </div>
             <div
               className={`h-full flex flex-col gap-2 overflow-y-auto ${
-                collapsed ? "items-center px-0" : "" // Apply internal layout adjustments for collapsed state
+                collapsed ? "items-center px-0" : ""
               }`}
             >
               {filteredExperiments.length > 0 ? (
@@ -245,7 +246,6 @@ export default function DatasetDetailPage() {
                   ))
                 )
               ) : (
-                // Only show "No experiments found." when not collapsed
                 !collapsed && (
                   <div className="text-xs text-muted-foreground">
                     No experiments found.
