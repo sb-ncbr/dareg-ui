@@ -18,12 +18,13 @@ import {
   Settings,
   UserRound,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TypographySidebar } from "../typography/typography-sidebar";
 import Link from "next/link";
-import daregLogo from "../../../public/dareg-logo.png";
 import Image from "next/image";
+import daregLogo from "@/assets/dareg-logo.svg";
+import { useUserProfile } from "@/hooks/UserProfileContext";
 
 const handleLogout = () => {
   signOut({ callbackUrl: "/login" });
@@ -31,6 +32,10 @@ const handleLogout = () => {
 
 export function AppSidebar() {
   const router = useRouter();
+  const profile = useUserProfile();
+  const year = new Date().getFullYear();
+  const { data: session, status } = useSession();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -39,12 +44,14 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenuItem onClick={() => router.push("/")}>
-          <div className="flex items-center space-x-4">
-            <LayoutDashboard className="h-8" />
-            <TypographySidebar text="Dashboard" />
-          </div>
-        </SidebarMenuItem>
+        <SidebarGroup>
+          <SidebarMenuItem onClick={() => router.push("/")}>
+            <div className="flex items-center space-x-4">
+              <LayoutDashboard className="h-8" />
+              <TypographySidebar text="Dashboard" />
+            </div>
+          </SidebarMenuItem>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Data</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -88,8 +95,18 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenuItem onClick={() => router.push("/profile")}>
           <div className="flex items-center">
-            <UserRound className="h-5 w-5 mr-6" />
-            <TypographySidebar text="Profile" />
+            {profile?.avatar ? (
+              <Image
+                src={profile.avatar}
+                alt="Profile Picture"
+                width={24}
+                height={24}
+                className="rounded-full mr-2"
+              />
+            ) : (
+              <UserRound className="h-5 w-5 mr-6" />
+            )}
+            <TypographySidebar text={session?.user?.name || "Profile"} />
           </div>
         </SidebarMenuItem>
         {/* <SidebarMenuItem onClick={() => router.push("/settings")}>
@@ -105,7 +122,17 @@ export function AppSidebar() {
           </div>
         </SidebarMenuItem>
         <div className="flex items-center justify-between p-4">
-          <p className="text-sm text-muted-foreground">© 2023 Ceitec</p>
+          <p className="text-sm text-muted-foreground">
+            © {year}{" "}
+            <a
+              href="https://ceitec.cz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-primary"
+            >
+              CEITEC Masaryk University
+            </a>
+          </p>
         </div>
       </SidebarFooter>
     </Sidebar>
