@@ -7,6 +7,8 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenuItem,
+  SidebarMenu,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import {
   CalendarClock,
@@ -17,14 +19,28 @@ import {
   LogOutIcon,
   Settings,
   UserRound,
+  Bookmark,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TypographySidebar } from "../typography/typography-sidebar";
 import Link from "next/link";
 import Image from "next/image";
-import daregLogo from "@/assets/dareg-logo.svg";
+import daregLogo from "../../../public/dareg-logo.png";
 import { useUserProfile } from "@/hooks/UserProfileContext";
+import { SavedSearchesAccordion } from "../saved-searches/saved-searches-accordion";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useState, useEffect } from "react";
+import {
+  savedSearchesService,
+  SavedSearch,
+} from "@/services/saved-searches-service";
 
 const handleLogout = () => {
   signOut({ callbackUrl: "/login" });
@@ -35,22 +51,121 @@ export function AppSidebar() {
   const profile = useUserProfile();
   const year = new Date().getFullYear();
   const { data: session, status } = useSession();
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load saved searches on component mount
+  useEffect(() => {
+    const loadSavedSearches = async () => {
+      try {
+        setIsLoading(true);
+        const searches = await savedSearchesService.getSavedSearches();
+        setSavedSearches(searches);
+      } catch (error) {
+        console.error("Error loading saved searches:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSavedSearches();
+
+    // Set up periodic refresh every 30 seconds to keep in sync
+    const interval = setInterval(loadSavedSearches, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSavedSearchClick = (search: SavedSearch) => {
+    // Navigate to the saved search URL
+    if (search.url) {
+      router.push(search.url);
+    }
+  };
+
+  const refreshSavedSearches = async () => {
+    try {
+      setIsLoading(true);
+      const searches = await savedSearchesService.getSavedSearches();
+      setSavedSearches(searches);
+    } catch (error) {
+      console.error("Error refreshing saved searches:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Expose refresh function globally for other components to use
+  useEffect(() => {
+    (window as any).refreshSidebarSearches = refreshSavedSearches;
+    return () => {
+      delete (window as any).refreshSidebarSearches;
+    };
+  }, []);
 
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2">
-          <Image src={daregLogo} alt="Logo" className="p-4 opacity-90" />
+          <Image
+            onClick={() => router.push("/")}
+            src={daregLogo}
+            alt="Logo"
+            className="p-4 opacity-90"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarMenuItem onClick={() => router.push("/")}>
-            <div className="flex items-center space-x-4">
-              <LayoutDashboard className="h-8" />
-              <TypographySidebar text="Dashboard" />
-            </div>
-          </SidebarMenuItem>
+          <Collapsible
+            defaultOpen={savedSearches.length > 0}
+            className="group/collapsible"
+          >
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="w-full rounded-lg h-auto px-4 py-4 hover:bg-sidebar-accent transition-colors duration-200">
+                <div className="flex items-center space-x-4">
+                  <LayoutDashboard className="h-8" />
+                  <TypographySidebar text="Dashboards" />
+                  <div className="ml-auto flex items-center space-x-2">
+                    {savedSearches.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {savedSearches.length} saved
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180 text-muted-foreground" />
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            {savedSearches.length > 0 && (
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <div className="animate-in fade-in-0 duration-300 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 pr-2">
+                    <SidebarMenu>
+                      {isLoading ? (
+                        <div className="px-4 py-2 text-sm text-muted-foreground">
+                          Loading saved searches...
+                        </div>
+                      ) : (
+                        savedSearches.map((search) => (
+                          <SidebarMenuItem key={search.id}>
+                            <SidebarMenuButton
+                              onClick={() => handleSavedSearchClick(search)}
+                              className="flex items-center space-x-3"
+                            >
+                              <Search className="h-4 w-4" />
+                              <span className="truncate">{search.name}</span>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))
+                      )}
+                    </SidebarMenu>
+                  </div>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            )}
+          </Collapsible>
+          {/* Dashboard navigation item */}
         </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Data</SidebarGroupLabel>

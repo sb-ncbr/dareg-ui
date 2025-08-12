@@ -17,18 +17,12 @@ const DEFAULT_DATE_RANGE: DateRange = {
 };
 
 function isDefaultFrom(date?: Date) {
-  return (
-    !date ||
-    date.getMilliseconds() === DEFAULT_DATE_RANGE.from!.getMilliseconds()
-  );
+  return !date || date.getTime() === DEFAULT_DATE_RANGE.from!.getTime();
 }
 
 function isDefaultTo(date?: Date) {
-  return (
-    !date || date.getMilliseconds() === DEFAULT_DATE_RANGE.to!.getMilliseconds()
-  );
+  return !date || date.getTime() === DEFAULT_DATE_RANGE.to!.getTime();
 }
-
 export function DoubleRangeCalendarPopover({
   value,
   onChange,

@@ -45,8 +45,6 @@ const DatasetDetails: React.FC = () => {
     error,
   } = useApiServiceGetApiV1DatasetsById({ id: id as string });
 
-  console.log("Dataset Details", dataset);
-
   const patchDataset = useApiServicePatchApiV1DatasetsById();
 
   const { data: schemaData, isLoading: isSchemaLoading } =
@@ -58,8 +56,6 @@ const DatasetDetails: React.FC = () => {
     useApiServiceGetApiV1ProjectsById({
       id: dataset?.project.id ?? "",
     });
-
-  console.log("Project Data", projectData);
 
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -113,6 +109,7 @@ const DatasetDetails: React.FC = () => {
       const meta = dataset?.metadata || {};
       setMetadata(meta);
       setOriginalMetadata(meta);
+      setFormData(meta);
     }
   }, [dataset]);
 
@@ -140,6 +137,7 @@ const DatasetDetails: React.FC = () => {
   const handleChange = (inputId: string, value: any) => {
     if (inputId === "metadata") {
       setFormData(value);
+      setMetadata(value);
     }
   };
 
@@ -153,7 +151,7 @@ const DatasetDetails: React.FC = () => {
     if (description !== originalDescription)
       updatedFields.description = description;
     if (JSON.stringify(metadata) !== JSON.stringify(originalMetadata)) {
-      updatedFields.metadata = { dataset_metadata: metadata };
+      updatedFields.metadata = metadata;
     }
 
     if (Object.keys(updatedFields).length === 0) {
@@ -174,7 +172,6 @@ const DatasetDetails: React.FC = () => {
       setIsEditing({ name: false, description: false });
       toast.success("Changes saved successfully!");
     } catch (error) {
-      console.error("Error updating project:", error);
       toast.error("Failed to update project. Please try again.");
     }
   };
@@ -221,9 +218,6 @@ const DatasetDetails: React.FC = () => {
   if (!dataset) {
     return <div>No dataset found.</div>;
   }
-
-  console.log("Dataset Details Rendered", dataset);
-  console.log("Schema Data", schemaData);
 
   return (
     <div>

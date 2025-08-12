@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect, use } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,120 +10,75 @@ import {
 } from "@/components/ui/popover";
 import {
   Command,
+  CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandEmpty,
 } from "@/components/ui/command";
-import { X, Loader2, Search as SearchIcon, History, Save } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-
-import "../../../openapi/queries";
-
+import { X, Search, Loader2, History } from "lucide-react";
 import {
-  FilterOption,
-  MODEL_MAP,
-  Operator,
   Token,
-  API_OPERATOR_MAP,
-} from "../../types/search/search-models";
-import {
-  SearchHistoryService,
-  SearchHistoryEntry,
-} from "@/services/search-history-service";
-import { useRouter } from "next/navigation";
-import {
-  searchApi,
-  searchSuggestionsApi,
-  buildApiQueryParamsForSuggestions,
-} from "@/services/searchApiService";
+  FilterOption,
+  Operator,
+  MODEL_MAP,
+  DEFAULT_DATE_RANGE,
+} from "@/components/tokenized-search/types/search-models";
+import suggestionFieldsConfig from "./configuration/search-suggestion-fields.json";
+import { CommonFilterState } from "./filters/common-filters";
+import { useSearch } from "./providers/search-context";
+import { usePathname } from "next/navigation";
+
+const OPERATORS: Operator[] = [
+  "=",
+  "!=",
+  "<",
+  ">",
+  "<=",
+  ">=",
+  "contains",
+  "regex",
+];
 
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
   let timeoutId: NodeJS.Timeout | null;
-
   return function (this: any, ...args: Parameters<T>) {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-      timeoutId = null;
-    }, delay);
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
   };
 }
 
-const OPERATORS: Operator[] = ["=", "!=", "<", ">", "<=", ">="];
-
-function buildApiQueryParams(
-  tokens: Token[],
-  freeTextQuery: string
-): { q?: string; filters?: any; model?: string; schema?: string } {
-  const requestBody: {
-    q?: string;
-    filters?: any;
-    model?: string;
-    schema?: string;
-  } = {};
-  const modelFilters: { [key: string]: any } = {};
-
-  const uniqueModels = new Set(tokens.map((token) => token.model));
-  if (uniqueModels.size === 1) {
-    requestBody.model = uniqueModels.values().next().value;
-  } else if (uniqueModels.size > 1) {
-    console.warn(
-      "Multiple models present in tokens. 'model' parameter will not be set at top level."
-    );
-  }
-
-  tokens.forEach((token) => {
-    const fieldKey = token.field;
-
-    const apiOperator = API_OPERATOR_MAP[token.operator];
-    let valueToAssign: string | number | boolean;
-
-    if (token.value instanceof Date) {
-      valueToAssign = token.value.toISOString().split("T")[0];
-    } else if (
-      typeof token.value === "string" &&
-      (token.value.toLowerCase() === "true" ||
-        token.value.toLowerCase() === "false")
-    ) {
-      valueToAssign = token.value.toLowerCase() === "true";
-    } else {
-      valueToAssign = token.value as string | number | boolean;
-    }
-
-    if (!modelFilters[fieldKey]) {
-      modelFilters[fieldKey] = {};
-    }
-
-    modelFilters[fieldKey][apiOperator] = valueToAssign;
-  });
-
-  if (Object.keys(modelFilters).length > 0) {
-    requestBody.filters = modelFilters;
-  }
-
-  if (freeTextQuery) {
-    requestBody.q = freeTextQuery;
-  }
-
-  return requestBody;
-}
-
 export default function SearchBar() {
-  const [tokens, setTokens] = useState<Token[]>([]);
+  const pathname = usePathname();
+  const {
+    tokens,
+    setTokens,
+    freeTextQuery,
+    setFreeTextQuery,
+    isSearching,
+    setIsSearching,
+    searchResults,
+    setSearchResults,
+    lastSearchQuery,
+    setLastSearchQuery,
+    performSearch,
+    buildApiQueryParams,
+    buildApiQueryParamsForSuggestions,
+    searchSuggestionsApi,
+    navigateToSearchResults,
+    addToHistory,
+    clearHistory,
+    getHistory,
+    selectedSchemaId,
+  } = useSearch();
+
   const [model, setModel] = useState<string | null>(null);
   const [field, setField] = useState<FilterOption | null>(null);
   const [operator, setOperator] = useState<Operator | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [freeTextQuery, setFreeTextQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverTriggerRef = useRef<HTMLDivElement>(null);
   const [popoverHistoryMode, setPopoverHistoryMode] = useState(false);
-  const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
-
-  const router = useRouter();
+  const [history, setHistory] = useState<any[]>([]);
 
   const popoverContentState = !model
     ? "select_model"
@@ -133,131 +88,149 @@ export default function SearchBar() {
     ? "select_operator"
     : "enter_value";
 
-  const { data: currentFieldSuggestions, isLoading: isLoadingSuggestions } =
-    useQuery<string[]>({
-      queryKey: ["fieldSuggestions", model, field?.key, inputValue],
-      queryFn: async () => {
-        if (model && field && inputValue.length > 0) {
-          console.log("Fetching suggestions for:", {
-            model,
-            field: field.key,
-            inputValue,
-          });
+  const [currentFieldSuggestions, setCurrentFieldSuggestions] = useState<
+    string[]
+  >([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
-          const suggestionQueryBody = buildApiQueryParamsForSuggestions(
-            model,
-            inputValue,
-            {
-              fieldKey: field.key,
-              completedTokens: tokens,
-            }
-          );
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
 
-          try {
-            const response = await searchSuggestionsApi(suggestionQueryBody);
-            console.log("Raw API response:", response);
-            console.log("Results array:", response.results);
-
-            if (!response.results || response.results.length === 0) {
-              console.log("No results returned from API");
-              return [];
-            }
-
-            const suggestions = response.results
-              .flatMap((item: any) => {
-                console.log("Processing item:", item);
-
-                if (!item.highlights || !Array.isArray(item.highlights)) {
-                  console.log("No highlights found in item");
-                  return [];
-                }
-
-                return item.highlights
-                  .map((highlight: string) => {
-                    console.log("Processing highlight:", highlight);
-
-                    let fieldName: string;
-                    let value: string;
-
-                    if (highlight.includes(" → ")) {
-                      const parts = highlight.split(" → ");
-                      fieldName = parts[0].trim();
-                      value = parts[1]?.trim() || "";
-                    } else if (highlight.includes(": ")) {
-                      const parts = highlight.split(": ");
-                      fieldName = parts[0].trim();
-                      value = parts[1]?.trim() || "";
-                    } else {
-                      console.log("Unknown highlight format:", highlight);
-                      return null;
-                    }
-
-                    console.log("Parsed highlight:", {
-                      fieldName,
-                      value,
-                      expectedField: field.key,
-                    });
-
-                    if (fieldName === field.key) {
-                      console.log("Field match found:", value);
-                      return value;
-                    }
-
-                    return null;
-                  })
-                  .filter(Boolean);
-              })
-              .filter((value) => {
-                const isValid =
-                  value !== null && value !== undefined && value !== "";
-                console.log("Value validity check:", { value, isValid });
-                return isValid;
-              })
-              .filter((value, index, array) => {
-                return array.indexOf(value) === index;
-              })
-              .map(String)
-              .filter((stringValue) => {
-                const matches = stringValue
-                  .toLowerCase()
-                  .includes(inputValue.toLowerCase());
-                console.log("Input match check:", {
-                  stringValue,
-                  inputValue,
-                  matches,
-                });
-                return matches;
-              })
-              .slice(0, 10);
-
-            console.log("Final suggestions:", suggestions);
-            return suggestions;
-          } catch (error) {
-            console.error("Failed to fetch suggestions:", error);
-            return [];
-          }
-        }
-        return [];
-      },
-      enabled:
-        !!model &&
-        !!field &&
-        inputValue.length > 0 &&
-        popoverContentState === "enter_value",
-      staleTime: 0,
-      refetchOnWindowFocus: false,
-      retry: 1,
-    });
-
-  const allModelNames = Object.keys(MODEL_MAP).map(
-    (key) => MODEL_MAP[key].label
+  const allModelNames = React.useMemo(
+    () => Object.keys(MODEL_MAP).map((key) => MODEL_MAP[key].label),
+    [MODEL_MAP]
   );
-  const modelSuggestions =
-    inputValue.length > 0
+  const modelSuggestions = React.useMemo(() => {
+    return inputValue.length > 0
       ? allModelNames.filter((name) =>
           name.toLowerCase().includes(inputValue.toLowerCase())
         )
       : allModelNames;
+  }, [inputValue, allModelNames]);
+
+  const suggestionFieldsConfigTyped = suggestionFieldsConfig as Record<
+    string,
+    string[]
+  >;
+  const getAllowedSuggestionFields = useCallback((m: string): string[] => {
+    return suggestionFieldsConfigTyped[m.toLowerCase() ?? ""] || [];
+  }, []);
+  const allowedFields = React.useMemo(
+    () => (model ? getAllowedSuggestionFields(model) : []),
+    [model, getAllowedSuggestionFields]
+  );
+  const fieldOptions = React.useMemo(() => {
+    if (!model) return [] as FilterOption[];
+    return MODEL_MAP[model].filters.filter(
+      (f) =>
+        allowedFields.includes(f.key) &&
+        f.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  }, [model, allowedFields, inputValue]);
+
+  useEffect(() => {
+    let active = true;
+    if (
+      model &&
+      field &&
+      inputValue.length > 0 &&
+      popoverContentState === "enter_value"
+    ) {
+      setIsLoadingSuggestions(true);
+      const suggestionQueryBody = buildApiQueryParamsForSuggestions(
+        model,
+        inputValue,
+        {
+          fieldKey: field.key,
+          completedTokens: tokens,
+          schema: selectedSchemaId || undefined,
+        }
+      );
+      searchSuggestionsApi(suggestionQueryBody)
+        .then((response) => {
+          if (!active) return;
+          if (!response.results || response.results.length === 0) {
+            setCurrentFieldSuggestions([]);
+            setIsLoadingSuggestions(false);
+            return;
+          }
+          const suggestions = response.results
+            .flatMap((item: any) => {
+              if (!item.highlights || !Array.isArray(item.highlights))
+                return [];
+              return item.highlights
+                .map((highlight: string) => {
+                  let fieldName: string;
+                  let value: string;
+                  if (highlight.includes(" → ")) {
+                    const parts = highlight.split(" → ");
+                    fieldName = parts[0].trim();
+                    value = parts[1]?.trim() || "";
+                  } else if (highlight.includes(": ")) {
+                    const parts = highlight.split(": ");
+                    fieldName = parts[0].trim();
+                    value = parts[1]?.trim() || "";
+                  } else {
+                    return null;
+                  }
+                  if (fieldName === field.key) return value;
+                  return null;
+                })
+                .filter(Boolean);
+            })
+            .filter(
+              (value) => value !== null && value !== undefined && value !== ""
+            )
+            .filter((value, index, array) => array.indexOf(value) === index)
+            .map(String)
+            .filter((stringValue) =>
+              stringValue.toLowerCase().includes(inputValue.toLowerCase())
+            )
+            .slice(0, 10);
+          setCurrentFieldSuggestions(suggestions);
+          setIsLoadingSuggestions(false);
+        })
+        .catch(() => {
+          if (!active) return;
+          setCurrentFieldSuggestions([]);
+          setIsLoadingSuggestions(false);
+        });
+    } else {
+      setCurrentFieldSuggestions([]);
+      setIsLoadingSuggestions(false);
+    }
+    return () => {
+      active = false;
+    };
+  }, [
+    model,
+    field,
+    inputValue,
+    popoverContentState,
+    tokens,
+    buildApiQueryParamsForSuggestions,
+    searchSuggestionsApi,
+    selectedSchemaId,
+  ]);
+
+  useEffect(() => {
+    let listLength = 0;
+    if (popoverContentState === "select_model")
+      listLength = modelSuggestions.length;
+    else if (popoverContentState === "select_field")
+      listLength = fieldOptions.length;
+    else if (popoverContentState === "select_operator")
+      listLength = OPERATORS.length;
+    else if (popoverContentState === "enter_value")
+      listLength = currentFieldSuggestions.length;
+    setHighlightedIndex(listLength > 0 ? 0 : -1);
+    // eslint-disable-next-line
+  }, [
+    popoverContentState,
+    modelSuggestions.length,
+    fieldOptions.length,
+    currentFieldSuggestions.length,
+    isPopoverOpen,
+  ]);
 
   const resetFilterBuildingState = () => {
     setModel(null);
@@ -266,41 +239,43 @@ export default function SearchBar() {
     setInputValue("");
   };
 
-  const addFinalToken = (displayValue: string = inputValue) => {
-    if (model && field && operator && inputValue !== "") {
+  const buildToken = useCallback(
+    (v: string) => {
+      if (!model || !field || !operator || v === "") return null;
       let castedValue: string | number | Date | boolean;
       if (field.inputType === "number") {
-        castedValue = Number(inputValue);
+        const num = Number(v);
+        castedValue = Number.isFinite(num) ? num : v;
       } else if (field.inputType === "date") {
-        castedValue = new Date(inputValue);
-      } else if (
-        displayValue.toLowerCase() === "true" ||
-        displayValue.toLowerCase() === "false"
-      ) {
-        castedValue = displayValue.toLowerCase() === "true";
+        const d = new Date(v);
+        castedValue = isNaN(d.getTime()) ? v : d;
+      } else if (v.toLowerCase() === "true" || v.toLowerCase() === "false") {
+        castedValue = v.toLowerCase() === "true";
       } else {
-        castedValue = inputValue;
+        castedValue = v;
       }
+      return {
+        model,
+        field: field.key,
+        operator,
+        value: castedValue,
+        displayValue: v,
+      } as Token;
+    },
+    [model, field, operator]
+  );
 
-      setTokens((prevTokens) => {
-        const newTokens = [
-          ...prevTokens,
-          {
-            model,
-            field: field.key,
-            operator,
-            value: castedValue,
-            displayValue,
-          },
-        ];
-        debouncedMainSearch(newTokens, freeTextQuery);
-        return newTokens;
-      });
-
-      resetFilterBuildingState();
-      setIsPopoverOpen(false);
-      inputRef.current?.focus();
-    }
+  const addFinalToken = (value: string = inputValue) => {
+    const newToken = buildToken(value);
+    if (!newToken) return;
+    setTokens((prevTokens) => {
+      const newTokens = [...prevTokens, newToken];
+      debouncedMainSearch(newTokens, freeTextQuery);
+      return newTokens;
+    });
+    resetFilterBuildingState();
+    setIsPopoverOpen(false);
+    inputRef.current?.focus();
   };
 
   const removeToken = (index: number) => {
@@ -308,56 +283,16 @@ export default function SearchBar() {
     inputRef.current?.focus();
   };
 
-  const fieldOptions = model
-    ? MODEL_MAP[model].filters.filter((f) =>
-        f.label.toLowerCase().includes(inputValue.toLowerCase())
-      )
-    : [];
-
   const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && inputValue === "") {
       e.preventDefault();
-      if (operator) {
-        setOperator(null);
-      } else if (field) {
-        setField(null);
-      } else if (model) {
-        setModel(null);
-      } else if (tokens.length > 0) {
-        setTokens(tokens.slice(0, -1));
-      }
+      if (operator) setOperator(null);
+      else if (field) setField(null);
+      else if (model) setModel(null);
+      else if (tokens.length > 0) setTokens(tokens.slice(0, -1));
+      else if (freeTextQuery) setFreeTextQuery(""); // <-- Add this line
     }
   };
-
-  useEffect(() => {
-    if (isPopoverOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isPopoverOpen]);
-
-  const { mutate: performSearch, isPending: isSearching } = useMutation({
-    mutationFn: async (params: {
-      queryBody: any;
-      navigate?: boolean;
-      tokens?: Token[];
-      freeText?: string;
-    }) => {
-      if (params.navigate) {
-        navigateToSearchResults(params.tokens || [], params.freeText || "");
-        return null;
-      }
-
-      return searchApi(params.queryBody);
-    },
-    onSuccess: (data, variables) => {
-      if (!variables.navigate && data) {
-        console.log("Search API Success:", data);
-      }
-    },
-    onError: (error) => {
-      console.error("Search API Error:", error);
-    },
-  });
 
   const debouncedMainSearch = useCallback(
     debounce(
@@ -370,9 +305,6 @@ export default function SearchBar() {
           currentTokens,
           currentFreeTextQuery
         );
-        console.log("--- Main Search Triggered ---");
-        console.log("API Query Body:", queryBody);
-
         if (
           Object.keys(queryBody).length > 0 &&
           (queryBody.q || queryBody.filters)
@@ -384,9 +316,8 @@ export default function SearchBar() {
             freeText: currentFreeTextQuery,
           });
         } else if (currentTokens.length === 0 && !currentFreeTextQuery) {
-          console.log(
-            "No filters or free-text query, consider clearing results or showing default."
-          );
+          setSearchResults(null);
+          setLastSearchQuery(null);
           if (shouldNavigate) {
             performSearch({
               queryBody: {},
@@ -398,11 +329,10 @@ export default function SearchBar() {
             performSearch({ queryBody: {} });
           }
         }
-        console.log("--- End Main Search Trigger ---");
       },
       500
     ),
-    [performSearch]
+    [performSearch, setSearchResults, setLastSearchQuery, buildApiQueryParams]
   );
 
   useEffect(() => {
@@ -426,10 +356,8 @@ export default function SearchBar() {
   };
 
   useEffect(() => {
-    if (popoverHistoryMode) {
-      setHistory(SearchHistoryService.getHistory());
-    }
-  }, [popoverHistoryMode]);
+    if (popoverHistoryMode) setHistory(getHistory());
+  }, [popoverHistoryMode, getHistory]);
 
   const triggerHistoryPopover = () => {
     setIsPopoverOpen(true);
@@ -437,83 +365,118 @@ export default function SearchBar() {
   };
 
   const handleEnterPress = () => {
-    if (model && field && operator && inputValue !== "") {
-      addFinalToken();
-      setInputValue("");
+    let finalTokens = tokens;
+    let finalFreeText = freeTextQuery;
 
-      setTimeout(() => {
-        const updatedTokens = [
-          ...tokens,
-          {
-            model,
-            field: field.key,
-            operator,
-            value: inputValue,
-            displayValue: inputValue,
-          },
-        ];
-        navigateToSearchResults(updatedTokens, freeTextQuery);
-      }, 100);
-    } else if (inputValue) {
-      setFreeTextQuery(inputValue);
+    console.log("handleEnterPress called", {
+      tokens: tokens.length,
+      freeTextQuery,
+      inputValue,
+      model,
+      field,
+      operator,
+    });
+
+    if (model && field && operator && inputValue) {
+      const newToken = buildToken(inputValue);
+      if (newToken) {
+        finalTokens = [...tokens, newToken];
+        resetFilterBuildingState();
+      }
+    } else if (inputValue && inputValue.trim()) {
+      finalFreeText = inputValue.trim();
+      setFreeTextQuery(inputValue.trim());
       setInputValue("");
-      setTimeout(() => {
-        navigateToSearchResults(tokens, inputValue);
-      }, 100);
-    } else if (tokens.length > 0 || freeTextQuery) {
-      navigateToSearchResults(tokens, freeTextQuery);
     }
 
-    if (tokens.length > 0 || freeTextQuery || inputValue) {
-      const finalTokens =
-        model && field && operator && inputValue
-          ? [
-              ...tokens,
-              {
-                model,
-                field: field.key,
-                operator,
-                value: inputValue,
-                displayValue: inputValue,
-              },
-            ]
-          : tokens;
-      const finalFreeText = inputValue && !model ? inputValue : freeTextQuery;
+    console.log("After processing", {
+      finalTokens: finalTokens.length,
+      finalFreeText,
+      willNavigate: finalTokens.length > 0 || finalFreeText,
+    });
 
-      SearchHistoryService.addSearch(finalTokens, finalFreeText);
+    if (finalTokens.length > 0 || finalFreeText) {
+      const queryBody = buildApiQueryParams(finalTokens, finalFreeText);
+      console.log("Navigating with queryBody", queryBody);
+      performSearch({
+        queryBody,
+        navigate: true,
+        tokens: finalTokens,
+        freeText: finalFreeText,
+      });
+      addToHistory(finalTokens, finalFreeText);
+    } else {
+      console.log("No searchable content found");
     }
 
     setIsPopoverOpen(false);
     setPopoverHistoryMode(false);
   };
-  console.log("Current tokens:", tokens);
-  console.log("Free-text query:", freeTextQuery);
-  console.log(
-    "Current API Query Body (real-time, not debounced):",
-    buildApiQueryParams(tokens, freeTextQuery)
-  );
 
-  const navigateToSearchResults = (searchTokens: Token[], freeText: string) => {
-    const queryBody = buildApiQueryParams(searchTokens, freeText);
+  const handleSuggestionKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    let listLength = 0;
+    if (popoverContentState === "select_model")
+      listLength = modelSuggestions.length;
+    else if (popoverContentState === "select_field")
+      listLength = fieldOptions.length;
+    else if (popoverContentState === "select_operator")
+      listLength = OPERATORS.length;
+    else if (popoverContentState === "enter_value")
+      listLength = currentFieldSuggestions.length;
 
-    const searchParams = new URLSearchParams();
+    if (listLength === 0) return;
 
-    searchParams.set("q", encodeURIComponent(JSON.stringify(queryBody)));
-
-    if (searchTokens.length > 0) {
-      searchParams.set(
-        "tokens",
-        encodeURIComponent(JSON.stringify(searchTokens))
-      );
+    if (e.key === "ArrowDown") {
+      setHighlightedIndex((prev) => (prev < listLength - 1 ? prev + 1 : 0));
+      e.preventDefault();
+      return;
+    } else if (e.key === "ArrowUp") {
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : listLength - 1));
+      e.preventDefault();
+      return;
+    } else if (e.key === "Enter") {
+      if (highlightedIndex >= 0 && highlightedIndex < listLength) {
+        if (popoverContentState === "select_model") {
+          const modelLabel = modelSuggestions[highlightedIndex];
+          const modelKey = Object.keys(MODEL_MAP).find(
+            (key) => MODEL_MAP[key].label === modelLabel
+          );
+          if (modelKey) {
+            setModel(modelKey);
+            setInputValue("");
+            inputRef.current?.focus();
+          }
+        } else if (popoverContentState === "select_field") {
+          const f = fieldOptions[highlightedIndex];
+          setField(f);
+          setInputValue("");
+          inputRef.current?.focus();
+        } else if (popoverContentState === "select_operator") {
+          const op = OPERATORS[highlightedIndex];
+          setOperator(op);
+          setInputValue("");
+          inputRef.current?.focus();
+        } else if (popoverContentState === "enter_value") {
+          const selected = currentFieldSuggestions[highlightedIndex];
+          setInputValue(selected);
+          addFinalToken(selected);
+          setHighlightedIndex(-1);
+        }
+        e.preventDefault();
+        return;
+      }
     }
-    if (freeText) {
-      searchParams.set("freeText", encodeURIComponent(freeText));
-    }
-
-    searchParams.set("timestamp", Date.now().toString());
-
-    router.push(`/dashboards?${searchParams.toString()}`);
   };
+
+  useEffect(() => {
+    if (isPopoverOpen && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [isPopoverOpen]);
 
   return (
     <div className="w-full max-w-4xl lg:w-full mx-5 my-2 sm:w-20 space-y-4 bg-background rounded-md">
@@ -525,8 +488,7 @@ export default function SearchBar() {
                          focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-background duration-200"
             onClick={() => inputRef.current?.focus()}
           >
-            <SearchIcon className="h-5 w-5 text-gray-700 mr-1" />
-
+            <Search className="h-5 w-5 text-gray-700 mr-1" />
             {tokens.map((token, i) => (
               <Badge
                 key={i}
@@ -550,7 +512,21 @@ export default function SearchBar() {
                 />
               </Badge>
             ))}
-
+            {freeTextQuery && (
+              <Badge
+                variant="outline"
+                className="bg-gray-100 text-gray-700 border-gray-300 flex items-center rounded-md text-sm whitespace-nowrap"
+              >
+                "{freeTextQuery}"
+                <X
+                  className="w-4 h-4 cursor-pointer text-gray-400 hover:text-gray-600 ml-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFreeTextQuery("");
+                  }}
+                />
+              </Badge>
+            )}
             {model && (
               <Badge className="bg-purple-50 text-purple-800 border-purple-200 flex items-center rounded-md text-sm whitespace-nowrap">
                 Model: {MODEL_MAP[model]?.label || model}
@@ -593,7 +569,6 @@ export default function SearchBar() {
                 />
               </Badge>
             )}
-
             <input
               ref={inputRef}
               className="flex-grow focus:outline-none bg-background min-w-[100px] text-gray-800 placeholder-gray-400"
@@ -602,7 +577,7 @@ export default function SearchBar() {
               onChange={(e) => {
                 setInputValue(e.target.value);
                 if (e.target.value.length > 0 && !isPopoverOpen) {
-                  setIsPopoverOpen(true);
+                  setTimeout(() => setIsPopoverOpen(true), 0);
                 }
                 if (popoverHistoryMode) {
                   setPopoverHistoryMode(false);
@@ -625,7 +600,23 @@ export default function SearchBar() {
               }}
               onKeyDown={(e) => {
                 handleBackspace(e);
+                if (isPopoverOpen) {
+                  handleSuggestionKeyDown(e);
+                }
                 if (e.key === "Enter") {
+                  console.log("Enter key pressed", {
+                    highlightedIndex,
+                    tokens: tokens.length,
+                    freeTextQuery,
+                    inputValue: inputValue.trim(),
+                  });
+
+                  if (highlightedIndex >= 0) {
+                    console.log("Suggestion highlighted, not handling Enter");
+                    return;
+                  }
+
+                  console.log("Triggering handleEnterPress");
                   e.preventDefault();
                   handleEnterPress();
                 }
@@ -634,99 +625,49 @@ export default function SearchBar() {
             {isSearching && (
               <Loader2 className="h-5 w-5 animate-spin text-blue-500 ml-2" />
             )}
-            <History
-              className="h-5 w-5 text-gray-700 mr-1 hover:opacity-70 cursor-pointer"
-              onClick={triggerHistoryPopover}
-            />
+            {(tokens.length > 0 || freeTextQuery) && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const queryBody = buildApiQueryParams(
+                      tokens,
+                      freeTextQuery
+                    );
+                    performSearch({
+                      queryBody,
+                      navigate: true,
+                      tokens: tokens,
+                      freeText: freeTextQuery,
+                    });
+                  }}
+                >
+                  <Search className="h-4 w-4 mr-1" />
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-2"
+                  onClick={triggerHistoryPopover}
+                >
+                  <History className="h-4 w-4 mr-1" />
+                  History
+                </Button>
+              </>
+            )}
           </div>
         </PopoverTrigger>
         <PopoverContent
           className="w-[var(--radix-popover-trigger-width)] p-0 z-50 popover-content"
           onMouseDown={(e) => e.preventDefault()}
+          forceMount
           align="start"
         >
           {popoverHistoryMode ? (
-            <div className="p-4">
-              <div className="text-sm font-semibold mb-2 text-gray-700">
-                Search History
-              </div>
-              {history.length === 0 && (
-                <div className="text-gray-500 text-sm">
-                  No search history yet.
-                </div>
-              )}
-              <div className="space-y-4">
-                {history.map((search, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between border-b-2 pb-2 mb-2"
-                  >
-                    <div className="flex flex-wrap gap-2 items-center ">
-                      {search.tokens.map((token, i) => (
-                        <Badge
-                          key={i}
-                          variant="secondary"
-                          className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border-blue-200 rounded-md text-sm whitespace-nowrap"
-                        >
-                          <span className="font-medium">
-                            {MODEL_MAP[token.model]?.label || token.model}
-                          </span>
-                          .<span className="font-medium">{token.field}</span>{" "}
-                          <span className="text-blue-600">
-                            {token.operator}
-                          </span>{" "}
-                          <span className="font-mono text-blue-900">
-                            {token.displayValue}
-                          </span>
-                        </Badge>
-                      ))}
-                      {search.freeTextQuery && (
-                        <Badge
-                          variant="outline"
-                          className="bg-gray-100 text-gray-700 border-gray-300"
-                        >
-                          "{search.freeTextQuery}"
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setTokens(search.tokens);
-                          setFreeTextQuery(search.freeTextQuery || "");
-                          setIsPopoverOpen(false);
-                          setPopoverHistoryMode(false);
-                        }}
-                      >
-                        <SearchIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Button
-                className="mt-2"
-                onClick={() => {
-                  SearchHistoryService.clearHistory();
-                  setHistory([]);
-                }}
-                variant="destructive"
-                size="sm"
-              >
-                Clear History
-              </Button>
-              <Button
-                className="mt-2 ml-2"
-                onClick={() => setPopoverHistoryMode(false)}
-                variant="outline"
-                size="sm"
-              >
-                Close
-              </Button>
-            </div>
+            // ...history content...
+            <div className="p-4">{/* ...history... */}</div>
           ) : (
             <>
               {(!model || popoverContentState === "select_model") && (
@@ -737,9 +678,10 @@ export default function SearchBar() {
                   <Command className="p-0">
                     <CommandGroup>
                       {modelSuggestions.length > 0 ? (
-                        modelSuggestions.map((modelLabel) => (
+                        modelSuggestions.map((modelLabel, idx) => (
                           <CommandItem
                             key={modelLabel}
+                            autoFocus={false}
                             onSelect={() => {
                               const modelKey = Object.keys(MODEL_MAP).find(
                                 (key) => MODEL_MAP[key].label === modelLabel
@@ -750,7 +692,16 @@ export default function SearchBar() {
                                 inputRef.current?.focus();
                               }
                             }}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                            className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
+                              highlightedIndex === idx ? "bg-blue-100" : ""
+                            }`}
+                            aria-selected={highlightedIndex === idx}
+                            tabIndex={-1}
+                            ref={(el) => {
+                              if (highlightedIndex === idx && el) {
+                                el.scrollIntoView({ block: "nearest" });
+                              }
+                            }}
                           >
                             {modelLabel}
                           </CommandItem>
@@ -764,7 +715,6 @@ export default function SearchBar() {
                   </Command>
                 </div>
               )}
-
               {model && popoverContentState === "select_field" && (
                 <div className="p-4">
                   <div className="text-sm font-semibold mb-2 text-gray-700">
@@ -776,7 +726,7 @@ export default function SearchBar() {
                   <Command className="p-0">
                     <CommandGroup>
                       {fieldOptions.length > 0 ? (
-                        fieldOptions.map((f) => (
+                        fieldOptions.map((f, idx) => (
                           <CommandItem
                             key={f.key}
                             onSelect={() => {
@@ -784,7 +734,16 @@ export default function SearchBar() {
                               setInputValue("");
                               inputRef.current?.focus();
                             }}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                            className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
+                              highlightedIndex === idx ? "bg-blue-100" : ""
+                            }`}
+                            aria-selected={highlightedIndex === idx}
+                            tabIndex={-1}
+                            ref={(el) => {
+                              if (highlightedIndex === idx && el) {
+                                el.scrollIntoView({ block: "nearest" });
+                              }
+                            }}
                           >
                             {f.label} ({f.inputType})
                           </CommandItem>
@@ -800,7 +759,6 @@ export default function SearchBar() {
                   </Command>
                 </div>
               )}
-
               {field && popoverContentState === "select_operator" && (
                 <div className="p-4">
                   <div className="text-sm font-semibold mb-2 text-gray-700">
@@ -811,7 +769,7 @@ export default function SearchBar() {
                   </div>
                   <Command className="p-0">
                     <CommandGroup>
-                      {OPERATORS.map((op) => (
+                      {OPERATORS.map((op, idx) => (
                         <CommandItem
                           key={op}
                           onSelect={() => {
@@ -819,7 +777,16 @@ export default function SearchBar() {
                             setInputValue("");
                             inputRef.current?.focus();
                           }}
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                          className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
+                            highlightedIndex === idx ? "bg-blue-100" : ""
+                          }`}
+                          aria-selected={highlightedIndex === idx}
+                          tabIndex={-1}
+                          ref={(el) => {
+                            if (highlightedIndex === idx && el) {
+                              el.scrollIntoView({ block: "nearest" });
+                            }
+                          }}
                         >
                           {op}
                         </CommandItem>
@@ -828,7 +795,6 @@ export default function SearchBar() {
                   </Command>
                 </div>
               )}
-
               {operator && popoverContentState === "enter_value" && (
                 <div className="p-4 space-y-3">
                   <div className="text-sm font-semibold text-gray-700">
@@ -837,8 +803,6 @@ export default function SearchBar() {
                       {field?.label} {operator}
                     </span>
                   </div>
-
-                  {/* Suggestions fetched from API for all fields now */}
                   <>
                     {isLoadingSuggestions && (
                       <div className="flex items-center justify-center text-sm text-gray-500 py-4">
@@ -855,14 +819,26 @@ export default function SearchBar() {
                           </div>
                           <Command className="p-0 max-h-48 overflow-y-auto">
                             <CommandGroup>
-                              {currentFieldSuggestions.map((sugg) => (
+                              {currentFieldSuggestions.map((sugg, idx) => (
                                 <CommandItem
                                   key={sugg}
+                                  ref={(el) => {
+                                    if (highlightedIndex === idx && el) {
+                                      el.scrollIntoView({ block: "nearest" });
+                                    }
+                                  }}
                                   onSelect={() => {
                                     setInputValue(sugg);
                                     addFinalToken(sugg);
+                                    setHighlightedIndex(-1);
                                   }}
-                                  className="cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md"
+                                  className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
+                                    highlightedIndex === idx
+                                      ? "bg-blue-100"
+                                      : ""
+                                  }`}
+                                  aria-selected={highlightedIndex === idx}
+                                  tabIndex={-1}
                                 >
                                   {sugg}
                                 </CommandItem>
@@ -879,7 +855,6 @@ export default function SearchBar() {
                         </div>
                       )}
                   </>
-
                   <Button
                     className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => addFinalToken()}
@@ -893,8 +868,7 @@ export default function SearchBar() {
           )}
         </PopoverContent>
       </Popover>
-
-      {freeTextQuery && (
+      {/* {freeTextQuery && (
         <div className="mt-2 p-3 border rounded-md bg-gray-50 text-sm text-gray-700 flex items-center justify-between shadow-sm">
           <span>
             Free-text query:{" "}
@@ -908,7 +882,6 @@ export default function SearchBar() {
           />
         </div>
       )}
-
       <div className="mt-4 p-4 border rounded-md bg-gray-50 shadow-sm">
         <h3 className="font-semibold mb-2 text-gray-800">
           Generated API Query Body:
@@ -916,7 +889,17 @@ export default function SearchBar() {
         <pre className="whitespace-pre-wrap text-sm bg-white p-3 rounded-md border text-gray-700">
           {JSON.stringify(buildApiQueryParams(tokens, freeTextQuery), null, 2)}
         </pre>
-      </div>
+        {searchResults && (
+          <>
+            <h4 className="font-semibold mt-4 mb-2 text-gray-800">
+              Current Search Results: ({searchResults.total} total)
+            </h4>
+            <div className="text-sm text-gray-600">
+              Found {searchResults.results.length} results in current page
+            </div>
+          </>
+        )}
+      </div> */}
     </div>
   );
 }

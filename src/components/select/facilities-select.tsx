@@ -14,7 +14,6 @@ export default function FacilitiesSelect({
   onChange,
 }: FacilitiesSelectProps) {
   const { data: facilities, isLoading } = useApiServiceGetApiV1Facilities();
-  console.log("Facilities:", facilities);
 
   if (isLoading || !facilities) {
     return <Skeleton className="h-10 w-[200px]" />;

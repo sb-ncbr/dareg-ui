@@ -17,7 +17,6 @@ export default function TemplateSelectSSR({
   if (isLoading || !templates) {
     <Skeleton className="h-10 w-[200px]" />;
   }
-  console.log("Templates:", templates);
   return (
     <ReusableSelect<Schema>
       items={templates?.results ?? []}

@@ -108,11 +108,12 @@ export type DynamicDataTableProps<TData extends object> = {
     columnFilters: ColumnFiltersState;
     columnVisibility: VisibilityState;
   }>;
-  rowType?: "dataset" | "collection" | "template" | "share";
+  rowType?: "dataset" | "collection" | "template" | "share" | "search-result";
   pageSize?: number;
   pageIndex: number;
   pageCount: number;
   onPageChange: (pageIndex: number) => void;
+  showSearch?: boolean;
 };
 
 export function DynamicDataTable<TData extends object>({
@@ -124,6 +125,7 @@ export function DynamicDataTable<TData extends object>({
   pageIndex,
   pageCount,
   onPageChange,
+  showSearch = true,
 }: DynamicDataTableProps<TData>) {
   const cols = React.useMemo(
     () => columns ?? inferColumns(data),
@@ -137,11 +139,14 @@ export function DynamicDataTable<TData extends object>({
     if (rowType === "collection") return `/collections/${(row as any).id}`;
     if (rowType === "template") return `/templates/${(row as any).id}`;
     if (rowType === "share") return `/shares/${(row as any).id}`;
+    if (rowType === "search-result")
+      return `/${(row as any).type}s/${(row as any).id}`; // Example for search results
     return null;
   };
 
   const redirectToDetail = (row: any) => () => {
     const url = getRowUrl(row.original);
+    console.log("Redirecting to:", url);
     if (url) {
       router.push(url);
     }
@@ -188,14 +193,16 @@ export function DynamicDataTable<TData extends object>({
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Search..."
-          onChange={(e) => table.setGlobalFilter(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+    <div key={pageIndex} className="w-full animate-fade-in">
+      {showSearch && (
+        <div className="flex items-center py-4">
+          <Input
+            placeholder="Search..."
+            onChange={(e) => table.setGlobalFilter(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+      )}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((hg) => (

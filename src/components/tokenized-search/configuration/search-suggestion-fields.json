@@ -1,0 +1,20 @@
+{
+    "datasets": [
+        "name",
+        "description",
+        "created",
+        "modified"
+    ],
+    "collections": [
+        "name",
+        "description",
+        "created",
+        "modified"
+    ],
+    "templates": [
+        "name",
+        "description",
+        "created",
+        "modified"
+    ]
+}

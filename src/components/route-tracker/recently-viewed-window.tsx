@@ -4,6 +4,7 @@ import { RecentlyViewedTile } from "./recently-viewed-tile";
 import {
   FileText,
   FlaskConical,
+  LayoutDashboard,
   LayoutPanelTop,
   Library,
   Newspaper,
@@ -22,13 +23,13 @@ export const iconMap: Record<RecentlyViewedItem["icon"], React.ReactNode> = {
   template: <LayoutPanelTop name="template" className="h-full w-full" />,
   experiment: <FlaskConical className="h-full w-full" />,
   default: <Newspaper className="h-full w-full" />,
+  dashboard: <LayoutDashboard name="dashboard" className="h-full w-full" />,
 };
 
 function useRecentlyViewedTitleAndName(pathname: string): {
   typeTitle: string;
   detailName?: string;
 } {
-  // Dataset detail
   if (pathname.startsWith("/datasets/") && pathname.split("/").length > 2) {
     const id = pathname.split("/")[2];
     if (pathname.includes("/experiments")) {
@@ -41,13 +42,14 @@ function useRecentlyViewedTitleAndName(pathname: string): {
     const { data } = useApiServiceGetApiV1DatasetsById({ id });
     return { typeTitle: "Dataset:", detailName: data?.name };
   }
-  // Collection detail
+  if (pathname.startsWith("/dashboards")) {
+    return { typeTitle: "Dashboard" };
+  }
   if (pathname.startsWith("/collections/") && pathname.split("/").length > 2) {
     const id = pathname.split("/")[2];
     const { data } = useApiServiceGetApiV1ProjectsById({ id });
     return { typeTitle: "Collection:", detailName: data?.name };
   }
-  // Template detail
   if (pathname.startsWith("/templates/") && pathname.split("/").length > 2) {
     const id = pathname.split("/")[2];
     const { data } = useApiServiceGetApiV1SchemasById({ id });
@@ -57,7 +59,8 @@ function useRecentlyViewedTitleAndName(pathname: string): {
   if (pathname.startsWith("/datasets")) return { typeTitle: "Datasets" };
   if (pathname.startsWith("/collections")) return { typeTitle: "Collections" };
   if (pathname.startsWith("/templates")) return { typeTitle: "Templates" };
-  return { typeTitle: "Page" };
+
+  return { typeTitle: "Recently Viewed" };
 }
 
 export function RecentlyViewedList() {

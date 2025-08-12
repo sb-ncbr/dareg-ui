@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,30 +7,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Table } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { FileText, Library, LayoutPanelTop } from "lucide-react";
 
-export const datasetColumns = [
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "collection":
+      return (
+        <div className="flex items-center w-full justify-start">
+          <Library className="h-5 w-5 text-muted-foreground" />
+        </div>
+      );
+    case "dataset":
+      return (
+        <div className="flex items-center w-full justify-start">
+          <FileText className="h-5 w-5 text-muted-foreground" />
+        </div>
+      );
+    case "template":
+      return (
+        <div className="flex items-center w-full justify-start">
+          <LayoutPanelTop className="h-5 w-5 text-muted-foreground" />
+        </div>
+      );
+    default:
+      return null;
+  }
+};
+
+export const searchResultColumns = [
   {
-    id: "select",
-    header: ({ table }: { table: Table<any> }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }: any) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
+    id: "type",
+    header: "Type",
+    cell: ({ row }: any) => {
+      const type = row.original.type;
+      return <div className="flex justify-center">{getTypeIcon(type)}</div>;
+    },
+    enableSorting: true,
     enableHiding: false,
   },
   {
@@ -40,31 +52,15 @@ export const datasetColumns = [
     header: "Name",
   },
   {
-    id: "description",
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    id: "created_by.full_name",
-    accessorKey: "created_by.full_name",
-    header: "Creator",
-  },
-  {
-    id: "created",
-    accessorKey: "created",
-    header: "Created",
-    cell: ({ row }: any) => {
-      const date = new Date(row.getValue("created"));
-      return date.toLocaleDateString("cs-CZ");
-    },
-  },
-  {
     id: "actions",
     header: "Actions",
-    rowType: "dataset",
     cell: ({ row }: any) => {
       const rowData = row.original;
       const router = useRouter();
+
+      const getDetailsUrl = (type: string, id: string) => {
+        return `/${type}s/${id}`;
+      };
 
       return (
         <DropdownMenu>
@@ -77,14 +73,16 @@ export const datasetColumns = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() =>
-                navigator.clipboard.writeText(JSON.stringify(rowData))
+                navigator.clipboard.writeText(JSON.stringify(rowData, null, 2))
               }
             >
               Copy Row Data
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => router.push(`/datasets/${rowData.id}`)}
+              onClick={() =>
+                router.push(getDetailsUrl(rowData.type, rowData.id))
+              }
             >
               View Details
             </DropdownMenuItem>
