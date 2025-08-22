@@ -32,6 +32,10 @@ export function ReusableSelect<T>({
   const value =
     controlledValue !== undefined ? controlledValue : uncontrolledValue;
 
+  // Find the selected item to get its label for display
+  const selectedItem = items.find((item) => getItemId(item) === value);
+  const displayValue = selectedItem ? getItemLabel(selectedItem) : "";
+
   React.useEffect(() => {
     if (items.length > 0 && !value) {
       const firstId = getItemId(items[0]);
@@ -53,7 +57,7 @@ export function ReusableSelect<T>({
       }}
     >
       <SelectTrigger className="w-[320px]">
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>{displayValue}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {items.map((item) => (

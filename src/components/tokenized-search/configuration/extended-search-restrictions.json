@@ -1,0 +1,22 @@
+{
+    "datasets": [
+        "onedata_dataset_id",
+        "onedata_space_id",
+        "onedata_share_id",
+        "onedata_visit_id",
+        "onedata_file_id",
+        "reservationId"
+    ],
+    "common": [
+        "shares",
+        "perms"
+    ],
+    "collections": [
+        "onedata_space_id"
+    ],
+    "templates": [
+        "uischema",
+        "schema",
+        "version"
+    ]
+}

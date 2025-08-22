@@ -14,7 +14,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { X, Search, Loader2, History } from "lucide-react";
+import { X, Search, Loader2, History, SearchIcon } from "lucide-react";
 import {
   Token,
   FilterOption,
@@ -26,6 +26,11 @@ import suggestionFieldsConfig from "./configuration/search-suggestion-fields.jso
 import { CommonFilterState } from "./filters/common-filters";
 import { useSearch } from "./providers/search-context";
 import { usePathname } from "next/navigation";
+import { SearchHistoryService } from "@/services/search-history-service";
+import { set } from "zod";
+import { formatTokenDisplayValue } from "@/utils/token-display";
+import TemplateSelectSSR from "@/components/select/template-select";
+import ProjectSelectSSR from "@/components/select/project-select";
 
 const OPERATORS: Operator[] = [
   "=",
@@ -92,6 +97,21 @@ export default function SearchBar() {
     string[]
   >([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+
+  // Helper function to determine if a field needs a dropdown
+  const getFieldDropdownType = useCallback(
+    (fieldKey: string): "schema" | "project" | null => {
+      if (fieldKey === "schema") return "schema";
+      if (fieldKey === "project") return "project";
+      if (fieldKey.includes("_id") || fieldKey === "reservationId")
+        return "project"; // Default to project for ID fields
+      return null;
+    },
+    []
+  );
 
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
 
@@ -478,22 +498,41 @@ export default function SearchBar() {
     }
   }, [isPopoverOpen]);
 
+  useEffect(() => {
+    const isDashboardPage = pathname.startsWith("/dashboards/");
+    if (!isDashboardPage && (tokens.length > 0 || freeTextQuery)) {
+      setTokens([]);
+      setFreeTextQuery("");
+      setSearchResults(null);
+      setLastSearchQuery(null);
+    }
+  }, [pathname]);
+
   return (
     <div className="w-full max-w-4xl lg:w-full mx-5 my-2 sm:w-20 space-y-4 bg-background rounded-md">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
           <div
             ref={popoverTriggerRef}
-            className="relative border rounded-md px-3 py-2 flex flex-wrap items-center gap-2 min-h-[44px] cursor-text
-                         focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-background duration-200"
-            onClick={() => inputRef.current?.focus()}
+            className="border rounded-md px-3 py-2 flex flex-wrap items-center gap-2 min-h-[44px] cursor-text
+                         focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-background duration-200 z-0"
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (
+                !target.closest("button") &&
+                !target.closest(".token-remove-x") &&
+                !target.closest(".badge")
+              ) {
+                inputRef.current?.focus();
+              }
+            }}
           >
             <Search className="h-5 w-5 text-gray-700 mr-1" />
-            {tokens.map((token, i) => (
+            {tokens.slice(0, 3).map((token, i) => (
               <Badge
                 key={i}
                 variant="secondary"
-                className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border-blue-200 rounded-md text-sm whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border-blue-200 rounded-md text-sm whitespace-nowrap relative z-10"
               >
                 <span className="font-medium">
                   {MODEL_MAP[token.model]?.label || token.model}
@@ -501,30 +540,47 @@ export default function SearchBar() {
                 .<span className="font-medium">{token.field}</span>{" "}
                 <span className="text-blue-600">{token.operator}</span>{" "}
                 <span className="font-mono text-blue-900">
-                  {token.displayValue}
+                  {formatTokenDisplayValue(token)}{" "}
                 </span>
-                <X
-                  className="w-4 h-4 cursor-pointer text-blue-400 hover:text-blue-600 transition-colors ml-1"
+                <Button
+                  variant="ghost"
+                  className="token-remove-x w-4 h-2 cursor-pointer text-blue-400 hover:text-red-500 ml-1 transition-colors relative z-20 pointer-events-auto"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeToken(i);
                   }}
-                />
+                >
+                  <X className="w-4 h-1" />
+                </Button>
               </Badge>
             ))}
+            {tokens.length > 3 && (
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 border-gray-300 rounded-md text-sm whitespace-nowrap relative z-10 cursor-default"
+                title={`${
+                  tokens.length - 3
+                } more search criteria - see details below`}
+              >
+                +{tokens.length - 3} more
+              </Badge>
+            )}
             {freeTextQuery && (
               <Badge
                 variant="outline"
-                className="bg-gray-100 text-gray-700 border-gray-300 flex items-center rounded-md text-sm whitespace-nowrap"
+                className="bg-gray-100 text-gray-700 px-2 py-1 border-gray-300 flex items-center rounded-md text-sm whitespace-nowrap"
               >
-                "{freeTextQuery}"
-                <X
-                  className="w-4 h-4 cursor-pointer text-gray-400 hover:text-gray-600 ml-1"
+                <span>{freeTextQuery}</span>
+                <Button
+                  variant="ghost"
+                  className="token-remove-x w-4 h-2 cursor-pointer text-blue-400 hover:text-red-500 ml-1 transition-colors relative z-20 pointer-events-auto"
                   onClick={(e) => {
                     e.stopPropagation();
                     setFreeTextQuery("");
                   }}
-                />
+                >
+                  <X />
+                </Button>
               </Badge>
             )}
             {model && (
@@ -588,10 +644,7 @@ export default function SearchBar() {
                 setTimeout(() => {
                   if (
                     !document.activeElement ||
-                    (!popoverTriggerRef.current?.contains(
-                      document.activeElement
-                    ) &&
-                      !document.activeElement.closest(".popover-content"))
+                    !popoverTriggerRef.current?.contains(document.activeElement)
                   ) {
                     setIsPopoverOpen(false);
                     setPopoverHistoryMode(false);
@@ -610,12 +663,10 @@ export default function SearchBar() {
                     freeTextQuery,
                     inputValue: inputValue.trim(),
                   });
-
                   if (highlightedIndex >= 0) {
                     console.log("Suggestion highlighted, not handling Enter");
                     return;
                   }
-
                   console.log("Triggering handleEnterPress");
                   e.preventDefault();
                   handleEnterPress();
@@ -666,8 +717,87 @@ export default function SearchBar() {
           align="start"
         >
           {popoverHistoryMode ? (
-            // ...history content...
-            <div className="p-4">{/* ...history... */}</div>
+            <div className="p-4">
+              <div className="text-sm font-semibold mb-2 text-gray-700">
+                Search History
+              </div>
+              {history.length === 0 && (
+                <div className="text-gray-500 text-sm">
+                  No search history yet.
+                </div>
+              )}
+              <div className="space-y-4">
+                {history.map((search, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between border-b-2 pb-2 mb-2"
+                  >
+                    <div className="flex flex-wrap gap-2 items-center ">
+                      {search.tokens.map((token: any, i: number) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border-blue-200 rounded-md text-sm whitespace-nowrap"
+                        >
+                          <span className="font-medium">
+                            {MODEL_MAP[token.model]?.label || token.model}
+                          </span>
+                          .<span className="font-medium">{token.field}</span>{" "}
+                          <span className="text-blue-600">
+                            {token.operator}
+                          </span>{" "}
+                          <span className="font-mono text-blue-900">
+                            {token.displayValue}
+                          </span>
+                        </Badge>
+                      ))}
+                      {search.freeTextQuery && (
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-100 text-gray-700 border-gray-300"
+                        >
+                          "{search.freeTextQuery}"
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setTokens(search.tokens);
+                          setFreeTextQuery(search.freeTextQuery || "");
+                          setIsPopoverOpen(false);
+                          setPopoverHistoryMode(false);
+                        }}
+                      >
+                        <SearchIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Button
+                className="mt-2"
+                onClick={() => {
+                  SearchHistoryService.clearHistory();
+                  setHistory([]);
+                }}
+                variant="destructive"
+                size="sm"
+              >
+                Clear History
+              </Button>
+              <Button
+                className="mt-2 ml-2"
+                onClick={() => setPopoverHistoryMode(false)}
+                variant="outline"
+                size="sm"
+              >
+                Close
+              </Button>
+            </div>
           ) : (
             <>
               {(!model || popoverContentState === "select_model") && (
@@ -868,6 +998,7 @@ export default function SearchBar() {
           )}
         </PopoverContent>
       </Popover>
+
       {/* {freeTextQuery && (
         <div className="mt-2 p-3 border rounded-md bg-gray-50 text-sm text-gray-700 flex items-center justify-between shadow-sm">
           <span>

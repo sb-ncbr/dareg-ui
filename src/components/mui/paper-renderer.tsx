@@ -11,18 +11,17 @@ const PaperRenderer = ({
   renderers,
   cells,
   schema,
-  ...props
 }: RendererProps) => {
   if (!visible) {
     return null;
   }
 
-  // @ts-ignore
+  // @ts-expect-error - uischema.elements is not properly typed in the interface
   const elements = uischema.elements || [];
 
   return (
     <Paper elevation={0} style={{ padding: 16, marginBottom: 16, rowGap: 5 }}>
-      {elements.map((element: any, index: number) => (
+      {elements.map((element: RendererProps, index: number) => (
         <JsonFormsDispatch
           key={index}
           uischema={element}

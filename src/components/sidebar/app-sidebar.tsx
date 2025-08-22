@@ -106,7 +106,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 cursor-pointer">
           <Image
             onClick={() => router.push("/")}
             src={daregLogo}
@@ -122,7 +122,7 @@ export function AppSidebar() {
             className="group/collapsible"
           >
             <SidebarGroupLabel asChild>
-              <CollapsibleTrigger className="w-full rounded-lg h-auto px-4 py-4 hover:bg-sidebar-accent transition-colors duration-200">
+              <CollapsibleTrigger className="w-full cursor-pointer rounded-lg h-auto px-4 py-4 hover:bg-sidebar-accent transition-colors duration-200">
                 <div className="flex items-center space-x-4">
                   <LayoutDashboard className="h-8" />
                   <TypographySidebar text="Dashboards" />
@@ -148,14 +148,15 @@ export function AppSidebar() {
                         </div>
                       ) : (
                         savedSearches.map((search) => (
-                          <SidebarMenuItem key={search.id}>
-                            <SidebarMenuButton
-                              onClick={() => handleSavedSearchClick(search)}
-                              className="flex items-center space-x-3"
-                            >
-                              <Search className="h-4 w-4" />
-                              <span className="truncate">{search.name}</span>
-                            </SidebarMenuButton>
+                          <SidebarMenuItem
+                            key={search.id}
+                            onClick={() => handleSavedSearchClick(search)}
+                            className="flex items-center space-x-3"
+                          >
+                            <Search className="h-4 w-4" />
+                            <span className="truncate text-sm">
+                              {search.name}
+                            </span>
                           </SidebarMenuItem>
                         ))
                       )}

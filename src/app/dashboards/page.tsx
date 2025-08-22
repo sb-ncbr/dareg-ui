@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { TypographyH3 } from "@/components/typography/typography-h3";
 import { searchResultColumns } from "@/components/dynamic_table/columns/search-result-columns";
-import { ListFilter, Save, Loader2 } from "lucide-react";
+import { ListFilter, Save, Loader2, X } from "lucide-react";
 import { useSearch } from "@/components/tokenized-search/providers/search-context";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -27,11 +27,19 @@ import {
   Token,
 } from "@/components/tokenized-search/types/search-models";
 import { SaveSearchDialog } from "@/components/saved-searches/save-search-dialog";
+import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
+import {
+  SavedSearch,
+  savedSearchesService,
+} from "@/services/saved-searches-service";
+import { formatTokenDisplayValue } from "@/utils/token-display";
+import { useApiServiceGetApiV1Schemas } from "../../../openapi/queries";
 
 export default function DashboardsPage() {
   const {
     tokens,
     freeTextQuery,
+    setFreeTextQuery,
     isSearching,
     searchResults,
     setSearchResults,
@@ -100,6 +108,22 @@ export default function DashboardsPage() {
     }
   }, [isSearching, searchResults, tokens, freeTextQuery]);
 
+  const [savedSearch, setSavedSearch] = useState<SavedSearch | null>(null);
+
+  const { data: schemasData } = useApiServiceGetApiV1Schemas();
+  const availableSchemas = schemasData?.results || [];
+
+  useEffect(() => {
+    async function checkSavedSearch() {
+      const existing = await savedSearchesService.isSearchSaved({
+        tokens,
+        freeText: freeTextQuery,
+      });
+      setSavedSearch(existing);
+    }
+    checkSavedSearch();
+  }, [isSearching]);
+
   const isShowingSearchResults =
     !!searchResults && (tokens.length > 0 || freeTextQuery);
 
@@ -113,12 +137,40 @@ export default function DashboardsPage() {
     for (const key in filters) {
       const value = filters[key];
       if (value === undefined || value === null || value === "") continue;
+
+      // Skip _name fields as they are only for display purposes
+      if (key.endsWith("_name")) continue;
+
+      let displayValue = String(value);
+
+      // Handle schema fields specially - they should create tokens for display but not be processed as filters
+      if (key === "schema") {
+        // For schema fields, look up the name from available schemas
+        const schemaName = availableSchemas?.find(
+          (schema: any) => schema.id === value
+        )?.name;
+        if (schemaName) {
+          displayValue = schemaName;
+        }
+
+        // Create a token for display purposes (schema is handled separately in query body)
+        tokens.push({
+          model: model || "Dataset",
+          field: key,
+          operator: "=",
+          value: value,
+          displayValue: displayValue,
+          apiField: getApiField(model || "Dataset", key),
+        });
+        continue;
+      }
+
       tokens.push({
         model: model || "Dataset",
         field: key,
         operator: typeof value === "string" ? "regex" : "=",
         value: value,
-        displayValue: String(value),
+        displayValue: displayValue,
         apiField: getApiField(model || "Dataset", key),
       });
     }
@@ -152,7 +204,12 @@ export default function DashboardsPage() {
     const filterArray = [];
 
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        key !== "schema"
+      ) {
         filterArray.push({
           [`metadata.${key}`]:
             typeof value === "string" ? { $regex: value } : { $eq: value },
@@ -194,26 +251,17 @@ export default function DashboardsPage() {
       <Breadcrumbs />
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
-          <TypographyH2
-            text={
-              isShowingSearchResults
-                ? "Search Results"
-                : "Perform a search to see results"
-            }
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          {isShowingSearchResults && (
-            <SaveSearchDialog
-              tokens={tokens}
-              freeTextQuery={freeTextQuery}
-              queryBody={buildApiQueryParams(tokens, freeTextQuery)}
-              currentUrl={window.location.href}
-              trigger={
-                <Button variant="outline" className="w-[160px]">
-                  <Save className="h-4 w-4 mr-2" />
-                  <span>Save Search</span>
-                </Button>
+          {savedSearch ? (
+            <>
+              <TypographyH2 text="Saved Search:" />
+              <TypographyH2Ghost text={savedSearch.name} />
+            </>
+          ) : (
+            <TypographyH2
+              text={
+                isShowingSearchResults
+                  ? "Search Results"
+                  : "Perform a search to see results"
               }
             />
           )}
@@ -230,18 +278,29 @@ export default function DashboardsPage() {
               <Badge
                 key={i}
                 variant="secondary"
-                className="bg-blue-100 text-blue-800 border-blue-300"
+                className="bg-blue-100 text-blue-800 border-blue-300 cursor-pointer hover:bg-blue-200 transition-colors"
+                onClick={() => {
+                  const newTokens = tokens.filter((_, index) => index !== i);
+                  setTokens(newTokens);
+                }}
+                title={`Click to remove: ${token.model}.${token.field} ${
+                  token.operator
+                } ${formatTokenDisplayValue(token)}`}
               >
                 {token.model}.{token.field} {token.operator}{" "}
-                {token.displayValue}
+                {formatTokenDisplayValue(token)}
+                <X className="w-3 h-3 text-blue-400 hover:text-red-500 ml-1" />
               </Badge>
             ))}
             {freeTextQuery && (
               <Badge
                 variant="outline"
-                className="bg-white text-blue-700 border-blue-300"
+                className="bg-white text-blue-700 border-blue-300 cursor-pointer hover:bg-blue-50 transition-colors"
+                onClick={() => setFreeTextQuery("")}
+                title={`Click to remove free text query: "${freeTextQuery}"`}
               >
                 "{freeTextQuery}"
+                <X className="w-3 h-3 text-blue-400 hover:text-red-500 ml-1" />
               </Badge>
             )}
           </div>
@@ -253,30 +312,34 @@ export default function DashboardsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-4 mb-6 items-center">
+      <div className="flex flex-wrap gap-4 mt-2 mb-6 items-center">
         {/* <CommonFilters filterState={filterState} onChange={setFilterState} /> */}
-        <Button
-          variant="default"
-          onClick={() => setIsDialogOpen(!isDialogOpen)}
-          className="w-[160px] mb-1"
-          size={"xl"}
-        >
-          <ListFilter />
-          <span>Extensive Filter</span>
-        </Button>
+
         {isShowingSearchResults && (
-          <SaveSearchDialog
-            tokens={tokens}
-            freeTextQuery={freeTextQuery}
-            queryBody={buildApiQueryParams(tokens, freeTextQuery)}
-            currentUrl={window.location.href}
-            trigger={
-              <Button variant="outline" className="w-[160px]" size={"xl"}>
-                <Save className="h-4 w-4 mr-2" />
-                <span>Save Search</span>
-              </Button>
-            }
-          />
+          <>
+            {" "}
+            <Button
+              variant="default"
+              onClick={() => setIsDialogOpen(!isDialogOpen)}
+              className="w-[160px] mb-1"
+              size={"xl"}
+            >
+              <ListFilter />
+              <span>Extensive Filter</span>
+            </Button>
+            <SaveSearchDialog
+              tokens={tokens}
+              freeTextQuery={freeTextQuery}
+              queryBody={buildApiQueryParams(tokens, freeTextQuery)}
+              currentUrl={window.location.href}
+              trigger={
+                <Button variant="outline" className="w-[160px]" size={"xl"}>
+                  <Save className="h-4 w-4 mr-2" />
+                  <span>Save Search</span>
+                </Button>
+              }
+            />
+          </>
         )}
       </div>
 
@@ -337,11 +400,10 @@ export default function DashboardsPage() {
           }`}
         >
           <Lottie animationData={notFoundAnimation} loop={false} />
-          {!showNoResults ? (
+          {isShowingSearchResults ? (
             <p className="animate-pulse">Searching for results...</p>
           ) : (
             <div className="flex flex-col items-center transition-opacity duration-700 opacity-100">
-              <p className="animate-pulse mb-2">No results found.</p>
               <Button
                 variant="default"
                 onClick={() => setIsDialogOpen(!isDialogOpen)}

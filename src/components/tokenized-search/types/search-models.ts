@@ -1,7 +1,7 @@
 // --- TYPE DEFINITIONS ---
 
 export type Operator = "=" | "!=" | "<" | ">" | "<=" | ">=" | "contains" | "regex";
-export type InputType = "number" | "string" | "date" | "boolean";
+export type InputType = "string" | "number" | "boolean" | "date" | "matrix";
 
 export interface FilterOption {
     key: string;
@@ -34,6 +34,62 @@ export interface Token {
 export interface SearchHistoryEntry {
     tokens: Token[];
     freeTextQuery?: string;
+}
+
+// Enhanced metadata types for recursive unwrapping
+export interface MetadataField {
+  key: string;
+  label: string;
+  inputType: InputType;
+  description?: string;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  suggestions?: SuggestionConfig;
+  matrix?: MatrixConfig;
+  nested?: MetadataField[];
+  isSection?: boolean;
+  sectionLabel?: string;
+}
+
+export interface SuggestionConfig {
+  endpoint?: string;
+  type: "ror" | "orcid" | "custom" | "enum";
+  searchField?: string;
+  displayField?: string;
+  valueField?: string;
+  minChars?: number;
+  debounceMs?: number;
+  transform?: (item: any) => { label: string; value: string };
+}
+
+export interface MatrixConfig {
+  rows: number;
+  columns: number;
+  rowLabels?: string[];
+  columnLabels?: string[];
+  cellType: "number" | "string" | "boolean";
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
+}
+
+export interface MetadataSection {
+  key: string;
+  label: string;
+  description?: string;
+  fields: MetadataField[];
+  isCollapsible?: boolean;
+  defaultExpanded?: boolean;
+}
+
+export interface UnwrappedMetadata {
+  sections: MetadataSection[];
+  flatFields: MetadataField[];
+  matrixFields: MetadataField[];
+  suggestionFields: MetadataField[];
 }
 
 // --- CONFIGURATION & CONSTANTS ---

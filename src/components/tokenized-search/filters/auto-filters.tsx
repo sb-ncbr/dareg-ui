@@ -12,25 +12,29 @@ import { FilterOption } from "../types/search-models";
 import { DoubleRangeCalendarPopover } from "@/components/time-picker/double-calendar-popover";
 import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
+import TemplateSelectSSR from "@/components/select/template-select";
+import ProjectSelectSSR from "@/components/select/project-select";
 
 export type AutoFilterState = Record<
   string,
   string | number | boolean | Date | { from?: Date; to?: Date }
 >;
 
-const DEFAULT_SLIDER_MIN = 0;
-const DEFAULT_SLIDER_MAX = 10000;
+const DEFAULT_SLIDER_MIN = 1970;
+const DEFAULT_SLIDER_MAX = 2030;
 
 interface AutoFiltersProps {
   filters: FilterOption[];
   filterState: AutoFilterState;
   onChange: (newState: AutoFilterState) => void;
+  getFieldDropdownType?: (fieldKey: string) => "schema" | "project" | null;
 }
 
 export function AutoFilters({
   filters,
   filterState,
   onChange,
+  getFieldDropdownType,
 }: AutoFiltersProps) {
   const handleChange = (key: string, value: any) => {
     const newFilterState = { ...filterState };
@@ -44,6 +48,42 @@ export function AutoFilters({
 
   const renderInput = (filter: FilterOption) => {
     const value = filterState[filter.key] ?? "";
+    const dropdownType = getFieldDropdownType?.(filter.key);
+
+    // Handle ID fields with dropdowns
+    if (dropdownType === "schema") {
+      const displayValue =
+        (filterState[`${filter.key}_name`] as string) || (value as string);
+      return (
+        <TemplateSelectSSR
+          value={value as string} // Pass the ID, not the display name
+          onChange={(schema) =>
+            onChange({
+              ...filterState,
+              [filter.key]: schema.id, // Store the ID for search
+              [`${filter.key}_name`]: schema.name, // Store the name for display
+            })
+          }
+        />
+      );
+    }
+
+    if (dropdownType === "project") {
+      const displayValue =
+        (filterState[`${filter.key}_name`] as string) || (value as string);
+      return (
+        <ProjectSelectSSR
+          value={value as string} // Pass the ID, not the display name
+          onChange={(project) =>
+            onChange({
+              ...filterState,
+              [filter.key]: project.id, // Store the ID for search
+              [`${filter.key}_name`]: project.name, // Store the name for display
+            })
+          }
+        />
+      );
+    }
 
     switch (filter.inputType) {
       case "number":

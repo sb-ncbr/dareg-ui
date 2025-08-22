@@ -134,7 +134,7 @@ class SavedSearchesService {
   }
 
   // Check if a search is already saved (by comparing filters)
-  async isSearchSaved(filters: { tokens: any[]; freeText?: string; queryBody: any }): Promise<SavedSearch | null> {
+  async isSearchSaved(filters: { tokens: any[]; freeText?: string}): Promise<SavedSearch | null> {
     try {
       const searches = await this.getSavedSearches();
       

@@ -79,6 +79,10 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    setTokens([]); // Clear tokens when route changes
+  }, [pathname]);
+
+  useEffect(() => {
     if (tokens.length === 0) {
       const qParam = searchParams.get("q");
       const tokensParam = searchParams.get("tokens");
@@ -161,7 +165,9 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     SearchHistoryService.clearHistory();
   }, []);
   const getHistory = useCallback(() => {
-    return SearchHistoryService.getHistory();
+    const history = SearchHistoryService.getHistory();
+    console.log("history", history);
+    return history;
   }, []);
 
   const { mutate: performSearch } = useMutation({
