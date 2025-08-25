@@ -22,6 +22,7 @@ import {
   Bookmark,
   Search,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -80,6 +81,22 @@ export function AppSidebar() {
     // Navigate to the saved search URL
     if (search.url) {
       router.push(search.url);
+    }
+  };
+
+  const handleDeleteSavedSearch = async (
+    searchId: string,
+    event: React.MouseEvent
+  ) => {
+    event.stopPropagation(); // Prevent triggering the search click
+    try {
+      const success = await savedSearchesService.deleteSavedSearch(searchId);
+      if (success) {
+        // Refresh the saved searches list
+        await refreshSavedSearches();
+      }
+    } catch (error) {
+      console.error("Error deleting saved search:", error);
     }
   };
 
@@ -151,12 +168,21 @@ export function AppSidebar() {
                           <SidebarMenuItem
                             key={search.id}
                             onClick={() => handleSavedSearchClick(search)}
-                            className="flex items-center space-x-3"
+                            className="flex items-center justify-between group/item hover:bg-sidebar-accent rounded-lg space-x-3"
                           >
                             <Search className="h-4 w-4" />
                             <span className="truncate text-sm">
                               {search.name}
                             </span>
+                            <button
+                              onClick={(e) =>
+                                handleDeleteSavedSearch(search.id, e)
+                              }
+                              className="opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-100 rounded text-red-500 hover:text-red-700"
+                              title="Delete saved search"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </SidebarMenuItem>
                         ))
                       )}

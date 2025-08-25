@@ -1,0 +1,133 @@
+/* Enhanced Filter Dialog Styles for JsonForms */
+
+/* Fade-in animation for schema content changes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Ensure JsonForms has proper background */
+.enhanced-filter-jsonforms {
+  background-color: white !important;
+}
+
+/* Style JsonForms form elements */
+.enhanced-filter-jsonforms .jsonforms-control {
+  background-color: white;
+}
+
+.enhanced-filter-jsonforms .jsonforms-control input,
+.enhanced-filter-jsonforms .jsonforms-control select,
+.enhanced-filter-jsonforms .jsonforms-control textarea {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.enhanced-filter-jsonforms .jsonforms-control input:focus,
+.enhanced-filter-jsonforms .jsonforms-control select:focus,
+.enhanced-filter-jsonforms .jsonforms-control textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Style JsonForms labels */
+.enhanced-filter-jsonforms .jsonforms-control-label {
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+/* Style JsonForms validation errors */
+.enhanced-filter-jsonforms .jsonforms-validation-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Ensure proper spacing in JsonForms */
+.enhanced-filter-jsonforms .jsonforms-control + .jsonforms-control {
+  margin-top: 1rem;
+}
+
+/* Style JsonForms checkboxes and radio buttons */
+.enhanced-filter-jsonforms .jsonforms-control input[type="checkbox"],
+.enhanced-filter-jsonforms .jsonforms-control input[type="radio"] {
+  margin-right: 0.5rem;
+}
+
+/* Style JsonForms array controls */
+.enhanced-filter-jsonforms .jsonforms-array-control {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Style JsonForms object controls */
+.enhanced-filter-jsonforms .jsonforms-object-control {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Ensure proper contrast for JsonForms text */
+.enhanced-filter-jsonforms {
+  color: #111827;
+}
+
+/* Style JsonForms buttons */
+.enhanced-filter-jsonforms .jsonforms-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.enhanced-filter-jsonforms .jsonforms-button:hover {
+  background-color: #2563eb;
+}
+
+.enhanced-filter-jsonforms .jsonforms-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Style JsonForms array add/remove buttons */
+.enhanced-filter-jsonforms .jsonforms-array-control .jsonforms-button {
+  background-color: #10b981;
+  margin-right: 0.25rem;
+}
+
+.enhanced-filter-jsonforms .jsonforms-array-control .jsonforms-button:hover {
+  background-color: #059669;
+}
+
+.enhanced-filter-jsonforms .jsonforms-array-control .jsonforms-button.remove {
+  background-color: #ef4444;
+}
+
+.enhanced-filter-jsonforms .jsonforms-array-control .jsonforms-button.remove:hover {
+  background-color: #dc2626;
+}

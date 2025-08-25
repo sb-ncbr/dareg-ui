@@ -13,7 +13,6 @@ import {
 } from "../types/search-models";
 import { useDebounce } from "../../../hooks/use-debounce";
 
-// Matrix Input Component
 interface MatrixInputProps {
   field: MetadataField;
   value: any;
@@ -26,7 +25,6 @@ export function MatrixInput({ field, value, onChange }: MatrixInputProps) {
     if (value && Array.isArray(value)) {
       return value;
     }
-    // Initialize empty matrix
     return Array.from({ length: matrix.rows }, () =>
       Array.from({ length: matrix.columns }, () =>
         matrix.cellType === "number"
@@ -84,7 +82,7 @@ export function MatrixInput({ field, value, onChange }: MatrixInputProps) {
           variant="outline"
           size="sm"
           onClick={addRow}
-          disabled={matrixData.length >= 10} // Limit to 10 rows
+          disabled={matrixData.length >= 10}
         >
           Add Row
         </Button>
@@ -190,7 +188,6 @@ export function MatrixInput({ field, value, onChange }: MatrixInputProps) {
   );
 }
 
-// Suggestion Input Component
 interface SuggestionInputProps {
   field: MetadataField;
   value: any;
@@ -214,7 +211,6 @@ export function SuggestionInput({
     suggestions.debounceMs || 300
   );
 
-  // Fetch suggestions from API
   const fetchSuggestions = useCallback(
     async (query: string) => {
       if (!suggestions.endpoint || query.length < (suggestions.minChars || 1)) {
@@ -320,7 +316,6 @@ export function SuggestionInput({
           )}
         </div>
 
-        {/* Suggestions dropdown */}
         {isOpen && searchTerm.length >= (suggestions.minChars || 1) && (
           <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
             {isLoading ? (
@@ -360,7 +355,6 @@ export function SuggestionInput({
         )}
       </div>
 
-      {/* Selected item display */}
       {selectedItem && (
         <div className="flex items-center space-x-2">
           <Badge variant="secondary" className="text-xs">

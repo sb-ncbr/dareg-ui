@@ -14,7 +14,7 @@ import {
   CommonFilters,
   CommonFilterState,
 } from "@/components/tokenized-search/filters/common-filters";
-import { FilterDialog } from "@/components/tokenized-search/filters/filter-dialog";
+import { EnhancedFilterDialog } from "@/components/tokenized-search/filters/enhanced-filter-dialog";
 import Lottie from "lottie-react";
 import notFoundAnimation from "../../../public/lottie/not-found.json";
 import {
@@ -343,7 +343,7 @@ export default function DashboardsPage() {
         )}
       </div>
 
-      <FilterDialog
+      <EnhancedFilterDialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onApply={handleDialogApply}
@@ -395,7 +395,7 @@ export default function DashboardsPage() {
       )}
       {showLoading && (
         <div
-          className={`flex flex-col justify-center items-center py-8 text-gray-500 transition-opacity duration-500 ${
+          className={`flex flex-col justify-center items-center text-gray-500 transition-opacity duration-500 ${
             showLoading ? "opacity-100" : "opacity-0"
           }`}
         >

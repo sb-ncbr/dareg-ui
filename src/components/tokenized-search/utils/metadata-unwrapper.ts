@@ -1,7 +1,7 @@
 import { MetadataField, MetadataSection, UnwrappedMetadata } from "../types/search-models";
 
 /**
- * Simple metadata unwrapper that creates sections for top-level objects
+ * Metadata unwrapper that creates sections for top-level objects
  * and processes primitive fields within each section
  */
 export function unwrapMetadata(schema: any, prefix: string = ""): UnwrappedMetadata {
@@ -37,20 +37,22 @@ export function unwrapMetadata(schema: any, prefix: string = ""): UnwrappedMetad
         
         console.log("Processing nested property:", { nestedKey, type: nestedProperty.type, fieldKey });
         
-        // Create a field for this nested property
-        const field: MetadataField = {
-          key: fieldKey,
-          label: nestedProperty.title || nestedKey.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
-          inputType: mapSchemaPropertyToInputType(nestedProperty),
-          description: nestedProperty.description,
-          required: nestedProperty.required,
-          min: nestedProperty.minimum,
-          max: nestedProperty.maximum,
-          step: nestedProperty.multipleOf,
-          placeholder: nestedProperty.description || `Enter ${nestedKey.replace(/_/g, " ")}`
-        };
-        
-        sectionFields.push(field);
+        // Only include simple field types in manual fields
+        if (isSimpleFieldType(nestedProperty)) {
+          const field: MetadataField = {
+            key: fieldKey,
+            label: nestedProperty.title || nestedKey.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+            inputType: mapSchemaPropertyToInputType(nestedProperty),
+            description: nestedProperty.description,
+            required: nestedProperty.required,
+            min: nestedProperty.minimum,
+            max: nestedProperty.maximum,
+            step: nestedProperty.multipleOf,
+            placeholder: nestedProperty.description || `Enter ${nestedKey.replace(/_/g, " ")}`
+          };
+          
+          sectionFields.push(field);
+        }
       });
       
       // Create the section
@@ -68,21 +70,23 @@ export function unwrapMetadata(schema: any, prefix: string = ""): UnwrappedMetad
         console.log("Created section:", { key, fieldCount: sectionFields.length });
       }
     } else {
-      // Top-level primitive field
-      const field: MetadataField = {
-        key,
-        label: property.title || key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
-        inputType: mapSchemaPropertyToInputType(property),
-        description: property.description,
-        required: property.required,
-        min: property.minimum,
-        max: property.maximum,
-        step: property.multipleOf,
-        placeholder: property.description || `Enter ${key.replace(/_/g, " ")}`
-      };
-      
-      flatFields.push(field);
-      console.log("Added flat field:", { key, type: field.inputType });
+      // Only include simple field types in manual fields
+      if (isSimpleFieldType(property)) {
+        const field: MetadataField = {
+          key,
+          label: property.title || key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+          inputType: mapSchemaPropertyToInputType(property),
+          description: property.description,
+          required: property.required,
+          min: property.minimum,
+          max: property.maximum,
+          step: property.multipleOf,
+          placeholder: property.description || `Enter ${key.replace(/_/g, " ")}`
+        };
+        
+        flatFields.push(field);
+        console.log("Added flat field:", { key, type: field.inputType });
+      }
     }
   });
   
@@ -94,6 +98,35 @@ export function unwrapMetadata(schema: any, prefix: string = ""): UnwrappedMetad
   });
   
   return { sections, flatFields, matrixFields, suggestionFields };
+}
+
+/**
+ * Determines if a field type is simple enough for manual input
+ * Complex types (arrays, objects, enums) should be handled by enhanced forms
+ */
+function isSimpleFieldType(property: any): boolean {
+  // Skip arrays (including matrices)
+  if (property?.type === "array") {
+    return false;
+  }
+  
+  // Skip objects with properties (nested structures)
+  if (property?.type === "object" && property?.properties) {
+    return false;
+  }
+  
+  // Skip enums (these should be handled by enhanced forms)
+  if (property?.enum && Array.isArray(property.enum)) {
+    return false;
+  }
+  
+  // Skip anyOf, oneOf, allOf (complex schemas)
+  if (property?.anyOf || property?.oneOf || property?.allOf) {
+    return false;
+  }
+  
+  // Only allow simple primitive types
+  return ["string", "number", "integer", "boolean"].includes(property?.type);
 }
 
 /**

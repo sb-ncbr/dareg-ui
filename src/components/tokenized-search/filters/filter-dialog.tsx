@@ -56,13 +56,11 @@ export function FilterDialog({
   onApply: (type: string, filters: AutoFilterState, schemaId?: string) => void;
   resultCount?: number;
 }) {
-  // Type assertion for imported JSON config
   const filterExcludeConfig = filterExcludeConfigJson as Record<
     string,
     string[]
   >;
 
-  // Helper to filter out excluded fields for a model
   function getFilteredModelFilters(modelKey: string) {
     const lowerKey = modelKey.toLowerCase();
     const excluded = [
@@ -89,14 +87,13 @@ export function FilterDialog({
   const availableSchemas =
     schemasData?.results?.map((schema) => schema.name) || [];
 
-  // Helper function to determine if a field needs a dropdown
   const getFieldDropdownType = (
     fieldKey: string
   ): "schema" | "project" | null => {
     if (fieldKey === "schema") return "schema";
     if (fieldKey === "project") return "project";
     if (fieldKey.includes("_id") || fieldKey === "reservationId")
-      return "project"; // Default to project for ID fields
+      return "project";
     return null;
   };
 
@@ -123,14 +120,12 @@ export function FilterDialog({
         (selectedSchemaObj.schema as any)?.properties
       );
 
-      // Use the new enhanced metadata unwrapping
       const metadata = unwrapMetadata(selectedSchemaObj.schema);
       console.log("Unwrapped metadata:", metadata);
 
       setSchemaMetadata(metadata);
       setSelectedSchemaId(selectedSchemaObj.id);
 
-      // Add the schema to the filter state so it gets included in the tokens and query body
       setFilterState((prev) => ({
         ...prev,
         schema: selectedSchemaObj.id,
@@ -149,7 +144,6 @@ export function FilterDialog({
     const value = filterState[field.key] ?? "";
     const dropdownType = getFieldDropdownType(field.key);
 
-    // Handle ID fields with dropdowns
     if (dropdownType === "schema") {
       const displayValue =
         (filterState[`${field.key}_name`] as string) || (value as string);
@@ -190,7 +184,6 @@ export function FilterDialog({
       );
     }
 
-    // Handle regular input types
     switch (field.inputType) {
       case "number":
         return (
@@ -198,7 +191,7 @@ export function FilterDialog({
             <Label htmlFor={field.key}>{field.label}</Label>
             <div className="flex flex-col gap-2 pt-2">
               <Slider
-                min={field.min ?? 1970}
+                min={field.min ?? 0}
                 max={field.max ?? 2030}
                 value={[typeof value === "number" ? value : field.min ?? 1970]}
                 onValueChange={([val]) => handleFieldChange(field.key, val)}
@@ -346,7 +339,6 @@ export function FilterDialog({
                         </Select>
                       )}
 
-                      {/* Enhanced metadata rendering with sections */}
                       {schemaMetadata && (
                         <div className="mt-4">
                           <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
@@ -363,10 +355,8 @@ export function FilterDialog({
                           </div>
 
                           <Accordion type="multiple" className="w-full">
-                            {/* Render sections */}
                             {schemaMetadata.sections.map(renderMetadataSection)}
 
-                            {/* Render flat fields */}
                             {schemaMetadata.flatFields.length > 0 && (
                               <AccordionItem value="other-fields">
                                 <AccordionTrigger className="text-sm font-medium">

@@ -17,7 +17,14 @@ import ProjectSelectSSR from "@/components/select/project-select";
 
 export type AutoFilterState = Record<
   string,
-  string | number | boolean | Date | { from?: Date; to?: Date }
+  | string
+  | number
+  | boolean
+  | Date
+  | { from?: Date; to?: Date }
+  | { $in: any[] }
+  | { $gte: any; $lte: any }
+  | any[][]
 >;
 
 const DEFAULT_SLIDER_MIN = 1970;

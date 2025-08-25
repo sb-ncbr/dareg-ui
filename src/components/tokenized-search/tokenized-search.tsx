@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -241,7 +242,9 @@ export default function SearchBar() {
     else if (popoverContentState === "select_operator")
       listLength = OPERATORS.length;
     else if (popoverContentState === "enter_value")
-      listLength = currentFieldSuggestions.length;
+      // Add 1 for the free text option if there's input, plus API suggestions
+      listLength =
+        (inputValue.length > 0 ? 1 : 0) + currentFieldSuggestions.length;
     setHighlightedIndex(listLength > 0 ? 0 : -1);
     // eslint-disable-next-line
   }, [
@@ -249,6 +252,7 @@ export default function SearchBar() {
     modelSuggestions.length,
     fieldOptions.length,
     currentFieldSuggestions.length,
+    inputValue.length,
     isPopoverOpen,
   ]);
 
@@ -398,12 +402,20 @@ export default function SearchBar() {
     });
 
     if (model && field && operator && inputValue) {
+      // We're building a filter - create the token and add it
       const newToken = buildToken(inputValue);
       if (newToken) {
-        finalTokens = [...tokens, newToken];
+        setTokens((prevTokens) => {
+          const newTokens = [...prevTokens, newToken];
+          debouncedMainSearch(newTokens, freeTextQuery);
+          return newTokens;
+        });
         resetFilterBuildingState();
+        setIsPopoverOpen(false);
+        return; // Don't navigate, just add the token
       }
     } else if (inputValue && inputValue.trim()) {
+      // We're doing a free text search
       finalFreeText = inputValue.trim();
       setFreeTextQuery(inputValue.trim());
       setInputValue("");
@@ -444,7 +456,9 @@ export default function SearchBar() {
     else if (popoverContentState === "select_operator")
       listLength = OPERATORS.length;
     else if (popoverContentState === "enter_value")
-      listLength = currentFieldSuggestions.length;
+      // Add 1 for the free text option if there's input, plus API suggestions
+      listLength =
+        (inputValue.length > 0 ? 1 : 0) + currentFieldSuggestions.length;
 
     if (listLength === 0) return;
 
@@ -479,10 +493,19 @@ export default function SearchBar() {
           setInputValue("");
           inputRef.current?.focus();
         } else if (popoverContentState === "enter_value") {
-          const selected = currentFieldSuggestions[highlightedIndex];
-          setInputValue(selected);
-          addFinalToken(selected);
-          setHighlightedIndex(-1);
+          if (highlightedIndex === 0 && inputValue.length > 0) {
+            // First option is the free text - use the current input value
+            addFinalToken();
+            setHighlightedIndex(-1);
+          } else {
+            // API suggestion - adjust index to account for free text option
+            const suggestionIndex =
+              highlightedIndex - (inputValue.length > 0 ? 1 : 0);
+            const selected = currentFieldSuggestions[suggestionIndex];
+            setInputValue(selected);
+            addFinalToken(selected);
+            setHighlightedIndex(-1);
+          }
         }
         e.preventDefault();
         return;
@@ -625,54 +648,67 @@ export default function SearchBar() {
                 />
               </Badge>
             )}
-            <input
-              ref={inputRef}
-              className="flex-grow focus:outline-none bg-background min-w-[100px] text-gray-800 placeholder-gray-400"
-              placeholder={getPlaceholder()}
-              value={inputValue}
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                if (e.target.value.length > 0 && !isPopoverOpen) {
-                  setTimeout(() => setIsPopoverOpen(true), 0);
-                }
-                if (popoverHistoryMode) {
-                  setPopoverHistoryMode(false);
-                }
-              }}
-              onFocus={() => setIsPopoverOpen(true)}
-              onBlur={(e) => {
-                setTimeout(() => {
-                  if (
-                    !document.activeElement ||
-                    !popoverTriggerRef.current?.contains(document.activeElement)
-                  ) {
-                    setIsPopoverOpen(false);
+            <div className="flex-grow relative">
+              <input
+                ref={inputRef}
+                className="w-full focus:outline-none bg-background min-w-[100px] text-gray-800 placeholder-gray-400"
+                placeholder={getPlaceholder()}
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  if (e.target.value.length > 0 && !isPopoverOpen) {
+                    setTimeout(() => setIsPopoverOpen(true), 0);
+                  }
+                  if (popoverHistoryMode) {
                     setPopoverHistoryMode(false);
                   }
-                }, 100);
-              }}
-              onKeyDown={(e) => {
-                handleBackspace(e);
-                if (isPopoverOpen) {
-                  handleSuggestionKeyDown(e);
-                }
-                if (e.key === "Enter") {
-                  console.log("Enter key pressed", {
-                    highlightedIndex,
-                    tokens: tokens.length,
-                    freeTextQuery,
-                    inputValue: inputValue.trim(),
-                  });
-                  if (highlightedIndex >= 0) {
-                    console.log("Suggestion highlighted, not handling Enter");
-                    return;
+                }}
+                onFocus={() => setIsPopoverOpen(true)}
+                onBlur={(e) => {
+                  setTimeout(() => {
+                    if (
+                      !document.activeElement ||
+                      !popoverTriggerRef.current?.contains(
+                        document.activeElement
+                      )
+                    ) {
+                      setIsPopoverOpen(false);
+                      setPopoverHistoryMode(false);
+                    }
+                  }, 100);
+                }}
+                onKeyDown={(e) => {
+                  handleBackspace(e);
+                  if (isPopoverOpen) {
+                    handleSuggestionKeyDown(e);
                   }
-                  console.log("Triggering handleEnterPress");
-                  e.preventDefault();
-                  handleEnterPress();
-                }
-              }}
-            />
+                  if (e.key === "Enter") {
+                    console.log("Enter key pressed", {
+                      highlightedIndex,
+                      tokens: tokens.length,
+                      freeTextQuery,
+                      inputValue: inputValue.trim(),
+                    });
+                    if (highlightedIndex >= 0) {
+                      console.log("Suggestion highlighted, not handling Enter");
+                      return;
+                    }
+                    console.log("Triggering handleEnterPress");
+                    e.preventDefault();
+                    handleEnterPress();
+                  }
+                }}
+              />
+              {/* Show hint when building a filter */}
+              {model && field && operator && inputValue && (
+                <div className="absolute -bottom-6 left-0 text-xs text-gray-500 flex items-center gap-1">
+                  <span>Press Enter to create filter with</span>
+                  <span className="font-medium text-blue-600">
+                    "{inputValue}"
+                  </span>
+                </div>
+              )}
+            </div>
             {isSearching && (
               <Loader2 className="h-5 w-5 animate-spin text-blue-500 ml-2" />
             )}
@@ -940,43 +976,100 @@ export default function SearchBar() {
                         Loading suggestions...
                       </div>
                     )}
-                    {!isLoadingSuggestions &&
-                      currentFieldSuggestions &&
-                      currentFieldSuggestions.length > 0 && (
-                        <div>
-                          <div className="text-xs font-semibold mb-1 text-gray-600">
-                            Suggestions:
-                          </div>
-                          <Command className="p-0 max-h-48 overflow-y-auto">
-                            <CommandGroup>
-                              {currentFieldSuggestions.map((sugg, idx) => (
-                                <CommandItem
-                                  key={sugg}
-                                  ref={(el) => {
-                                    if (highlightedIndex === idx && el) {
-                                      el.scrollIntoView({ block: "nearest" });
-                                    }
-                                  }}
-                                  onSelect={() => {
-                                    setInputValue(sugg);
-                                    addFinalToken(sugg);
-                                    setHighlightedIndex(-1);
-                                  }}
-                                  className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
-                                    highlightedIndex === idx
-                                      ? "bg-blue-100"
-                                      : ""
-                                  }`}
-                                  aria-selected={highlightedIndex === idx}
-                                  tabIndex={-1}
-                                >
-                                  {sugg}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </Command>
+                    {!isLoadingSuggestions && (
+                      <div>
+                        <div className="text-xs font-semibold mb-1 text-gray-600">
+                          Suggestions:
                         </div>
-                      )}
+                        <Command className="p-0 max-h-48 overflow-y-auto">
+                          <CommandGroup>
+                            {/* Always show the free text input as the first option */}
+                            {inputValue.length > 0 && (
+                              <CommandItem
+                                key="free-text"
+                                ref={(el) => {
+                                  if (highlightedIndex === 0 && el) {
+                                    el.scrollIntoView({ block: "nearest" });
+                                  }
+                                }}
+                                onSelect={() => {
+                                  addFinalToken();
+                                  setHighlightedIndex(-1);
+                                }}
+                                className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md border-l-4 border-l-blue-500 ${
+                                  highlightedIndex === 0
+                                    ? "bg-blue-100"
+                                    : "bg-blue-50"
+                                }`}
+                                aria-selected={highlightedIndex === 0}
+                                tabIndex={-1}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <div>
+                                    <span className="font-medium text-blue-700">
+                                      "{inputValue}"
+                                    </span>
+                                    <span className="text-xs text-blue-600 ml-2 font-medium">
+                                      (exact text)
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-blue-500 bg-blue-100 px-2 py-1 rounded">
+                                    Enter
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            )}
+                            {/* Show API suggestions after the free text */}
+                            {currentFieldSuggestions &&
+                              currentFieldSuggestions.length > 0 && (
+                                <>
+                                  {/* Separator between free text and API suggestions */}
+                                  <div className="px-3 py-2 border-t border-gray-200">
+                                    <span className="text-xs text-gray-500 font-medium">
+                                      API Suggestions:
+                                    </span>
+                                  </div>
+                                  {currentFieldSuggestions.map((sugg, idx) => (
+                                    <CommandItem
+                                      key={sugg}
+                                      ref={(el) => {
+                                        if (
+                                          highlightedIndex ===
+                                            idx +
+                                              (inputValue.length > 0 ? 1 : 0) &&
+                                          el
+                                        ) {
+                                          el.scrollIntoView({
+                                            block: "nearest",
+                                          });
+                                        }
+                                      }}
+                                      onSelect={() => {
+                                        setInputValue(sugg);
+                                        addFinalToken(sugg);
+                                        setHighlightedIndex(-1);
+                                      }}
+                                      className={`cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-md ${
+                                        highlightedIndex ===
+                                        idx + (inputValue.length > 0 ? 1 : 0)
+                                          ? "bg-blue-100"
+                                          : ""
+                                      }`}
+                                      aria-selected={
+                                        highlightedIndex ===
+                                        idx + (inputValue.length > 0 ? 1 : 0)
+                                      }
+                                      tabIndex={-1}
+                                    >
+                                      {sugg}
+                                    </CommandItem>
+                                  ))}
+                                </>
+                              )}
+                          </CommandGroup>
+                        </Command>
+                      </div>
+                    )}
                     {!isLoadingSuggestions &&
                       currentFieldSuggestions?.length === 0 &&
                       inputValue.length > 0 && (
