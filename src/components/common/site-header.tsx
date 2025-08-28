@@ -13,10 +13,10 @@ export function SiteHeader() {
     <header className="bg-sidebar sticky top-0 z-40 w-full border-b px-5 ">
       <div className="container flex w-full items-center space-x-4 justify-between sm:justify-between sm:space-x-0 sm:min-w-full">
         <SidebarTrigger></SidebarTrigger>
-        <div className="flex-1 flex justify-center items-center min-w-0">
+        <div className="flex-[2] flex justify-center items-center min-w-0">
           <SearchBar />
         </div>
-        <div className="flex flex-1 items-center w-full justify-end">
+        <div className="flex-1 flex items-center w-full justify-end">
           <nav className="flex items-center space-x-1">
             <ThemeToggle />
           </nav>

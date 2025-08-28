@@ -167,7 +167,7 @@ export function AutoFilters({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[50vh] overflow-y-auto pr-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
       {filters.map((filter) => (
         <div key={filter.key} className="flex flex-col gap-1.5 text-sm">
           <Label htmlFor={filter.key}>{filter.label}</Label>

@@ -193,8 +193,8 @@ const DatasetDetails: React.FC = () => {
   const renderMetadataFields = () => {
     return (
       <>
-        <div className="flex items-center justify-between mb-2">
-          <TypographyH3 text="Metadata" />
+        <div className="flex items-center justify-between mb-4 mt-2">
+          <TypographyH2 text="Metadata" />
         </div>
         <FormsWrapped
           setErrors={setErrors}

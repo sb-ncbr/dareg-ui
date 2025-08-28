@@ -532,7 +532,7 @@ export default function SearchBar() {
   }, [pathname]);
 
   return (
-    <div className="w-full max-w-4xl lg:w-full mx-5 my-2 sm:w-20 space-y-4 bg-background rounded-md">
+    <div className="w-full mx-5 my-2 space-y-4 bg-background rounded-md">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
           <div
@@ -648,10 +648,10 @@ export default function SearchBar() {
                 />
               </Badge>
             )}
-            <div className="flex-grow relative">
+            <div className="flex-1 relative min-w-0">
               <input
                 ref={inputRef}
-                className="w-full focus:outline-none bg-background min-w-[100px] text-gray-800 placeholder-gray-400"
+                className="w-full focus:outline-none bg-background min-w-0 text-gray-800 placeholder-gray-400"
                 placeholder={getPlaceholder()}
                 value={inputValue}
                 onChange={(e) => {
@@ -712,38 +712,35 @@ export default function SearchBar() {
             {isSearching && (
               <Loader2 className="h-5 w-5 animate-spin text-blue-500 ml-2" />
             )}
+            {/* Search button - only show when there are tokens or free text */}
             {(tokens.length > 0 || freeTextQuery) && (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const queryBody = buildApiQueryParams(
-                      tokens,
-                      freeTextQuery
-                    );
-                    performSearch({
-                      queryBody,
-                      navigate: true,
-                      tokens: tokens,
-                      freeText: freeTextQuery,
-                    });
-                  }}
-                >
-                  <Search className="h-4 w-4 mr-1" />
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="ml-2"
-                  onClick={triggerHistoryPopover}
-                >
-                  <History className="h-4 w-4 mr-1" />
-                  History
-                </Button>
-              </>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const queryBody = buildApiQueryParams(tokens, freeTextQuery);
+                  performSearch({
+                    queryBody,
+                    navigate: true,
+                    tokens: tokens,
+                    freeText: freeTextQuery,
+                  });
+                }}
+              >
+                <Search className="h-4 w-4 mr-1" />
+              </Button>
             )}
+
+            {/* History button - always visible */}
+            <Button
+              size="sm"
+              variant="outline"
+              className={tokens.length > 0 || freeTextQuery ? "ml-2" : ""}
+              onClick={triggerHistoryPopover}
+            >
+              <History className="h-4 w-4 mr-1" />
+              History
+            </Button>
           </div>
         </PopoverTrigger>
         <PopoverContent

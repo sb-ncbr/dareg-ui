@@ -2,6 +2,7 @@
 import "./globals.css";
 import { Metadata } from "next";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 import { cn } from "@/lib/utils";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -23,6 +24,7 @@ import { UserProfileProvider } from "@/hooks/UserProfileContext";
 import { SearchProvider } from "@/components/tokenized-search/providers/search-context";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Loading from "./loading";
 
 const metadata: Metadata = {
   title: {
@@ -57,34 +59,36 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SessionProvider>
           <InterceptorInitializer />
           <QueryClientProvider client={queryClient}>
-            <SearchProvider>
-              <UserProfileProvider>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                >
-                  <MuiThemeProviderSync>
-                    {isLoginPage ? (
-                      <main className="flex min-h-screen items-center justify-center">
-                        {children}
-                      </main>
-                    ) : (
-                      <SidebarProvider>
-                        <AppSidebar />
-                        <RouteTracker />
-                        <div className="flex flex-col min-h-screen flex-1">
-                          <SiteHeader></SiteHeader>
-                          <main className="flex-1 mx-8 my-8">{children}</main>
-                        </div>
-                      </SidebarProvider>
-                    )}
-                    <TailwindIndicator />
-                    <ToastContainer />
-                  </MuiThemeProviderSync>
-                </ThemeProvider>
-              </UserProfileProvider>
-            </SearchProvider>
+            <Suspense fallback={<Loading />}>
+              <SearchProvider>
+                <UserProfileProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                  >
+                    <MuiThemeProviderSync>
+                      {isLoginPage ? (
+                        <main className="flex min-h-screen items-center justify-center">
+                          {children}
+                        </main>
+                      ) : (
+                        <SidebarProvider>
+                          <AppSidebar />
+                          <RouteTracker />
+                          <div className="flex flex-col min-h-screen flex-1">
+                            <SiteHeader></SiteHeader>
+                            <main className="flex-1 mx-8 my-8">{children}</main>
+                          </div>
+                        </SidebarProvider>
+                      )}
+                      <TailwindIndicator />
+                      <ToastContainer />
+                    </MuiThemeProviderSync>
+                  </ThemeProvider>
+                </UserProfileProvider>
+              </SearchProvider>
+            </Suspense>
           </QueryClientProvider>
         </SessionProvider>
       </body>

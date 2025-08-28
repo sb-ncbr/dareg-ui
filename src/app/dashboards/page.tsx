@@ -34,6 +34,7 @@ import {
 } from "@/services/saved-searches-service";
 import { formatTokenDisplayValue } from "@/utils/token-display";
 import { useApiServiceGetApiV1Schemas } from "../../../openapi/queries";
+import { bootstrapSearchModels } from "@/components/tokenized-search/services/bootstrap-service";
 
 export default function DashboardsPage() {
   const {
@@ -50,6 +51,7 @@ export default function DashboardsPage() {
     addToHistory,
     selectedSchemaId,
     setSelectedSchemaId,
+    isInitialized,
   } = useSearch();
 
   const [pagination, setPagination] = useState({
@@ -107,6 +109,47 @@ export default function DashboardsPage() {
       return () => clearTimeout(timeout);
     }
   }, [isSearching, searchResults, tokens, freeTextQuery]);
+
+  // Force bootstrap search models when dashboard loads
+  useEffect(() => {
+    if (!isInitialized) {
+      const forceBootstrap = async () => {
+        console.log(
+          "🔄 Force bootstrapping search models on dashboard load..."
+        );
+        try {
+          await bootstrapSearchModels();
+          console.log(
+            "✅ Search models bootstrapped successfully on dashboard load"
+          );
+        } catch (error) {
+          console.error(
+            "❌ Failed to bootstrap search models on dashboard load:",
+            error
+          );
+        }
+      };
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(forceBootstrap, 100);
+      return () => clearTimeout(timer);
+    } else {
+      console.log("✅ Search models already initialized, skipping bootstrap");
+    }
+  }, [isInitialized]);
+
+  // Additional bootstrap on mount to ensure models are available
+  useEffect(() => {
+    const immediateBootstrap = async () => {
+      console.log("🚀 Immediate bootstrap on dashboard mount...");
+      try {
+        await bootstrapSearchModels();
+        console.log("✅ Immediate bootstrap completed successfully");
+      } catch (error) {
+        console.error("❌ Immediate bootstrap failed:", error);
+      }
+    };
+    immediateBootstrap();
+  }, []); // Empty dependency array - runs once on mount
 
   const [savedSearch, setSavedSearch] = useState<SavedSearch | null>(null);
 
@@ -399,7 +442,11 @@ export default function DashboardsPage() {
             showLoading ? "opacity-100" : "opacity-0"
           }`}
         >
-          <Lottie animationData={notFoundAnimation} loop={false} />
+          <Lottie
+            style={{ width: 450, height: 450 }}
+            animationData={notFoundAnimation}
+            loop={false}
+          />
           {isShowingSearchResults ? (
             <p className="animate-pulse">Searching for results...</p>
           ) : (

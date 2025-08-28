@@ -563,13 +563,7 @@ export function EnhancedFilterDialog({
                   <AccordionTrigger>Base Filters</AccordionTrigger>
                   <AccordionContent>
                     {currentModelConfig ? (
-                      <div
-                        className={`max-h-[40vh] overflow-y-auto pr-2 transition-all duration-300 ease-out ${
-                          showFadeIn
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-4"
-                        }`}
-                      >
+                      <div className="max-h-[40vh] overflow-y-auto pr-2">
                         <AutoFilters
                           filters={getFilteredModelFilters(selectedModelKey)}
                           filterState={filterState}

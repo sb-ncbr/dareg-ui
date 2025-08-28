@@ -44,6 +44,7 @@ import ProjectSelectSSR from "@/components/select/project-select";
 import { DoubleRangeCalendarPopover } from "@/components/time-picker/double-calendar-popover";
 
 import { useApiServiceGetApiV1Schemas } from "../../../../openapi/queries";
+import Loading from "@/app/loading";
 
 export function FilterDialog({
   open,
@@ -70,8 +71,8 @@ export function FilterDialog({
     return MODEL_MAP[modelKey].filters.filter((f) => !excluded.includes(f.key));
   }
 
-  const modelKeys = Object.keys(MODEL_MAP);
-  const { setSelectedSchemaId } = useSearch();
+  const { setSelectedSchemaId, isInitialized } = useSearch();
+  const modelKeys = isInitialized ? Object.keys(MODEL_MAP) : [];
 
   const [selectedModelKey, setSelectedModelKey] = useState<string | null>(null);
   const [filterState, setFilterState] = useState<AutoFilterState>({});
@@ -294,19 +295,29 @@ export function FilterDialog({
         </DialogHeader>
         <div className="flex min-h-[400px]">
           <div className="w-1/4 border-r pr-4">
-            <ul className="flex flex-col gap-2">
-              {modelKeys.map((key) => (
-                <li key={key}>
-                  <Button
-                    variant={selectedModelKey === key ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => handleSelectModel(key)}
-                  >
-                    {MODEL_MAP[key].label}
-                  </Button>
-                </li>
-              ))}
-            </ul>
+            {!isInitialized ? (
+              <div className="flex items-center justify-center py-8">
+                <Loading />
+              </div>
+            ) : modelKeys.length === 0 ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                No models available
+              </div>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {modelKeys.map((key) => (
+                  <li key={key}>
+                    <Button
+                      variant={selectedModelKey === key ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => handleSelectModel(key)}
+                    >
+                      {MODEL_MAP[key].label}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="w-3/4 pl-8">
@@ -387,7 +398,11 @@ export function FilterDialog({
                 <AccordionItem value="base-filters">
                   <AccordionTrigger>Base Filters</AccordionTrigger>
                   <AccordionContent>
-                    {currentModelConfig ? (
+                    {!isInitialized ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loading />
+                      </div>
+                    ) : currentModelConfig ? (
                       <AutoFilters
                         filters={getFilteredModelFilters(selectedModelKey)}
                         filterState={filterState}
