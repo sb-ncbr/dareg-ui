@@ -30,6 +30,8 @@ export type ProjectShare = {
 
 const ProjectDetails: React.FC = () => {
   const { id } = useParams();
+  const [pageIndex, setPageIndex] = useState(0);
+
   const {
     data: project,
     isLoading,
@@ -38,9 +40,11 @@ const ProjectDetails: React.FC = () => {
     id: id as string,
   }) as { data?: ProjectsData; isLoading: boolean; error: any };
 
-  const { data: datasets } = useApiServiceGetApiV1Datasets({
-    project: id as string,
-  });
+  const { data: datasets, isLoading: datasetsLoading } =
+    useApiServiceGetApiV1Datasets({
+      project: id as string,
+      page: pageIndex + 1,
+    });
 
   const [originalName, setOriginalName] = useState<string>(project?.name || "");
   const [originalDescription, setOriginalDescription] = useState<string>(
@@ -69,8 +73,6 @@ const ProjectDetails: React.FC = () => {
     description: false,
   });
   const [hasChanges, setHasChanges] = useState(false);
-
-  const [pageIndex, setPageIndex] = useState(0);
 
   const patchProject = useApiServicePatchApiV1ProjectsById();
   const router = useRouter();
@@ -192,16 +194,22 @@ const ProjectDetails: React.FC = () => {
         <div className="pl-8">
           <div className="w-full max-w-full overflow-x-auto">
             <div className="min-w-[600px] max-w-[120%]">
-              {datasets?.results ? (
+              {datasetsLoading ? (
+                <SkeletonTable />
+              ) : datasets?.results && datasets.results.length > 0 ? (
                 <DynamicDataTable
+                  rowType="dataset"
+                  data={datasets.results}
                   columns={datasetColumns}
-                  data={dataToUse.results || []}
                   pageIndex={pageIndex}
                   pageCount={pageCount}
                   onPageChange={setPageIndex}
+                  showSearch={false}
                 />
               ) : (
-                <SkeletonTable />
+                <div className="text-center py-8 text-muted-foreground">
+                  No datasets found in this collection.
+                </div>
               )}
             </div>
           </div>

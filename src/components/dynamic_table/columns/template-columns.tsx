@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,13 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Table } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { useDeleteHandler } from "@/utils/delete-handlers";
 
 export const templateColumns = [
   {
     id: "select",
-    header: ({ table }: any) => (
+    header: ({ table }: { table: Table<any> }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -34,24 +36,24 @@ export const templateColumns = [
     enableHiding: false,
   },
   {
+    id: "name",
     accessorKey: "name",
     header: "Name",
   },
   {
+    id: "description",
     accessorKey: "description",
     header: "Description",
   },
   {
-    accessorKey: "version",
-    header: "Version",
-  },
-  {
+    id: "created_by.full_name",
     accessorKey: "created_by.full_name",
     header: "Creator",
   },
   {
+    id: "created",
     accessorKey: "created",
-    header: "Creation",
+    header: "Created",
     cell: ({ row }: any) => {
       const date = new Date(row.getValue("created"));
       return date.toLocaleDateString("cs-CZ");
@@ -59,11 +61,14 @@ export const templateColumns = [
   },
   {
     id: "actions",
-    rowType: "templates",
     header: "Actions",
+    rowType: "template",
     cell: ({ row }: any) => {
       const rowData = row.original;
       const router = useRouter();
+      const { handleDelete, isDeleting } = useDeleteHandler("template", {
+        redirectAfterDelete: true,
+      });
 
       return (
         <DropdownMenu>
@@ -87,7 +92,13 @@ export const templateColumns = [
             >
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem>Delete Row</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(rowData)}
+              disabled={isDeleting}
+              className="text-destructive focus:text-destructive"
+            >
+              {isDeleting ? "Deleting..." : "Delete Row"}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

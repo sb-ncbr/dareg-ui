@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useApiServiceGetApiV1ProjectsById,
   useApiServiceGetApiV1Users,
   useApiServicePatchApiV1ProjectsById,
+  useApiServiceGetApiV1ProjectsByIdKey,
 } from "../../../../../openapi/queries";
 import { Button } from "@/components/ui/button";
 import { TypographyH2 } from "@/components/typography/typography-h2";
@@ -33,10 +35,14 @@ import BoundingBox from "@/components/bounding-box/bounding-box";
 import { Label } from "@/components/ui/label";
 import { toast, ToastContainer } from "react-toastify";
 import { PatchedProject, User } from "../../../../../openapi/requests";
+import { TypographyH3 } from "@/components/typography/typography-h3";
+import { TypographyH4 } from "@/components/typography/typography-h4";
+import { Divider } from "@mui/material";
 
 export default function CollectionSettingsPage() {
   const { id } = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: collection, isLoading } = useApiServiceGetApiV1ProjectsById({
     id: id as string,
@@ -56,17 +62,20 @@ export default function CollectionSettingsPage() {
   const [newOwner, setNewOwner] = useState<User>();
 
   const [transferUserId, setTransferUserId] = useState<number | undefined>();
-  const [defaultFacility, setDefaultFacility] = useState<any>(
-    collection?.facility
+  const [defaultFacility, setDefaultFacility] = useState<string | null>(
+    collection?.facility?.id || null
   );
-  const [defaultTemplate, setDefaultTemplate] = useState<any>(
-    collection?.default_dataset_schema
+  const [defaultTemplate, setDefaultTemplate] = useState<string | null>(
+    collection?.default_dataset_schema?.id || null
   );
 
   const projectMutation = useApiServicePatchApiV1ProjectsById({
     onSuccess: () => {
       setOriginalShares(shares.map((s) => ({ ...s })));
       setHasChanges(false);
+      queryClient.invalidateQueries({
+        queryKey: [useApiServiceGetApiV1ProjectsByIdKey, { id: id as string }],
+      });
       toast.success("Changes saved successfully!");
     },
   });
@@ -74,12 +83,24 @@ export default function CollectionSettingsPage() {
   useEffect(() => {
     const shares = collection?.shares;
     if (shares) {
-      setShares(shares.map((s: any) => ({ ...s })));
-      setOriginalShares(shares.map((s: any) => ({ ...s })));
+      let sharesArray: any[] = [];
+      if (typeof shares === "string") {
+        try {
+          sharesArray = JSON.parse(shares);
+        } catch (error) {
+          console.error("Failed to parse shares:", error);
+          sharesArray = [];
+        }
+      } else if (Array.isArray(shares)) {
+        sharesArray = shares;
+      }
+
+      setShares(sharesArray.map((s: any) => ({ ...s })));
+      setOriginalShares(sharesArray.map((s: any) => ({ ...s })));
       setHasChanges(false);
     }
-    setDefaultFacility(collection?.facility);
-    setDefaultTemplate(collection?.default_dataset_schema);
+    setDefaultFacility(collection?.facility?.id || null);
+    setDefaultTemplate(collection?.default_dataset_schema?.id || null);
   }, [collection]);
 
   useEffect(() => {
@@ -88,12 +109,12 @@ export default function CollectionSettingsPage() {
 
   useEffect(() => {
     if (
-      collection?.facility !== defaultFacility?.id ||
-      collection?.default_dataset_schema !== defaultTemplate?.id
+      collection?.facility?.id !== defaultFacility ||
+      collection?.default_dataset_schema?.id !== defaultTemplate
     ) {
       setHasChanges(true);
     }
-  }, [defaultFacility, defaultTemplate]);
+  }, [defaultFacility, defaultTemplate, collection]);
 
   const canManagePermissions = collection?.perms?.includes("owner");
 
@@ -154,10 +175,10 @@ export default function CollectionSettingsPage() {
       if (collection?.name !== undefined) updatedFields.name = collection.name;
       if (collection?.description !== undefined)
         updatedFields.description = collection.description;
-      if (defaultFacility?.id !== collection?.facility)
-        updatedFields.facility = defaultFacility?.id || null;
-      if (defaultTemplate?.id !== collection?.default_dataset_schema)
-        updatedFields.default_dataset_schema = defaultTemplate?.id || null;
+      if (defaultFacility !== collection?.facility?.id)
+        updatedFields.facility = defaultFacility || undefined;
+      if (defaultTemplate !== collection?.default_dataset_schema?.id)
+        updatedFields.default_dataset_schema = defaultTemplate || undefined;
 
       if (JSON.stringify(shares) !== JSON.stringify(originalShares)) {
         updatedFields.shares = shares.map((s) => ({
@@ -209,14 +230,28 @@ export default function CollectionSettingsPage() {
         </Button>
       </div>
       <BoundingBox>
+        <div className="mb-4">
+          <TypographyH4 text="Collection Settings" />
+        </div>
         <Label className="mb-2">Default Facility</Label>
-        <FacilitiesSelect onChange={setDefaultFacility}></FacilitiesSelect>
+        <FacilitiesSelect
+          value={defaultFacility}
+          onChange={(facility) => setDefaultFacility(facility.id)}
+        ></FacilitiesSelect>
         <Label className="mb-2">Default Template</Label>
-        <TemplateSelectSSR onChange={setDefaultTemplate}></TemplateSelectSSR>
+        <TemplateSelectSSR
+          value={defaultTemplate}
+          onChange={(template) => setDefaultTemplate(template.id)}
+        ></TemplateSelectSSR>
+        <div className="mt-8">
+          <TypographyH4 text="Permissions" />
+        </div>
         {isLoading ? (
           <SkeletonTable />
         ) : (
           <DynamicDataTable
+            rowType="share"
+            showSearch={false}
             data={shares}
             columns={columns}
             pageIndex={0}

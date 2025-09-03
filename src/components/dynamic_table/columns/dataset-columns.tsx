@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { useDeleteHandler } from "@/utils/delete-handlers";
 
 export const datasetColumns = [
   {
@@ -65,6 +66,9 @@ export const datasetColumns = [
     cell: ({ row }: any) => {
       const rowData = row.original;
       const router = useRouter();
+      const { handleDelete, isDeleting } = useDeleteHandler("dataset", {
+        redirectAfterDelete: true,
+      });
 
       return (
         <DropdownMenu>
@@ -88,7 +92,13 @@ export const datasetColumns = [
             >
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem>Delete Row</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(rowData)}
+              disabled={isDeleting}
+              className="text-destructive focus:text-destructive"
+            >
+              {isDeleting ? "Deleting..." : "Delete Row"}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

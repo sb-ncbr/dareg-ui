@@ -34,7 +34,11 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-function inferColumns<TData extends object>(data: TData[]): ColumnDef<TData>[] {
+function inferColumns<TData extends object>(
+  data: TData[],
+  rowType?: string,
+  onDelete?: (row: TData) => void
+): ColumnDef<TData>[] {
   if (!data || data.length === 0) return [];
   return [
     {
@@ -89,7 +93,14 @@ function inferColumns<TData extends object>(data: TData[]): ColumnDef<TData>[] {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>View Details</DropdownMenuItem>
-              <DropdownMenuItem>Delete Row</DropdownMenuItem>
+              {onDelete && (
+                <DropdownMenuItem
+                  onClick={() => onDelete(rowData)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  Delete Row
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -114,6 +125,7 @@ export type DynamicDataTableProps<TData extends object> = {
   pageCount: number;
   onPageChange: (pageIndex: number) => void;
   showSearch?: boolean;
+  onDelete?: (row: TData) => void;
 };
 
 export function DynamicDataTable<TData extends object>({
@@ -126,10 +138,11 @@ export function DynamicDataTable<TData extends object>({
   pageCount,
   onPageChange,
   showSearch = true,
+  onDelete,
 }: DynamicDataTableProps<TData>) {
   const cols = React.useMemo(
-    () => columns ?? inferColumns(data),
-    [columns, data]
+    () => columns ?? inferColumns(data, rowType, onDelete),
+    [columns, data, rowType, onDelete]
   );
 
   const router = useRouter();

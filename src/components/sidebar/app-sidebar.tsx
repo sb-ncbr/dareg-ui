@@ -42,6 +42,10 @@ import {
   savedSearchesService,
   SavedSearch,
 } from "@/services/saved-searches-service";
+import { TypographyH5 } from "../typography/typography-h5";
+import { TypographyPGhost } from "../typography/typography-p-ghost";
+import { TypographyP } from "../typography/typography-p";
+import { TypographySmall } from "../typography/typography-small";
 
 const handleLogout = () => {
   signOut({ callbackUrl: "/login" });
@@ -171,9 +175,9 @@ export function AppSidebar() {
                             className="flex items-center justify-between group/item hover:bg-sidebar-accent rounded-lg space-x-3"
                           >
                             <Search className="h-4 w-4" />
-                            <span className="truncate text-sm">
-                              {search.name}
-                            </span>
+                            <TypographySmall
+                              text={search.name}
+                            ></TypographySmall>
                             <button
                               onClick={(e) =>
                                 handleDeleteSavedSearch(search.id, e)

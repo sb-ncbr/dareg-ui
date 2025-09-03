@@ -13,7 +13,9 @@ import TableBoundingBox from "@/components/bounding-box/table-bounding-box";
 const ProjectsPage = () => {
   const [pageIndex, setPageIndex] = useState(0);
 
-  const { data: projectsData, isLoading } = useApiServiceGetApiV1Projects();
+  const { data: projectsData, isLoading } = useApiServiceGetApiV1Projects({
+    page: pageIndex + 1,
+  });
 
   const projectDataCount = projectsData?.count || 0;
   const pageCount = Math.ceil(projectDataCount / 10) || 0;

@@ -8,13 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Table } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { useDeleteHandler } from "@/utils/delete-handlers";
 
-// Common columns for Dataset, Collection, Schema
 export const commonColumns = [
   {
     id: "select",
-    header: ({ table }) => (
+    header: ({ table }: { table: Table<any> }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -45,6 +46,11 @@ export const commonColumns = [
     header: "Description",
   },
   {
+    id: "created_by.full_name",
+    accessorKey: "created_by.full_name",
+    header: "Creator",
+  },
+  {
     id: "created",
     accessorKey: "created",
     header: "Created",
@@ -54,20 +60,17 @@ export const commonColumns = [
     },
   },
   {
-    id: "modified",
-    accessorKey: "modified",
-    header: "Modified",
-    cell: ({ row }: any) => {
-      const date = new Date(row.getValue("modified"));
-      return date.toLocaleDateString("cs-CZ");
-    },
-  },
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }: any) => {
       const rowData = row.original;
       const router = useRouter();
+
+      // Determine row type from the data or use a default
+      const rowType = rowData.model || "dataset";
+      const { handleDelete, isDeleting } = useDeleteHandler(rowType, {
+        redirectAfterDelete: true,
+      });
 
       return (
         <DropdownMenu>
@@ -86,10 +89,14 @@ export const commonColumns = [
               Copy Row Data
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push(`/${rowData.id}`)}>
-              View Details
+            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(rowData)}
+              disabled={isDeleting}
+              className="text-destructive focus:text-destructive"
+            >
+              {isDeleting ? "Deleting..." : "Delete Row"}
             </DropdownMenuItem>
-            <DropdownMenuItem>Delete Row</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

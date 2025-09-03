@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Table } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { useDeleteHandler } from "@/utils/delete-handlers";
 
 export const projectColumns = [
   {
     id: "select",
-    header: ({ table }) => (
+    header: ({ table }: { table: Table<any> }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -34,20 +36,24 @@ export const projectColumns = [
     enableHiding: false,
   },
   {
+    id: "name",
     accessorKey: "name",
     header: "Name",
   },
   {
+    id: "description",
     accessorKey: "description",
     header: "Description",
   },
   {
+    id: "created_by.full_name",
     accessorKey: "created_by.full_name",
-    header: "Created By",
+    header: "Creator",
   },
   {
+    id: "created",
     accessorKey: "created",
-    header: "Created At",
+    header: "Created",
     cell: ({ row }: any) => {
       const date = new Date(row.getValue("created"));
       return date.toLocaleDateString("cs-CZ");
@@ -55,17 +61,14 @@ export const projectColumns = [
   },
   {
     id: "actions",
-    rowType: "collections",
     header: "Actions",
+    rowType: "collection",
     cell: ({ row }: any) => {
       const rowData = row.original;
       const router = useRouter();
-
-      const convertToCSV = (data: object) => {
-        return Object.keys(data)
-          .map((key) => `${key},${data[key]}`)
-          .join("\n");
-      };
+      const { handleDelete, isDeleting } = useDeleteHandler("collection", {
+        redirectAfterDelete: true,
+      });
 
       return (
         <DropdownMenu>
@@ -78,7 +81,7 @@ export const projectColumns = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() =>
-                navigator.clipboard.writeText(convertToCSV(rowData))
+                navigator.clipboard.writeText(JSON.stringify(rowData))
               }
             >
               Copy Row Data
@@ -89,7 +92,13 @@ export const projectColumns = [
             >
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem>Delete Row</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(rowData)}
+              disabled={isDeleting}
+              className="text-destructive focus:text-destructive"
+            >
+              {isDeleting ? "Deleting..." : "Delete Row"}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
