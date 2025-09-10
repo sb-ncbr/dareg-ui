@@ -299,6 +299,7 @@ export default function SearchBar() {
     });
     resetFilterBuildingState();
     setIsPopoverOpen(false);
+    setHighlightedIndex(-1);
     inputRef.current?.focus();
   };
 
@@ -402,7 +403,6 @@ export default function SearchBar() {
     });
 
     if (model && field && operator && inputValue) {
-      // We're building a filter - create the token and add it
       const newToken = buildToken(inputValue);
       if (newToken) {
         setTokens((prevTokens) => {
@@ -412,7 +412,22 @@ export default function SearchBar() {
         });
         resetFilterBuildingState();
         setIsPopoverOpen(false);
-        return; // Don't navigate, just add the token
+
+        const newTokens = [...tokens, newToken];
+        const queryBody = buildApiQueryParams(newTokens, freeTextQuery);
+        if (
+          Object.keys(queryBody).length > 0 &&
+          (queryBody.q || queryBody.filters)
+        ) {
+          performSearch({
+            queryBody,
+            navigate: true,
+            tokens: newTokens,
+            freeText: freeTextQuery,
+          });
+          addToHistory(newTokens, freeTextQuery);
+        }
+        return;
       }
     } else if (inputValue && inputValue.trim()) {
       // We're doing a free text search
@@ -429,20 +444,28 @@ export default function SearchBar() {
 
     if (finalTokens.length > 0 || finalFreeText) {
       const queryBody = buildApiQueryParams(finalTokens, finalFreeText);
-      console.log("Navigating with queryBody", queryBody);
-      performSearch({
-        queryBody,
-        navigate: true,
-        tokens: finalTokens,
-        freeText: finalFreeText,
-      });
-      addToHistory(finalTokens, finalFreeText);
+
+      if (
+        Object.keys(queryBody).length > 0 &&
+        (queryBody.q || queryBody.filters)
+      ) {
+        performSearch({
+          queryBody,
+          navigate: true,
+          tokens: finalTokens,
+          freeText: finalFreeText,
+        });
+        addToHistory(finalTokens, finalFreeText);
+      } else {
+        console.log("Invalid query body, not navigating");
+      }
     } else {
       console.log("No searchable content found");
     }
 
     setIsPopoverOpen(false);
     setPopoverHistoryMode(false);
+    setHighlightedIndex(-1);
   };
 
   const handleSuggestionKeyDown = (
@@ -456,7 +479,6 @@ export default function SearchBar() {
     else if (popoverContentState === "select_operator")
       listLength = OPERATORS.length;
     else if (popoverContentState === "enter_value")
-      // Add 1 for the free text option if there's input, plus API suggestions
       listLength =
         (inputValue.length > 0 ? 1 : 0) + currentFieldSuggestions.length;
 
@@ -674,6 +696,7 @@ export default function SearchBar() {
                     ) {
                       setIsPopoverOpen(false);
                       setPopoverHistoryMode(false);
+                      setHighlightedIndex(-1);
                     }
                   }, 100);
                 }}
@@ -685,11 +708,12 @@ export default function SearchBar() {
                   if (e.key === "Enter") {
                     console.log("Enter key pressed", {
                       highlightedIndex,
+                      isPopoverOpen,
                       tokens: tokens.length,
                       freeTextQuery,
                       inputValue: inputValue.trim(),
                     });
-                    if (highlightedIndex >= 0) {
+                    if (isPopoverOpen && highlightedIndex >= 0) {
                       console.log("Suggestion highlighted, not handling Enter");
                       return;
                     }
@@ -803,6 +827,7 @@ export default function SearchBar() {
                           setFreeTextQuery(search.freeTextQuery || "");
                           setIsPopoverOpen(false);
                           setPopoverHistoryMode(false);
+                          setHighlightedIndex(-1);
                         }}
                       >
                         <SearchIcon className="h-4 w-4" />

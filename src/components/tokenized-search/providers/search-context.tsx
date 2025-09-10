@@ -140,7 +140,12 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
 
   const navigateToSearchResults = useCallback(
     (searchTokens: Token[], freeText: string) => {
+      console.log("navigateToSearchResults called with:", {
+        searchTokens,
+        freeText,
+      });
       const queryBody = buildApiQueryParams(searchTokens, freeText);
+      console.log("Generated queryBody for navigation:", queryBody);
       const searchParams = new URLSearchParams();
       searchParams.set("q", encodeURIComponent(JSON.stringify(queryBody)));
       if (searchTokens.length > 0) {
@@ -153,7 +158,9 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
         searchParams.set("freeText", encodeURIComponent(freeText));
       }
       searchParams.set("timestamp", Date.now().toString());
-      router.push(`/dashboards?${searchParams.toString()}`);
+      const url = `/dashboards?${searchParams.toString()}`;
+      console.log("Navigating to URL:", url);
+      router.push(url);
     },
     [router, buildApiQueryParams]
   );
