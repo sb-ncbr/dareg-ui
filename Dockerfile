@@ -69,8 +69,9 @@ ENV AUTH_SECRET=""
 ENV NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID=""
 ENV AUTH_TRUST_HOST="true"
 
-RUN sed -i "s/process.env.HOSTNAME/'0.0.0.0'/g" server.js
+RUN sed -i "s/process.env.HOSTNAME/'0.0.0.0'/g" server.js && \
+    sed -i "s/process.env.PORT || 3000/8081/g" server.js
 
 USER nextjs
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "PORT=8081 node server.js"]
