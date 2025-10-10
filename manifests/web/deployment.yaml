@@ -43,6 +43,49 @@ spec:
             capabilities:
               drop:
                 - ALL
+          env:
+            - name: AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ${APP}-secrets
+                  key: auth-secret
+            - name: AUTH_TRUST_HOST
+              value: "true"
+            - name: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ${APP}-secrets
+                  key: oidc-client-id
+            - name: NEXT_PUBLIC_AUTH_OIDC_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-issuer
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-metadata-issuer
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-authorization-endpoint
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-token-endpoint
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-userinfo-endpoint
+            - name: NEXT_PUBLIC_APP_OIDC_SCOPE
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: oidc-scope
           volumeMounts:
             - name: app-config
               mountPath: /usr/share/nginx/html/configs

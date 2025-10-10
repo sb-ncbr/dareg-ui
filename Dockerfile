@@ -59,6 +59,9 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=builder /app/public ./public
 COPY --chown=nextjs:nodejs --from=builder /app/.next/static ./.next/static
 
+# Create .next directory with proper permissions for cache
+RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
+
 EXPOSE 5000
 
 ENV HOSTNAME="0.0.0.0"
