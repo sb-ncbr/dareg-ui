@@ -59,9 +59,9 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=builder /app/public ./public
 COPY --chown=nextjs:nodejs --from=builder /app/.next/static ./.next/static
 
-EXPOSE 80
+EXPOSE 8081
+ENV PORT=8081
 
-ENV PORT=80
 ENV HOSTNAME="0.0.0.0"
 
 # Runtime environment variables (secrets will be injected by Kubernetes)

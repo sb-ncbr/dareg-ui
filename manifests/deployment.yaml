@@ -25,11 +25,11 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - image: ${DOCKER_IMAGE_NAME_FE}:${CI_COMMIT_SHORT_SHA}
+        - image: ${DOCKER_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
           imagePullPolicy: Always
           name: dareg-web
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
               name: dareg-frontend
               protocol: TCP
           resources:
