@@ -27,7 +27,7 @@ spec:
           imagePullPolicy: Always
           name: dareg-web
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
               name: dareg-frontend
               protocol: TCP
           resources:
