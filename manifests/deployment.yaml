@@ -29,7 +29,7 @@ spec:
           imagePullPolicy: Always
           name: dareg-web
           ports:
-            - containerPort: 8081
+            - containerPort: 5000
               name: dareg-frontend
               protocol: TCP
           resources:
@@ -58,9 +58,9 @@ spec:
   type: ClusterIP
   ports:
     - name: default
-      port: 8081
+      port: 5000
       protocol: TCP
-      targetPort: 8081
+      targetPort: 5000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

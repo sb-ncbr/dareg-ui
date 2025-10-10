@@ -59,8 +59,7 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=builder /app/public ./public
 COPY --chown=nextjs:nodejs --from=builder /app/.next/static ./.next/static
 
-EXPOSE 8081
-ENV PORT=8081
+EXPOSE 5000
 
 ENV HOSTNAME="0.0.0.0"
 
@@ -70,8 +69,8 @@ ENV NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID=""
 ENV AUTH_TRUST_HOST="true"
 
 RUN sed -i "s/process.env.HOSTNAME/'0.0.0.0'/g" server.js && \
-    sed -i "s/process.env.PORT || 3000/8081/g" server.js
+    sed -i "s/process.env.PORT || 3000/5000/g" server.js
 
 USER nextjs
 
-CMD ["sh", "-c", "PORT=8081 node server.js"]
+CMD ["sh", "-c", "PORT=5000 node server.js"]
