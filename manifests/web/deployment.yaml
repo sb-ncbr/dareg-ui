@@ -47,45 +47,45 @@ spec:
             - name: AUTH_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: ${APP}-secrets
-                  key: auth-secret
+                  name: ${APP}-config
+                  key: AUTH_SECRET
             - name: AUTH_TRUST_HOST
               value: "true"
             - name: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: ${APP}-secrets
-                  key: oidc-client-id
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
             - name: NEXT_PUBLIC_AUTH_OIDC_ISSUER
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-issuer
+                  key: NEXT_PUBLIC_AUTH_OIDC_ISSUER
             - name: NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-metadata-issuer
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER
             - name: NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-authorization-endpoint
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT
             - name: NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-token-endpoint
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT
             - name: NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-userinfo-endpoint
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT
             - name: NEXT_PUBLIC_APP_OIDC_SCOPE
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: oidc-scope
+                  key: NEXT_PUBLIC_APP_OIDC_SCOPE
           volumeMounts:
             - name: app-config
               mountPath: /usr/share/nginx/html/configs
