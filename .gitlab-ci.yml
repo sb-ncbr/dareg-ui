@@ -227,10 +227,10 @@ stop-dev:
     - kubectl delete deployments,services,ingresses,configmaps,secrets -n ${K8S_NAMESPACE} -l deployment-id=$APP
   when: manual
   variables:
-    APP: devel
+    APP: dev
     GIT_STRATEGY: none
   environment:
-    name: devel
+    name: dev
     action: stop
   only:
     - branches
