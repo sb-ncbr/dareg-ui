@@ -44,11 +44,11 @@ spec:
               drop:
                 - ALL
           env:
-            - name: NEXTAUTH_SECRET
+            - name: AUTH_SECRET
               valueFrom:
                 configMapKeyRef:
                   name: ${APP}-config
-                  key: NEXTAUTH_SECRET
+                  key: AUTH_SECRET
             - name: AUTH_TRUST_HOST
               value: "true"
             - name: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
