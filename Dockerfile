@@ -59,6 +59,10 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=builder /app/public ./public
 COPY --chown=nextjs:nodejs --from=builder /app/.next/static ./.next/static
 
+# Copy startup script
+COPY --chown=nextjs:nodejs startup.sh ./
+RUN chmod +x startup.sh
+
 # Create .next directory with proper permissions for cache
 RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
 
@@ -71,9 +75,6 @@ ENV AUTH_SECRET=""
 ENV NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID=""
 ENV AUTH_TRUST_HOST="true"
 
-RUN sed -i "s/process.env.HOSTNAME/'0.0.0.0'/g" server.js && \
-    sed -i "s/process.env.PORT || 3000/5000/g" server.js
-
 USER nextjs
 
-CMD ["sh", "-c", "PORT=5000 node server.js"]
+CMD ["./startup.sh"]

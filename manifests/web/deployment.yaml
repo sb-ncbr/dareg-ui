@@ -44,13 +44,16 @@ spec:
               drop:
                 - ALL
           envFrom:
-            - configMapRef:
-                name: dev-config
-                optional: false
-                volumes:
-                  - name: app-config
-                    configMap:
-                      name: ${APP}-config
+            - name: app-config
+              configMap:
+                name: ${APP}-config
+          volumeMounts:
+            - name: app-config
+              mountPath: /usr/share/nginx/html/configs
+      volumes:
+        - name: app-config
+          configMap:
+            name: ${APP}-config
 ---
 apiVersion: v1
 kind: Service
