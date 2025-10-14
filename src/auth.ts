@@ -2,6 +2,31 @@ import NextAuth from "next-auth";
 
 const REFRESH_MARGIN = 60 * 1000;
 
+// Debug: Log environment variables on startup
+console.log("=== AUTH ENVIRONMENT VARIABLES DEBUG ===");
+console.log("AUTH_SECRET:", process.env.AUTH_SECRET ? "SET" : "MISSING");
+console.log("NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID:", process.env.NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID || "MISSING");
+console.log("NEXT_PUBLIC_AUTH_OIDC_ISSUER:", process.env.NEXT_PUBLIC_AUTH_OIDC_ISSUER || "MISSING");
+console.log("NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER:", process.env.NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER || "MISSING");
+console.log("NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT:", process.env.NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT || "MISSING");
+console.log("NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT:", process.env.NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT || "MISSING");
+console.log("NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT:", process.env.NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT || "MISSING");
+console.log("NEXT_PUBLIC_APP_OIDC_SCOPE:", process.env.NEXT_PUBLIC_APP_OIDC_SCOPE || "MISSING");
+
+// Log all environment variables that start with AUTH_ or NEXT_PUBLIC_
+console.log("=== ALL AUTH-RELATED ENV VARS ===");
+Object.keys(process.env)
+  .filter(key => key.startsWith('AUTH_') || key.startsWith('NEXT_PUBLIC_'))
+  .forEach(key => {
+    const value = process.env[key];
+    if (key.includes('SECRET') || key.includes('KEY')) {
+      console.log(`${key}:`, value ? "SET (hidden)" : "MISSING");
+    } else {
+      console.log(`${key}:`, value || "MISSING");
+    }
+  });
+console.log("=== END AUTH DEBUG ===");
+
 async function refreshAccessToken(token : any) {
     try {
         const url = process.env.NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT!;

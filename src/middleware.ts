@@ -1,6 +1,11 @@
 import { auth } from "@/auth"
 import { DEFAULT_REDIRECT, PUBLIC_ROUTES, ROOT } from "@/lib/routes";
 
+// Debug: Log middleware execution
+console.log("=== MIDDLEWARE DEBUG ===");
+console.log("AUTH_SECRET available:", !!process.env.AUTH_SECRET);
+console.log("=== END MIDDLEWARE DEBUG ===");
+
 export default auth((req) => {
     const { nextUrl } = req; 
 
