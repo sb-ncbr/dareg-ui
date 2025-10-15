@@ -43,6 +43,56 @@ spec:
             capabilities:
               drop:
                 - ALL
+          env:
+            - name: AUTH_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: AUTH_SECRET
+            - name: AUTH_TRUST_HOST
+              value: "true"
+            - name: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID
+            - name: NEXT_PUBLIC_AUTH_OIDC_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_AUTH_OIDC_ISSUER
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_ISSUER
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_AUTHORIZATION_ENDPOINT
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT
+            - name: NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT
+            - name: NEXT_PUBLIC_APP_OIDC_SCOPE
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_APP_OIDC_SCOPE
+          volumeMounts:
+            - name: app-config
+              mountPath: /usr/share/nginx/html/configs
+      volumes:
+        - name: app-config
+          configMap:
+            name: ${APP}-config
 ---
 apiVersion: v1
 kind: Service
