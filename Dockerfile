@@ -82,8 +82,8 @@ FROM node:24-alpine AS runner
 
 WORKDIR /app
 
-RUN addgroup -g 1000 -S nodejs \
-    && adduser -u 1000 -S -G nodejs nextjs
+RUN addgroup -g 1001 -S nodejs \
+    && adduser -u 1001 -S -G nodejs nextjs
 
 COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=builder /app/public ./public
