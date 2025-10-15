@@ -86,6 +86,54 @@ spec:
                 configMapKeyRef:
                   name: ${APP}-config
                   key: NEXT_PUBLIC_APP_OIDC_SCOPE
+            # Additional environment variables for startup.sh
+            - name: APP_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_BASE_URL
+            - name: APP_BASE_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_BASE_API_URL
+            - name: APP_BASE_ONEZONE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_BASE_ONEZONE_URL
+            - name: APP_BASE_ONEZONE_PRETTY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_BASE_ONEZONE_PRETTY_URL
+            - name: PORT
+              value: "5000"
+            - name: APP_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_VERSION
+            - name: APP_VERSION_DATE
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_VERSION_DATE
+            - name: APP_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: APP_ENVIRONMENT
+            - name: NEXTAUTH_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXTAUTH_URL
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ${APP}-config
+                  key: NEXT_PUBLIC_API_URL
           volumeMounts:
             - name: app-config
               mountPath: /usr/share/nginx/html/configs

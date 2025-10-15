@@ -62,7 +62,11 @@ if [[ -z "$js_files" ]]; then
 else
   echo "🔎  Replacing placeholders in $(echo "$js_files" | wc -l) files..."
   for f in $js_files; do
-    sed -i '' -e "$SED_EXPR" "$f"
+    echo "  Processing: $f"
+    if ! sed -i -e "$SED_EXPR" "$f"; then
+      echo "❌  Failed to process $f"
+      exit 1
+    fi
   done
   echo "✅  Replacement complete."
 fi
