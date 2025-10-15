@@ -36,6 +36,9 @@ declare -A PH=(
   ["NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT_PLACEHOLDER"]="${NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT:-https://idp.example.com/oidc/token}"
   ["NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT_PLACEHOLDER"]="${NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT:-https://idp.example.com/oidc/userinfo}"
   ["NEXT_PUBLIC_APP_OIDC_METADATA_END_SESSION_ENDPOINT_PLACEHOLDER"]="${NEXT_PUBLIC_APP_OIDC_METADATA_END_SESSION_ENDPOINT:-https://idp.example.com/oidc/logout}"
+  ["AUTH_SECRET"]="${AUTH_SECRET:-}"
+  ["SECRET"]="${SECRET:-}"
+  ["AUTH_TRUST_HOST"]="${AUTH_TRUST_HOST:-true}"
 )
 
 # -----------------------------------------------------------------
