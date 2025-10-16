@@ -62,16 +62,6 @@ do
          -e "s|AUTH_TRUST_HOST_PLACEHOLDER|${AUTH_TRUST_HOST:-true}|g" "$file"
 done
 
-# Process OpenAPI files specifically (they contain placeholders)
-echo "Processing OpenAPI files..."
-for file in openapi/**/*.js openapi/**/*.ts;
-do
-  if [ -f "$file" ]; then
-    echo "Processing OpenAPI file: $(basename "$file") ..."
-    sed -i -e "s|NEXT_PUBLIC_API_URL_PLACEHOLDER|${NEXT_PUBLIC_API_URL:-https://api.example.com}|g" "$file"
-  fi
-done
-
 # Update environment variables to real values (not just placeholders in files)
 echo "=== UPDATING ENVIRONMENT VARIABLES ==="
 export NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID="${NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID:-9016cb62-acb6-4b73-b7af-93b773c6fc22}"
