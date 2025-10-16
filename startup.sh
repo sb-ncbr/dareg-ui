@@ -33,6 +33,7 @@ else
 fi
 echo "=== END CHECK ==="
 
+# Process compiled JavaScript files
 for file in .next/**/*.js;
 do
   echo "Processing $(basename "$file") ..."
@@ -59,6 +60,16 @@ do
          -e "s|AUTH_SECRET_PLACEHOLDER|${AUTH_SECRET:-}|g" \
          -e "s|SECRET_PLACEHOLDER|${SECRET:-}|g" \
          -e "s|AUTH_TRUST_HOST_PLACEHOLDER|${AUTH_TRUST_HOST:-true}|g" "$file"
+done
+
+# Process OpenAPI files specifically (they contain placeholders)
+echo "Processing OpenAPI files..."
+for file in openapi/**/*.js openapi/**/*.ts;
+do
+  if [ -f "$file" ]; then
+    echo "Processing OpenAPI file: $(basename "$file") ..."
+    sed -i -e "s|NEXT_PUBLIC_API_URL_PLACEHOLDER|${NEXT_PUBLIC_API_URL:-https://api.example.com}|g" "$file"
+  fi
 done
 
 # Update environment variables to real values (not just placeholders in files)

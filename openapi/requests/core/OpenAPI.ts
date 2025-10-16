@@ -41,7 +41,7 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-	BASE: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+	BASE: process.env.NEXT_PUBLIC_API_URL || 'NEXT_PUBLIC_API_URL_PLACEHOLDER',
 	CREDENTIALS: 'include',
 	ENCODE_PATH: undefined,
 	HEADERS: undefined,
