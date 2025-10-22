@@ -47,7 +47,6 @@ do
          -e "s|APP_VERSION_DATE_PLACEHOLDER|${APP_VERSION_DATE:-1970-01-01}|g" \
          -e "s|APP_ENVIRONMENT_PLACEHOLDER|${APP_ENVIRONMENT:-development}|g" \
          -e "s|NEXTAUTH_URL_PLACEHOLDER|${NEXTAUTH_URL:-http://example.com}|g" \
-         -e "s|NEXT_PUBLIC_API_URL_PLACEHOLDER|${NEXT_PUBLIC_API_URL:-https://api.example.com}|g" \
          -e "s|NEXT_PUBLIC_AUTH_OIDC_ISSUER_PLACEHOLDER|${NEXT_PUBLIC_AUTH_OIDC_ISSUER:-https://idp.example.com/oidc/}|g" \
          -e "s|NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID_PLACEHOLDER|${NEXT_PUBLIC_AUTH_OIDC_CLIENT_ID:-example-client-id}|g" \
          -e "s|NEXT_PUBLIC_APP_OIDC_SCOPE_PLACEHOLDER|${NEXT_PUBLIC_APP_OIDC_SCOPE:-openid profile email}|g" \
@@ -73,7 +72,6 @@ export NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT="${NEXT_PUBLIC_APP_OIDC_M
 export NEXT_PUBLIC_APP_OIDC_SCOPE="${NEXT_PUBLIC_APP_OIDC_SCOPE:-openid profile email eduperson_entitlement offline_access}"
 export NEXT_PUBLIC_APP_OIDC_METADATA_JWKS_URI="${NEXT_PUBLIC_APP_OIDC_METADATA_JWKS_URI:-https://id.muni.cz/jwk}"
 export NEXT_PUBLIC_APP_OIDC_METADATA_END_SESSION_ENDPOINT="${NEXT_PUBLIC_APP_OIDC_METADATA_END_SESSION_ENDPOINT:-https://id.muni.cz/oidc/endsession}"
-export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://api.devel.dareg.biodata.ceitec.cz/api/v1/}"
 export APP_BASE_URL="${APP_BASE_URL:-http://localhost:5000}"
 export APP_OIDC_REDIRECT_URL="${APP_OIDC_REDIRECT_URL:-auth}"
 export APP_BASE_API_URL="${APP_BASE_API_URL:-https://api.devel.dareg.biodata.ceitec.cz/api/v1/}"

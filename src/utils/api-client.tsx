@@ -5,6 +5,7 @@ class ApiClient {
   private axiosInstance: AxiosInstance;
 
   constructor() {
+    console.log("In axios setup the API URL is: " + process.env.NEXT_PUBLIC_API_URL);
     this.axiosInstance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL || "",
       withCredentials: false,
