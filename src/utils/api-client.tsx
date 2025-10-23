@@ -6,6 +6,10 @@ class ApiClient {
 
   constructor() {
     console.log("In axios setup the API URL is: " + process.env.NEXT_PUBLIC_API_URL);
+    console.log("All NEXT_PUBLIC env vars:", Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_')));
+    console.log("NEXT_PUBLIC_API_URL value:", process.env.NEXT_PUBLIC_API_URL);
+    console.log("NEXT_PUBLIC_API_URL type:", typeof process.env.NEXT_PUBLIC_API_URL);
+    console.log("NEXT_PUBLIC_API_URL length:", process.env.NEXT_PUBLIC_API_URL?.length);
     this.axiosInstance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL || "",
       withCredentials: false,
