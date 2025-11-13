@@ -107,4 +107,23 @@ fi
 echo "=== END VERIFICATION ==="
 
 echo "Starting Next.js server..."
+echo "Final environment check before starting server:"
+echo "AUTH_SECRET length: ${#AUTH_SECRET}"
+echo "NEXTAUTH_URL: $NEXTAUTH_URL"
+echo "NEXT_PUBLIC_AUTH_OIDC_ISSUER: $NEXT_PUBLIC_AUTH_OIDC_ISSUER"
+
+# Check if AUTH_SECRET is empty
+if [ -z "$AUTH_SECRET" ]; then
+    echo "❌ ERROR: AUTH_SECRET is empty! This will cause auth failures."
+    echo "Please ensure AUTH_SECRET is set in your ConfigMap."
+    exit 1
+fi
+
+# Check if required OIDC endpoints are accessible
+echo "Testing OIDC endpoints..."
+if ! curl -s -f "${NEXT_PUBLIC_AUTH_OIDC_ISSUER}" > /dev/null; then
+    echo "⚠️  WARNING: Cannot reach OIDC issuer at $NEXT_PUBLIC_AUTH_OIDC_ISSUER"
+fi
+
+echo "Starting Next.js server with enhanced error handling..."
 exec node server.js
