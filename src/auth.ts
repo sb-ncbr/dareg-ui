@@ -41,33 +41,6 @@ async function refreshAccessToken(token: any) {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret: process.env.AUTH_SECRET,
-  debug: true, // Enable debug in dev
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-    },
-  },
-  logger: {
-    error(code, metadata) {
-      console.error("NextAuth Error:", code, JSON.stringify(metadata, null, 2));
-    },
-    warn(code) {
-      console.warn("NextAuth Warning:", code);
-    },
-    debug(code, metadata) {
-      console.log("NextAuth Debug:", code, JSON.stringify(metadata, null, 2));
-    },
-  },
   providers: [
     {
       id: "einfracz",
@@ -86,10 +59,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           prompt: "consent",
         },
       },
+
       token: process.env.NEXT_PUBLIC_APP_OIDC_METADATA_TOKEN_ENDPOINT,
       userinfo: process.env.NEXT_PUBLIC_APP_OIDC_METADATA_USERINFO_ENDPOINT,
       profile(profile) {
-        console.log("OIDC Profile received:", profile);
         return {
           id: profile.sub,
           username: profile.sub?.toLowerCase(),
@@ -106,42 +79,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signOut: "/login",
   },
   callbacks: {
-    async jwt({ token, user, account, profile }) {
-      console.log("JWT Callback - Account:", account ? "Present" : "Missing");
-      console.log("JWT Callback - Token expires:", token.accessTokenExpires);
-
-      // Initial sign in
-      if (account && user) {
-        console.log("Initial sign in - storing minimal token data");
-        return {
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token,
-          accessTokenExpires: account.expires_at
-            ? account.expires_at * 1000
-            : Date.now() + (account.expires_in ?? 3600) * 1000,
-          username: user.username,
-          sub: token.sub,
-          // Don't store large profile data or entitlements
-        };
+    async jwt({ token, user, account }) {
+      if (account) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.accessTokenExpires = account.expires_at
+          ? account.expires_at * 1000
+          : Date.now() + (account.expires_in ?? 3600) * 1000;
+      }
+      if (user) {
+        token.username = user.username;
       }
 
-      // Return previous token if the access token has not expired yet
       if (
         token.accessTokenExpires &&
-        Date.now() < (token.accessTokenExpires as number) - REFRESH_MARGIN
+        Date.now() < token.accessTokenExpires - REFRESH_MARGIN
       ) {
-        console.log("Token still valid, returning existing token");
         return token;
       }
 
-      // Access token has expired, try to refresh it
-      console.log("Token expired, refreshing...");
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {
-      // Only pass minimal necessary data to the session
-      session.user.username = token.username as string;
-      session.accessToken = token.accessToken as string;
+      session.user.username = token.username;
+      session.accessToken = token.accessToken;
       return session;
     },
   },

@@ -422,6 +422,92 @@ export type UserSerializerMinimal = {
     readonly full_name: string;
 };
 
+export type WorkflowTemplate = {
+    readonly id: string;
+    readonly created: string;
+    readonly modified: string;
+    onedata_workflow_id: string;
+    name: string;
+    description: string;
+    revision: string;
+    input_params?: unknown;
+    workflow_type: WorkflowTypeEnum;
+    readonly created_by: number | null;
+    readonly modified_by: number | null;
+};
+
+export type WorkflowTypeEnum = 'WriteData' | 'Readonly' | 'In-placeChange' | 'Export';
+
+export type PatchedWorkflowTemplate = {
+    readonly id?: string;
+    readonly created?: string;
+    readonly modified?: string;
+    onedata_workflow_id?: string;
+    name?: string;
+    description?: string;
+    revision?: string;
+    input_params?: unknown;
+    workflow_type?: WorkflowTypeEnum;
+    readonly created_by?: number | null;
+    readonly modified_by?: number | null;
+};
+
+export type Job = {
+    readonly created: string;
+    readonly modified: string;
+    readonly id: string;
+    readonly created_by: number | null;
+    readonly modified_by: number | null;
+    workflow_template: string;
+    root_resource_content_type?: number | null;
+    root_resource_id?: string | null;
+    output_resource_content_type?: number | null;
+    output_resource_id?: string | null;
+    name: string;
+    description: string;
+    readonly status: string;
+    app_config?: string;
+    readonly start_time: string | null;
+    readonly end_time: string | null;
+    log_level?: LogLevelEnum | '';
+};
+
+export type LogLevelEnum = 'debug' | 'info' | 'warning';
+
+export type PatchedJob = {
+    readonly created?: string;
+    readonly modified?: string;
+    readonly id?: string;
+    readonly created_by?: number | null;
+    readonly modified_by?: number | null;
+    workflow_template?: string;
+    root_resource_content_type?: number | null;
+    root_resource_id?: string | null;
+    output_resource_content_type?: number | null;
+    output_resource_id?: string | null;
+    name?: string;
+    description?: string;
+    readonly status?: string;
+    app_config?: unknown;
+    readonly start_time?: string | null;
+    readonly end_time?: string | null;
+    log_level?: LogLevelEnum | '';
+};
+
+export type PaginatedWorkflowTemplateList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<WorkflowTemplate>;
+};
+
+export type PaginatedJobList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<Job>;
+};
+
 export type GetApiSchemaData = {
     format?: 'json' | 'yaml';
     lang?: 'af' | 'ar' | 'ar-dz' | 'ast' | 'az' | 'be' | 'bg' | 'bn' | 'br' | 'bs' | 'ca' | 'ckb' | 'cs' | 'cy' | 'da' | 'de' | 'dsb' | 'el' | 'en' | 'en-au' | 'en-gb' | 'eo' | 'es' | 'es-ar' | 'es-co' | 'es-mx' | 'es-ni' | 'es-ve' | 'et' | 'eu' | 'fa' | 'fi' | 'fr' | 'fy' | 'ga' | 'gd' | 'gl' | 'he' | 'hi' | 'hr' | 'hsb' | 'hu' | 'hy' | 'ia' | 'id' | 'ig' | 'io' | 'is' | 'it' | 'ja' | 'ka' | 'kab' | 'kk' | 'km' | 'kn' | 'ko' | 'ky' | 'lb' | 'lt' | 'lv' | 'mk' | 'ml' | 'mn' | 'mr' | 'ms' | 'my' | 'nb' | 'ne' | 'nl' | 'nn' | 'os' | 'pa' | 'pl' | 'pt' | 'pt-br' | 'ro' | 'ru' | 'sk' | 'sl' | 'sq' | 'sr' | 'sr-latn' | 'sv' | 'sw' | 'ta' | 'te' | 'tg' | 'th' | 'tk' | 'tr' | 'tt' | 'udm' | 'uk' | 'ur' | 'uz' | 'vi' | 'zh-hans' | 'zh-hant';
@@ -990,6 +1076,120 @@ export type GetOnedataApiV1FilesResponse = unknown;
 
 export type PostOnedataApiV1FilesResponse = unknown;
 
+export type GetApiV1WorkflowData = {
+    /**
+     * A page number within the paginated result set.
+     */
+    page?: number;
+    /**
+     * Number of results to return per page.
+     */
+    page_size?: number;
+};
+
+export type GetApiV1WorkflowResponse = PaginatedWorkflowTemplateList;
+
+export type PostApiV1WorkflowData = {
+    requestBody: WorkflowTemplate;
+};
+
+export type PostApiV1WorkflowResponse = WorkflowTemplate;
+
+export type GetApiV1WorkflowByIdData = {
+    /**
+     * A UUID string identifying this workflowtemplate.
+     */
+    id: string;
+};
+
+export type GetApiV1WorkflowByIdResponse = WorkflowTemplate;
+
+export type PutApiV1WorkflowByIdData = {
+    /**
+     * A UUID string identifying this workflowtemplate.
+     */
+    id: string;
+    requestBody: WorkflowTemplate;
+};
+
+export type PutApiV1WorkflowByIdResponse = WorkflowTemplate;
+
+export type PatchApiV1WorkflowByIdData = {
+    /**
+     * A UUID string identifying this workflowtemplate.
+     */
+    id: string;
+    requestBody?: PatchedWorkflowTemplate;
+};
+
+export type PatchApiV1WorkflowByIdResponse = WorkflowTemplate;
+
+export type DeleteApiV1WorkflowByIdData = {
+    /**
+     * A UUID string identifying this workflowtemplate.
+     */
+    id: string;
+};
+
+export type DeleteApiV1WorkflowByIdResponse = void;
+
+export type GetApiV1JobsData = {
+    /**
+     * A page number within the paginated result set.
+     */
+    page?: number;
+    /**
+     * Number of results to return per page.
+     */
+    page_size?: number;
+};
+
+export type GetApiV1JobsResponse = PaginatedJobList;
+
+export type PostApiV1JobsData = {
+    requestBody: Job;
+};
+
+export type PostApiV1JobsResponse = Job;
+
+export type GetApiV1JobsByIdData = {
+    /**
+     * A UUID string identifying this job.
+     */
+    id: string;
+};
+
+export type GetApiV1JobsByIdResponse = Job;
+
+export type PutApiV1JobsByIdData = {
+    /**
+     * A UUID string identifying this job.
+     */
+    id: string;
+    requestBody: Job;
+};
+
+export type PutApiV1JobsByIdResponse = Job;
+
+export type PatchApiV1JobsByIdData = {
+    /**
+     * A UUID string identifying this job.
+     */
+    id: string;
+    requestBody?: PatchedJob;
+};
+
+export type PatchApiV1JobsByIdResponse = Job;
+
+export type DeleteApiV1JobsByIdData = {
+    /**
+     * A UUID string identifying this job.
+     */
+    id: string;
+};
+
+export type DeleteApiV1JobsByIdResponse = void;
+
 export type $OpenApiTs = {
     '/api/schema/': {
         get: {
@@ -1551,6 +1751,92 @@ export type $OpenApiTs = {
                  * No response body
                  */
                 200: unknown;
+            };
+        };
+    };
+    '/api/v1/workflow/': {
+        get: {
+            req: GetApiV1WorkflowData;
+            res: {
+                200: PaginatedWorkflowTemplateList;
+            };
+        };
+        post: {
+            req: PostApiV1WorkflowData;
+            res: {
+                201: WorkflowTemplate;
+            };
+        };
+    };
+    '/api/v1/workflow/{id}/': {
+        get: {
+            req: GetApiV1WorkflowByIdData;
+            res: {
+                200: WorkflowTemplate;
+            };
+        };
+        put: {
+            req: PutApiV1WorkflowByIdData;
+            res: {
+                200: WorkflowTemplate;
+            };
+        };
+        patch: {
+            req: PatchApiV1WorkflowByIdData;
+            res: {
+                200: WorkflowTemplate;
+            };
+        };
+        delete: {
+            req: DeleteApiV1WorkflowByIdData;
+            res: {
+                /**
+                 * No response body
+                 */
+                204: void;
+            };
+        };
+    };
+    '/api/v1/jobs/': {
+        get: {
+            req: GetApiV1JobsData;
+            res: {
+                200: PaginatedJobList;
+            };
+        };
+        post: {
+            req: PostApiV1JobsData;
+            res: {
+                201: Job;
+            };
+        };
+    };
+    '/api/v1/jobs/{id}/': {
+        get: {
+            req: GetApiV1JobsByIdData;
+            res: {
+                200: Job;
+            };
+        };
+        put: {
+            req: PutApiV1JobsByIdData;
+            res: {
+                200: Job;
+            };
+        };
+        patch: {
+            req: PatchApiV1JobsByIdData;
+            res: {
+                200: Job;
+            };
+        };
+        delete: {
+            req: DeleteApiV1JobsByIdData;
+            res: {
+                /**
+                 * No response body
+                 */
+                204: void;
             };
         };
     };

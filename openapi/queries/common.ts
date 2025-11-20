@@ -197,3 +197,37 @@ export type ApiServiceDeleteApiV1ProjectsByIdMutationResult = Awaited<ReturnType
 export type ApiServiceDeleteApiV1SchemasByIdMutationResult = Awaited<ReturnType<typeof ApiService.deleteApiV1SchemasById>>;
 export type ApiServiceDeleteApiV1UsersByIdMutationResult = Awaited<ReturnType<typeof ApiService.deleteApiV1UsersById>>;
 export type DataciteApiServiceDeleteDataciteApiV1DoisMutationResult = Awaited<ReturnType<typeof DataciteApiService.deleteDataciteApiV1Dois>>;
+export type ApiServiceGetApiV1WorkflowDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1Workflow>>;
+export type ApiServiceGetApiV1WorkflowQueryResult<TData = ApiServiceGetApiV1WorkflowDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
+export const useApiServiceGetApiV1WorkflowKey = "ApiServiceGetApiV1Workflow";
+export const UseApiServiceGetApiV1WorkflowKeyFn = ({ page, page_size }: {
+  page?: number;
+  page_size?: number;
+} = {}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1WorkflowKey, ...(queryKey ?? [{ page, page_size }])];
+export type ApiServiceGetApiV1WorkflowByIdDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1WorkflowById>>;
+export type ApiServiceGetApiV1WorkflowByIdQueryResult<TData = ApiServiceGetApiV1WorkflowByIdDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
+export const useApiServiceGetApiV1WorkflowByIdKey = "ApiServiceGetApiV1WorkflowById";
+export const UseApiServiceGetApiV1WorkflowByIdKeyFn = ({ id }: {
+  id: string;
+}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1WorkflowByIdKey, ...(queryKey ?? [{ id }])];
+export type ApiServiceGetApiV1JobsDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1Jobs>>;
+export type ApiServiceGetApiV1JobsQueryResult<TData = ApiServiceGetApiV1JobsDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
+export const useApiServiceGetApiV1JobsKey = "ApiServiceGetApiV1Jobs";
+export const UseApiServiceGetApiV1JobsKeyFn = ({ page, page_size }: {
+  page?: number;
+  page_size?: number;
+} = {}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1JobsKey, ...(queryKey ?? [{ page, page_size }])];
+export type ApiServiceGetApiV1JobsByIdDefaultResponse = Awaited<ReturnType<typeof ApiService.getApiV1JobsById>>;
+export type ApiServiceGetApiV1JobsByIdQueryResult<TData = ApiServiceGetApiV1JobsByIdDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
+export const useApiServiceGetApiV1JobsByIdKey = "ApiServiceGetApiV1JobsById";
+export const UseApiServiceGetApiV1JobsByIdKeyFn = ({ id }: {
+  id: string;
+}, queryKey?: Array<unknown>) => [useApiServiceGetApiV1JobsByIdKey, ...(queryKey ?? [{ id }])];
+export type ApiServicePostApiV1WorkflowMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Workflow>>;
+export type ApiServicePutApiV1WorkflowByIdMutationResult = Awaited<ReturnType<typeof ApiService.putApiV1WorkflowById>>;
+export type ApiServicePatchApiV1WorkflowByIdMutationResult = Awaited<ReturnType<typeof ApiService.patchApiV1WorkflowById>>;
+export type ApiServiceDeleteApiV1WorkflowByIdMutationResult = Awaited<ReturnType<typeof ApiService.deleteApiV1WorkflowById>>;
+export type ApiServicePostApiV1JobsMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Jobs>>;
+export type ApiServicePutApiV1JobsByIdMutationResult = Awaited<ReturnType<typeof ApiService.putApiV1JobsById>>;
+export type ApiServicePatchApiV1JobsByIdMutationResult = Awaited<ReturnType<typeof ApiService.patchApiV1JobsById>>;
+export type ApiServiceDeleteApiV1JobsByIdMutationResult = Awaited<ReturnType<typeof ApiService.deleteApiV1JobsById>>;

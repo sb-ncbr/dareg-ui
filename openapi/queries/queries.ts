@@ -2,7 +2,7 @@
 
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService, DataciteApiService, OnedataApiService } from "../requests/services.gen";
-import { Dataset, Experiment, Facility, Group, Instrument, PatchedDataset, PatchedExperiment, PatchedFacility, PatchedGroup, PatchedInstrument, PatchedProfile, PatchedProject, PatchedSchema, PatchedUser, Profile, Project, Schema, User } from "../requests/types.gen";
+import { Dataset, Experiment, Facility, Group, Instrument, Job, PatchedDataset, PatchedExperiment, PatchedFacility, PatchedGroup, PatchedInstrument, PatchedJob, PatchedProfile, PatchedProject, PatchedSchema, PatchedUser, PatchedWorkflowTemplate, Profile, Project, Schema, User, WorkflowTemplate } from "../requests/types.gen";
 import * as Common from "./common";
 export const useApiServiceGetApiSchema = <TData = Common.ApiServiceGetApiSchemaDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ format, lang }: {
   format?: "json" | "yaml";
@@ -324,3 +324,65 @@ export const useApiServiceDeleteApiV1UsersById = <TData = Common.ApiServiceDelet
   id: number;
 }, TContext>({ mutationFn: ({ id }) => ApiService.deleteApiV1UsersById({ id }) as unknown as Promise<TData>, ...options });
 export const useDataciteApiServiceDeleteDataciteApiV1Dois = <TData = Common.DataciteApiServiceDeleteDataciteApiV1DoisMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, void, TContext>, "mutationFn">) => useMutation<TData, TError, void, TContext>({ mutationFn: () => DataciteApiService.deleteDataciteApiV1Dois() as unknown as Promise<TData>, ...options });
+export const useApiServiceGetApiV1Workflow = <TData = Common.ApiServiceGetApiV1WorkflowDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ page, page_size }: {
+  page?: number;
+  page_size?: number;
+} = {}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useQuery<TData, TError>({ queryKey: Common.UseApiServiceGetApiV1WorkflowKeyFn({ page, page_size }, queryKey), queryFn: () => ApiService.getApiV1Workflow({ page, page_size }) as TData, ...options });
+export const useApiServiceGetApiV1WorkflowById = <TData = Common.ApiServiceGetApiV1WorkflowByIdDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ id }: {
+  id: string;
+}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useQuery<TData, TError>({ queryKey: Common.UseApiServiceGetApiV1WorkflowByIdKeyFn({ id }, queryKey), queryFn: () => ApiService.getApiV1WorkflowById({ id }) as TData, ...options });
+export const useApiServiceGetApiV1Jobs = <TData = Common.ApiServiceGetApiV1JobsDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ page, page_size }: {
+  page?: number;
+  page_size?: number;
+} = {}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useQuery<TData, TError>({ queryKey: Common.UseApiServiceGetApiV1JobsKeyFn({ page, page_size }, queryKey), queryFn: () => ApiService.getApiV1Jobs({ page, page_size }) as TData, ...options });
+export const useApiServiceGetApiV1JobsById = <TData = Common.ApiServiceGetApiV1JobsByIdDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ id }: {
+  id: string;
+}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useQuery<TData, TError>({ queryKey: Common.UseApiServiceGetApiV1JobsByIdKeyFn({ id }, queryKey), queryFn: () => ApiService.getApiV1JobsById({ id }) as TData, ...options });
+export const useApiServicePostApiV1Workflow = <TData = Common.ApiServicePostApiV1WorkflowMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  requestBody: WorkflowTemplate;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  requestBody: WorkflowTemplate;
+}, TContext>({ mutationFn: ({ requestBody }) => ApiService.postApiV1Workflow({ requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServicePutApiV1WorkflowById = <TData = Common.ApiServicePutApiV1WorkflowByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+  requestBody: WorkflowTemplate;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+  requestBody: WorkflowTemplate;
+}, TContext>({ mutationFn: ({ id, requestBody }) => ApiService.putApiV1WorkflowById({ id, requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServicePatchApiV1WorkflowById = <TData = Common.ApiServicePatchApiV1WorkflowByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+  requestBody?: PatchedWorkflowTemplate;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+  requestBody?: PatchedWorkflowTemplate;
+}, TContext>({ mutationFn: ({ id, requestBody }) => ApiService.patchApiV1WorkflowById({ id, requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServiceDeleteApiV1WorkflowById = <TData = Common.ApiServiceDeleteApiV1WorkflowByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+}, TContext>({ mutationFn: ({ id }) => ApiService.deleteApiV1WorkflowById({ id }) as unknown as Promise<TData>, ...options });
+export const useApiServicePostApiV1Jobs = <TData = Common.ApiServicePostApiV1JobsMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  requestBody: Job;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  requestBody: Job;
+}, TContext>({ mutationFn: ({ requestBody }) => ApiService.postApiV1Jobs({ requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServicePutApiV1JobsById = <TData = Common.ApiServicePutApiV1JobsByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+  requestBody: Job;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+  requestBody: Job;
+}, TContext>({ mutationFn: ({ id, requestBody }) => ApiService.putApiV1JobsById({ id, requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServicePatchApiV1JobsById = <TData = Common.ApiServicePatchApiV1JobsByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+  requestBody?: PatchedJob;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+  requestBody?: PatchedJob;
+}, TContext>({ mutationFn: ({ id, requestBody }) => ApiService.patchApiV1JobsById({ id, requestBody }) as unknown as Promise<TData>, ...options });
+export const useApiServiceDeleteApiV1JobsById = <TData = Common.ApiServiceDeleteApiV1JobsByIdMutationResult, TError = unknown, TContext = unknown>(options?: Omit<UseMutationOptions<TData, TError, {
+  id: string;
+}, TContext>, "mutationFn">) => useMutation<TData, TError, {
+  id: string;
+}, TContext>({ mutationFn: ({ id }) => ApiService.deleteApiV1JobsById({ id }) as unknown as Promise<TData>, ...options });

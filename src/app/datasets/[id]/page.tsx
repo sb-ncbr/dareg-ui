@@ -32,6 +32,7 @@ import { TypographyH4 } from "@/components/typography/typography-h4";
 import { TypographyP } from "@/components/typography/typography-p";
 import { TypographyH5 } from "@/components/typography/typography-h5";
 import Loading from "../loading";
+import JobNavigationButton from "@/components/workflows/job-navigation-button";
 
 const DATASET_SHARE_URL = "https://onedata.e-infra.cz/share/";
 
@@ -245,11 +246,11 @@ const DatasetDetails: React.FC = () => {
         </div>
       </div>
       <BoundingBox>
-        <div className="mb-10 max-w-xl ">
-          <div>
+        <div className="mb-10 max-w-xl fl">
+          <div className="flex items-center gap-4 mb-6">
             <Button
               variant={"default"}
-              className="flex items-center justify-between mb-4"
+              className="flex items-center justify-between"
               onClick={() => router.push(`/datasets/${id}/experiments`)}
             >
               <div className="flex items-center gap-2">
@@ -261,6 +262,11 @@ const DatasetDetails: React.FC = () => {
                 />
               </div>
             </Button>
+            <JobNavigationButton
+              basePath={`/datasets/${id}`}
+              entityId={id as string}
+              entityType="dataset"
+            />
           </div>
 
           <TextField

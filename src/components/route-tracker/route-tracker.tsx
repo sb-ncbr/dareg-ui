@@ -12,6 +12,7 @@ const getIconType = (pathname: string): RecentlyViewedItem["icon"] => {
   if (pathname.startsWith("/datasets")) return "dataset";
   if (pathname.startsWith("/templates")) return "template";
   if (pathname.startsWith("/collections")) return "collection";
+  if (pathname.startsWith("/workflows")) return "workflow";
 
   return "default";
 };

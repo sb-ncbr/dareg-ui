@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiSchemaData, GetApiSchemaResponse, PostApiTokenLoginResponse, PostApiTokenLogoutResponse, PostApiTokenLogoutallResponse, GetApiV1DatasetsData, GetApiV1DatasetsResponse, PostApiV1DatasetsData, PostApiV1DatasetsResponse, GetApiV1DatasetsByIdData, GetApiV1DatasetsByIdResponse, PutApiV1DatasetsByIdData, PutApiV1DatasetsByIdResponse, PatchApiV1DatasetsByIdData, PatchApiV1DatasetsByIdResponse, DeleteApiV1DatasetsByIdData, DeleteApiV1DatasetsByIdResponse, GetApiV1DatasetsByIdGetByReservationIdData, GetApiV1DatasetsByIdGetByReservationIdResponse, PostApiV1DatasetsCreateDatasetData, PostApiV1DatasetsCreateDatasetResponse, PostApiV1DatasetsCreateOnedataFolderData, PostApiV1DatasetsCreateOnedataFolderResponse, PostApiV1DatasetsCreatePublicShareData, PostApiV1DatasetsCreatePublicShareResponse, PostApiV1DatasetsShadowData, PostApiV1DatasetsShadowResponse, GetApiV1ExperimentsData, GetApiV1ExperimentsResponse, PostApiV1ExperimentsData, PostApiV1ExperimentsResponse, GetApiV1ExperimentsByIdData, GetApiV1ExperimentsByIdResponse, PutApiV1ExperimentsByIdData, PutApiV1ExperimentsByIdResponse, PatchApiV1ExperimentsByIdData, PatchApiV1ExperimentsByIdResponse, DeleteApiV1ExperimentsByIdData, DeleteApiV1ExperimentsByIdResponse, GetApiV1FacilitiesData, GetApiV1FacilitiesResponse, PostApiV1FacilitiesData, PostApiV1FacilitiesResponse, GetApiV1FacilitiesByIdData, GetApiV1FacilitiesByIdResponse, PutApiV1FacilitiesByIdData, PutApiV1FacilitiesByIdResponse, PatchApiV1FacilitiesByIdData, PatchApiV1FacilitiesByIdResponse, DeleteApiV1FacilitiesByIdData, DeleteApiV1FacilitiesByIdResponse, GetApiV1GroupsData, GetApiV1GroupsResponse, PostApiV1GroupsData, PostApiV1GroupsResponse, GetApiV1GroupsByIdData, GetApiV1GroupsByIdResponse, PutApiV1GroupsByIdData, PutApiV1GroupsByIdResponse, PatchApiV1GroupsByIdData, PatchApiV1GroupsByIdResponse, DeleteApiV1GroupsByIdData, DeleteApiV1GroupsByIdResponse, GetApiV1InstrumentData, GetApiV1InstrumentResponse, PostApiV1InstrumentData, PostApiV1InstrumentResponse, GetApiV1InstrumentByIdData, GetApiV1InstrumentByIdResponse, PutApiV1InstrumentByIdData, PutApiV1InstrumentByIdResponse, PatchApiV1InstrumentByIdData, PatchApiV1InstrumentByIdResponse, DeleteApiV1InstrumentByIdData, DeleteApiV1InstrumentByIdResponse, GetApiV1InstrumentMetadataResponse, GetApiV1ProfileData, GetApiV1ProfileResponse, PostApiV1ProfileData, PostApiV1ProfileResponse, GetApiV1ProfileByIdData, GetApiV1ProfileByIdResponse, PutApiV1ProfileByIdData, PutApiV1ProfileByIdResponse, PatchApiV1ProfileByIdData, PatchApiV1ProfileByIdResponse, DeleteApiV1ProfileByIdData, DeleteApiV1ProfileByIdResponse, GetApiV1ProjectsData, GetApiV1ProjectsResponse, PostApiV1ProjectsData, PostApiV1ProjectsResponse, GetApiV1ProjectsByIdData, GetApiV1ProjectsByIdResponse, PutApiV1ProjectsByIdData, PutApiV1ProjectsByIdResponse, PatchApiV1ProjectsByIdData, PatchApiV1ProjectsByIdResponse, DeleteApiV1ProjectsByIdData, DeleteApiV1ProjectsByIdResponse, GetApiV1ReservationData, GetApiV1ReservationResponse, GetApiV1ReservationByIdData, GetApiV1ReservationByIdResponse, GetApiV1SchemasData, GetApiV1SchemasResponse, PostApiV1SchemasData, PostApiV1SchemasResponse, GetApiV1SchemasByIdData, GetApiV1SchemasByIdResponse, PutApiV1SchemasByIdData, PutApiV1SchemasByIdResponse, PatchApiV1SchemasByIdData, PatchApiV1SchemasByIdResponse, DeleteApiV1SchemasByIdData, DeleteApiV1SchemasByIdResponse, PostApiV1TempTokenByIdData, PostApiV1TempTokenByIdResponse, GetApiV1UsersData, GetApiV1UsersResponse, PostApiV1UsersData, PostApiV1UsersResponse, GetApiV1UsersByIdData, GetApiV1UsersByIdResponse, PutApiV1UsersByIdData, PutApiV1UsersByIdResponse, PatchApiV1UsersByIdData, PatchApiV1UsersByIdResponse, DeleteApiV1UsersByIdData, DeleteApiV1UsersByIdResponse, GetDataciteApiV1DoisResponse, PostDataciteApiV1DoisResponse, PutDataciteApiV1DoisResponse, DeleteDataciteApiV1DoisResponse, GetOnedataApiV1FilesResponse, PostOnedataApiV1FilesResponse } from './types.gen';
+import type { GetApiSchemaData, GetApiSchemaResponse, PostApiTokenLoginResponse, PostApiTokenLogoutResponse, PostApiTokenLogoutallResponse, GetApiV1DatasetsData, GetApiV1DatasetsResponse, PostApiV1DatasetsData, PostApiV1DatasetsResponse, GetApiV1DatasetsByIdData, GetApiV1DatasetsByIdResponse, PutApiV1DatasetsByIdData, PutApiV1DatasetsByIdResponse, PatchApiV1DatasetsByIdData, PatchApiV1DatasetsByIdResponse, DeleteApiV1DatasetsByIdData, DeleteApiV1DatasetsByIdResponse, GetApiV1DatasetsByIdGetByReservationIdData, GetApiV1DatasetsByIdGetByReservationIdResponse, PostApiV1DatasetsCreateDatasetData, PostApiV1DatasetsCreateDatasetResponse, PostApiV1DatasetsCreateOnedataFolderData, PostApiV1DatasetsCreateOnedataFolderResponse, PostApiV1DatasetsCreatePublicShareData, PostApiV1DatasetsCreatePublicShareResponse, PostApiV1DatasetsShadowData, PostApiV1DatasetsShadowResponse, GetApiV1ExperimentsData, GetApiV1ExperimentsResponse, PostApiV1ExperimentsData, PostApiV1ExperimentsResponse, GetApiV1ExperimentsByIdData, GetApiV1ExperimentsByIdResponse, PutApiV1ExperimentsByIdData, PutApiV1ExperimentsByIdResponse, PatchApiV1ExperimentsByIdData, PatchApiV1ExperimentsByIdResponse, DeleteApiV1ExperimentsByIdData, DeleteApiV1ExperimentsByIdResponse, GetApiV1FacilitiesData, GetApiV1FacilitiesResponse, PostApiV1FacilitiesData, PostApiV1FacilitiesResponse, GetApiV1FacilitiesByIdData, GetApiV1FacilitiesByIdResponse, PutApiV1FacilitiesByIdData, PutApiV1FacilitiesByIdResponse, PatchApiV1FacilitiesByIdData, PatchApiV1FacilitiesByIdResponse, DeleteApiV1FacilitiesByIdData, DeleteApiV1FacilitiesByIdResponse, GetApiV1GroupsData, GetApiV1GroupsResponse, PostApiV1GroupsData, PostApiV1GroupsResponse, GetApiV1GroupsByIdData, GetApiV1GroupsByIdResponse, PutApiV1GroupsByIdData, PutApiV1GroupsByIdResponse, PatchApiV1GroupsByIdData, PatchApiV1GroupsByIdResponse, DeleteApiV1GroupsByIdData, DeleteApiV1GroupsByIdResponse, GetApiV1InstrumentData, GetApiV1InstrumentResponse, PostApiV1InstrumentData, PostApiV1InstrumentResponse, GetApiV1InstrumentByIdData, GetApiV1InstrumentByIdResponse, PutApiV1InstrumentByIdData, PutApiV1InstrumentByIdResponse, PatchApiV1InstrumentByIdData, PatchApiV1InstrumentByIdResponse, DeleteApiV1InstrumentByIdData, DeleteApiV1InstrumentByIdResponse, GetApiV1InstrumentMetadataResponse, GetApiV1ProfileData, GetApiV1ProfileResponse, PostApiV1ProfileData, PostApiV1ProfileResponse, GetApiV1ProfileByIdData, GetApiV1ProfileByIdResponse, PutApiV1ProfileByIdData, PutApiV1ProfileByIdResponse, PatchApiV1ProfileByIdData, PatchApiV1ProfileByIdResponse, DeleteApiV1ProfileByIdData, DeleteApiV1ProfileByIdResponse, GetApiV1ProjectsData, GetApiV1ProjectsResponse, PostApiV1ProjectsData, PostApiV1ProjectsResponse, GetApiV1ProjectsByIdData, GetApiV1ProjectsByIdResponse, PutApiV1ProjectsByIdData, PutApiV1ProjectsByIdResponse, PatchApiV1ProjectsByIdData, PatchApiV1ProjectsByIdResponse, DeleteApiV1ProjectsByIdData, DeleteApiV1ProjectsByIdResponse, GetApiV1ReservationData, GetApiV1ReservationResponse, GetApiV1ReservationByIdData, GetApiV1ReservationByIdResponse, GetApiV1SchemasData, GetApiV1SchemasResponse, PostApiV1SchemasData, PostApiV1SchemasResponse, GetApiV1SchemasByIdData, GetApiV1SchemasByIdResponse, PutApiV1SchemasByIdData, PutApiV1SchemasByIdResponse, PatchApiV1SchemasByIdData, PatchApiV1SchemasByIdResponse, DeleteApiV1SchemasByIdData, DeleteApiV1SchemasByIdResponse, PostApiV1TempTokenByIdData, PostApiV1TempTokenByIdResponse, GetApiV1UsersData, GetApiV1UsersResponse, PostApiV1UsersData, PostApiV1UsersResponse, GetApiV1UsersByIdData, GetApiV1UsersByIdResponse, PutApiV1UsersByIdData, PutApiV1UsersByIdResponse, PatchApiV1UsersByIdData, PatchApiV1UsersByIdResponse, DeleteApiV1UsersByIdData, DeleteApiV1UsersByIdResponse, GetApiV1WorkflowData, GetApiV1WorkflowResponse, PostApiV1WorkflowData, PostApiV1WorkflowResponse, GetApiV1WorkflowByIdData, GetApiV1WorkflowByIdResponse, PutApiV1WorkflowByIdData, PutApiV1WorkflowByIdResponse, PatchApiV1WorkflowByIdData, PatchApiV1WorkflowByIdResponse, DeleteApiV1WorkflowByIdData, DeleteApiV1WorkflowByIdResponse, GetApiV1JobsData, GetApiV1JobsResponse, PostApiV1JobsData, PostApiV1JobsResponse, GetApiV1JobsByIdData, GetApiV1JobsByIdResponse, PutApiV1JobsByIdData, PutApiV1JobsByIdResponse, PatchApiV1JobsByIdData, PatchApiV1JobsByIdResponse, DeleteApiV1JobsByIdData, DeleteApiV1JobsByIdResponse, GetDataciteApiV1DoisResponse, PostDataciteApiV1DoisResponse, PutDataciteApiV1DoisResponse, DeleteDataciteApiV1DoisResponse, GetOnedataApiV1FilesResponse, PostOnedataApiV1FilesResponse } from './types.gen';
 
 export class ApiService {
     /**
@@ -1149,6 +1149,212 @@ export class ApiService {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/v1/users/{id}/',
+            path: {
+                id: data.id
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.page A page number within the paginated result set.
+     * @param data.page_size Number of results to return per page.
+     * @returns PaginatedWorkflowTemplateList
+     * @throws ApiError
+     */
+    public static getApiV1Workflow(data: GetApiV1WorkflowData = {}): CancelablePromise<GetApiV1WorkflowResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/workflow/',
+            query: {
+                page: data.page,
+                page_size: data.page_size
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns WorkflowTemplate
+     * @throws ApiError
+     */
+    public static postApiV1Workflow(data: PostApiV1WorkflowData): CancelablePromise<PostApiV1WorkflowResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/workflow/',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this workflowtemplate.
+     * @returns WorkflowTemplate
+     * @throws ApiError
+     */
+    public static getApiV1WorkflowById(data: GetApiV1WorkflowByIdData): CancelablePromise<GetApiV1WorkflowByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/workflow/{id}/',
+            path: {
+                id: data.id
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this workflowtemplate.
+     * @param data.requestBody
+     * @returns WorkflowTemplate
+     * @throws ApiError
+     */
+    public static putApiV1WorkflowById(data: PutApiV1WorkflowByIdData): CancelablePromise<PutApiV1WorkflowByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/workflow/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this workflowtemplate.
+     * @param data.requestBody
+     * @returns WorkflowTemplate
+     * @throws ApiError
+     */
+    public static patchApiV1WorkflowById(data: PatchApiV1WorkflowByIdData): CancelablePromise<PatchApiV1WorkflowByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/workflow/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this workflowtemplate.
+     * @returns void No response body
+     * @throws ApiError
+     */
+    public static deleteApiV1WorkflowById(data: DeleteApiV1WorkflowByIdData): CancelablePromise<DeleteApiV1WorkflowByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/workflow/{id}/',
+            path: {
+                id: data.id
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.page A page number within the paginated result set.
+     * @param data.page_size Number of results to return per page.
+     * @returns PaginatedJobList
+     * @throws ApiError
+     */
+    public static getApiV1Jobs(data: GetApiV1JobsData = {}): CancelablePromise<GetApiV1JobsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/jobs/',
+            query: {
+                page: data.page,
+                page_size: data.page_size
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Job
+     * @throws ApiError
+     */
+    public static postApiV1Jobs(data: PostApiV1JobsData): CancelablePromise<PostApiV1JobsResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/jobs/',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this job.
+     * @returns Job
+     * @throws ApiError
+     */
+    public static getApiV1JobsById(data: GetApiV1JobsByIdData): CancelablePromise<GetApiV1JobsByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/jobs/{id}/',
+            path: {
+                id: data.id
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this job.
+     * @param data.requestBody
+     * @returns Job
+     * @throws ApiError
+     */
+    public static putApiV1JobsById(data: PutApiV1JobsByIdData): CancelablePromise<PutApiV1JobsByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/jobs/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this job.
+     * @param data.requestBody
+     * @returns Job
+     * @throws ApiError
+     */
+    public static patchApiV1JobsById(data: PatchApiV1JobsByIdData): CancelablePromise<PatchApiV1JobsByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/jobs/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id A UUID string identifying this job.
+     * @returns void No response body
+     * @throws ApiError
+     */
+    public static deleteApiV1JobsById(data: DeleteApiV1JobsByIdData): CancelablePromise<DeleteApiV1JobsByIdResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/jobs/{id}/',
             path: {
                 id: data.id
             }

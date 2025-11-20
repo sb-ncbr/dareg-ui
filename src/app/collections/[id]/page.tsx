@@ -11,15 +11,17 @@ import { TypographyH2 } from "@/components/typography/typography-h2";
 import { DynamicDataTable } from "@/components/dynamic_table/dynamic-data-table";
 import { TypographyH3 } from "@/components/typography/typography-h3";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Settings } from "lucide-react";
+import { ChevronLeft, Settings, Workflow } from "lucide-react";
+import JobNavigationButton from "@/components/workflows/job-navigation-button";
 import { ProjectsData } from "@/types/global";
 import { SkeletonTable } from "@/components/dynamic_table/skeleton-table";
-import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
+import { TypographyH5 } from "@/components/typography/typography-h5";
 import { ToastContainer, toast } from "react-toastify";
 import { Breadcrumbs } from "@/components/breadcrumbs/Breadcrumbs";
 import BoundingBox from "@/components/bounding-box/bounding-box";
 import { datasetColumns } from "@/components/dynamic_table/columns/dataset-columns";
 import Loading from "../loading";
+import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
 
 export type ProjectShare = {
   id: number;
@@ -113,7 +115,7 @@ const ProjectDetails: React.FC = () => {
     } catch (error: any) {
       toast.error(
         "Failed to update project. Please try again. Error: \r\n" +
-          error.message
+        error.message
       );
     }
   };
@@ -164,6 +166,13 @@ const ProjectDetails: React.FC = () => {
       </div>
       <BoundingBox>
         <div className="mb-10">
+          <div className="flex items-center gap-4 mb-6">
+            <JobNavigationButton
+              basePath={`/collections/${id}`}
+              entityId={id as string}
+              entityType="project"
+            />
+          </div>
           <TextField
             label="Name"
             value={name}

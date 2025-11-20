@@ -23,6 +23,7 @@ import {
   Search,
   ChevronDown,
   Trash2,
+  Workflow,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
