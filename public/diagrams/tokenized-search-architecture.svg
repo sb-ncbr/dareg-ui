@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-label="Tokenized search component architecture">
+  <defs>
+    <style>
+      .title { font: 700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: #111; }
+      .subtitle { font: 600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: #111; }
+      .text { font: 12px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: #111; }
+      .small { font: 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: #111; }
+      .box { fill: #fff; stroke: #222; stroke-width: 1.5; }
+      .boxMuted { fill: #fff; stroke: #666; stroke-width: 1.2; stroke-dasharray: 6 4; }
+      .boxFill { fill: #f7f7f7; stroke: #222; stroke-width: 1.5; }
+      .arrow { stroke: #222; stroke-width: 1.4; fill: none; marker-end: url(#arrowHead); }
+      .arrowMuted { stroke: #666; stroke-width: 1.2; fill: none; marker-end: url(#arrowHeadMuted); }
+      .label { font: 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: #222; }
+    </style>
+
+    <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#222" />
+    </marker>
+    <marker id="arrowHeadMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="48" class="title">Tokenized Search Package — Architecture Overview</text>
+  <text x="40" y="72" class="small">Focus: host application integration, package layers, and backend/API contracts</text>
+
+  <!-- Host application -->
+  <rect x="40" y="110" width="360" height="320" rx="10" class="box" />
+  <text x="60" y="140" class="subtitle">Host Application</text>
+  <text x="60" y="168" class="text">- React application</text>
+  <text x="60" y="190" class="text">- Query client/provider (TanStack Query)</text>
+  <text x="60" y="212" class="text">- Router context (optional)</text>
+  <text x="60" y="234" class="text">- Calls configuration API once at startup</text>
+
+  <rect x="60" y="260" width="320" height="140" rx="8" class="boxFill" />
+  <text x="78" y="286" class="subtitle">Integration responsibilities</text>
+  <text x="78" y="312" class="text">1) Mount <tspan font-family="monospace">SearchProvider</tspan></text>
+  <text x="78" y="334" class="text">2) Render <tspan font-family="monospace">TokenizedSearch</tspan></text>
+  <text x="78" y="356" class="text">3) Configure API base URL + token provider</text>
+  <text x="78" y="378" class="text">4) Provide styling import (CSS export)</text>
+
+  <!-- Package -->
+  <rect x="460" y="110" width="520" height="560" rx="10" class="box" />
+  <text x="480" y="140" class="subtitle">npm Package: @muni-ics/tokenized-search</text>
+  <text x="480" y="164" class="small">Public entry points: components, provider/hooks, services, types, styles</text>
+
+  <!-- Package: UI -->
+  <rect x="480" y="190" width="480" height="120" rx="8" class="boxFill" />
+  <text x="500" y="216" class="subtitle">UI Layer</text>
+  <text x="500" y="240" class="text">- Token input + suggestions</text>
+  <text x="500" y="262" class="text">- Filter dialogs (date range, select, etc.)</text>
+  <text x="500" y="284" class="text">- Result rendering (dialog/page)</text>
+
+  <!-- Package: State -->
+  <rect x="480" y="330" width="230" height="150" rx="8" class="boxFill" />
+  <text x="500" y="356" class="subtitle">State / Context</text>
+  <text x="500" y="380" class="text">- tokens + free-text query</text>
+  <text x="500" y="402" class="text">- selected schema (optional)</text>
+  <text x="500" y="424" class="text">- loading + results + errors</text>
+  <text x="500" y="446" class="text">- URL sync (optional router)</text>
+
+  <!-- Package: Services -->
+  <rect x="730" y="330" width="230" height="150" rx="8" class="boxFill" />
+  <text x="750" y="356" class="subtitle">Services</text>
+  <text x="750" y="380" class="text">- SearchService</text>
+  <text x="750" y="402" class="text">- BootstrapService</text>
+  <text x="750" y="424" class="text">- SavedSearchesService</text>
+  <text x="750" y="446" class="text">- HistoryService</text>
+
+  <!-- Package: API client -->
+  <rect x="480" y="500" width="480" height="120" rx="8" class="boxFill" />
+  <text x="500" y="526" class="subtitle">API Client</text>
+  <text x="500" y="550" class="text">- Axios instance with request interceptor</text>
+  <text x="500" y="572" class="text">- Injects <tspan font-family="monospace">Authorization: Bearer …</tspan> (optional)</text>
+  <text x="500" y="594" class="text">- Centralizes base URL + timeouts</text>
+
+  <!-- External backend -->
+  <rect x="1040" y="110" width="320" height="380" rx="10" class="box" />
+  <text x="1060" y="140" class="subtitle">Backend API</text>
+  <text x="1060" y="168" class="text">Required endpoints (contract):</text>
+
+  <rect x="1060" y="190" width="280" height="120" rx="8" class="boxFill" />
+  <text x="1080" y="216" class="text"><tspan font-family="monospace">GET /api/schema/</tspan> (OpenAPI)</text>
+  <text x="1080" y="238" class="text">- schema bootstrap for models/filters</text>
+  <text x="1080" y="272" class="text"><tspan font-family="monospace">POST /api/v1/query/</tspan> (search)</text>
+  <text x="1080" y="294" class="text">- full search + suggestions</text>
+
+  <rect x="1060" y="330" width="280" height="90" rx="8" class="boxFill" />
+  <text x="1080" y="356" class="text"><tspan font-family="monospace">GET /api/v1/schemas/</tspan></text>
+  <text x="1080" y="378" class="text">- list schemas for selector</text>
+
+  <!-- Storage -->
+  <rect x="1040" y="520" width="320" height="150" rx="10" class="box" />
+  <text x="1060" y="550" class="subtitle">Browser Storage</text>
+
+  <rect x="1060" y="568" width="280" height="42" rx="8" class="boxFill" />
+  <text x="1080" y="594" class="text">Cookies: search history</text>
+
+  <rect x="1060" y="620" width="280" height="42" rx="8" class="boxFill" />
+  <text x="1080" y="646" class="text">localStorage: saved searches</text>
+
+  <!-- OpenAPI fallback -->
+  <rect x="460" y="690" width="520" height="95" rx="10" class="boxMuted" />
+  <text x="480" y="720" class="subtitle">Schema resilience</text>
+  <text x="480" y="744" class="text">- Primary: runtime bootstrap from <tspan font-family="monospace">/api/schema/</tspan></text>
+  <text x="480" y="766" class="text">- Fallback: bundled OpenAPI schema snapshot (package assets)</text>
+
+  <!-- Arrows: host -> package -->
+  <path d="M 400 260 C 430 260, 430 260, 460 260" class="arrow" />
+  <text x="408" y="246" class="label">mount provider + UI</text>
+
+  <path d="M 400 360 C 430 360, 430 360, 460 360" class="arrowMuted" />
+  <text x="408" y="346" class="label">optional router/query providers</text>
+
+  <!-- Arrows: package -> backend -->
+  <path d="M 980 540 C 1010 540, 1010 260, 1040 260" class="arrow" />
+  <text x="990" y="250" class="label">HTTP requests</text>
+
+  <!-- Arrows: bootstrap -->
+  <path d="M 860 330 C 930 300, 990 250, 1040 220" class="arrowMuted" />
+  <text x="900" y="292" class="label">bootstrap: OpenAPI</text>
+
+  <!-- Arrows: persistence -->
+  <path d="M 860 455 C 930 480, 990 560, 1040 590" class="arrowMuted" />
+  <text x="900" y="506" class="label">persist history/saved searches</text>
+
+  <!-- Legend -->
+  <rect x="40" y="470" width="360" height="200" rx="10" class="boxMuted" />
+  <text x="60" y="500" class="subtitle">Legend / Notes</text>
+  <text x="60" y="526" class="text">Solid arrow: required integration flow</text>
+  <text x="60" y="548" class="text">Dashed arrow: optional/conditional flow</text>
+  <text x="60" y="570" class="text">Contracts to specify in thesis:</text>
+  <text x="78" y="592" class="text">- endpoint paths + payload shapes</text>
+  <text x="78" y="614" class="text">- schema mapping rules (OpenAPI → filters)</text>
+  <text x="78" y="636" class="text">- persistence scope (cookies/localStorage)</text>
+
+</svg>

@@ -12,7 +12,9 @@
 
 # testing
 /coverage
-
+/Diplomka_2026
+/packages/*
+/packages/tokenized-search/examples/vite-demo/node_modules
 # next.js
 /.next/
 /out/
@@ -40,3 +42,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 build-and-run-docker.ps1
+
+# roo
+.roo/
