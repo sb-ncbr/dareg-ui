@@ -1,4 +1,4 @@
-@import "tailwindcss";
+n@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -33,7 +33,7 @@
   --sidebar-foreground: #000000;
   --sidebar-accent: #d8e3d47a;
   --sidebar-accent-foreground: #256600;
-  
+
   --sidebar-background: #eef6eb;
   --sidebar-foreground: 240 5.3% 26.1%;
   --sidebar-primary: 240 5.9% 10%;
@@ -54,7 +54,7 @@
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: #257400;
-  --primary-foreground: #ff
+  --primary-foreground: #fff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -77,11 +77,11 @@
   --sidebar-accent: #112612; /* dark green for hover in dark mode */
   --sidebar-accent-foreground: #fff;
 
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
 }
 
 @theme inline {
@@ -123,7 +123,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
 
 @layer base {
   * {

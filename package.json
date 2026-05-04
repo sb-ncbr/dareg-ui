@@ -15,7 +15,7 @@
     "@emotion/styled": "^11.14.0",
     "@hey-api/openapi-ts": "^0.69.0",
     "@jsonforms/core": "^3.5.1",
-    "@jsonforms/material-renderers": "^3.5.1",
+    "@jsonforms/material-renderers": "^3.7.0",
     "@jsonforms/react": "^3.5.1",
     "@mui/material": "^7.1.0",
     "@radix-ui/react-accordion": "^1.2.11",

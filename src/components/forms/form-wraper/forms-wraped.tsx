@@ -11,6 +11,11 @@ import MatrixTester from "./testers/matrix-tester";
 import matrixRenderer from "./rederers/matrix-renderer";
 import MaterialCategorizationLayoutTester from "./testers/material-categorization-layout-tester";
 import { MaterialCategorizationLayoutRenderer } from "./rederers/material-categorization-layout-renderer";
+import {
+  SuggestionTextControl,
+  suggestionTextControlTester,
+} from "./renderers/suggestion-text-renderer";
+import { SuggestionsProvider } from "./contexts/suggestions-context";
 import { Stack, SvgIcon, Typography } from "@mui/material";
 import { Code, Home, Layers } from "lucide-react";
 import { Description } from "@radix-ui/react-dialog";
@@ -19,6 +24,7 @@ const renderers = [
   ...materialRenderers,
   { tester: paperTester, renderer: PaperRenderer },
   { tester: MatrixTester, renderer: matrixRenderer },
+  { tester: suggestionTextControlTester, renderer: SuggestionTextControl },
 ];
 
 export const iconMap: { [key: string]: JSX.Element } = {
@@ -87,7 +93,7 @@ const FormsWrapped = ({
   ...other
 }: FormsWrappedProps): JSX.Element => {
   return (
-    <>
+    <SuggestionsProvider enabled={false}>
       <JsonForms
         schema={schema as JsonSchema}
         uischema={
@@ -107,7 +113,7 @@ const FormsWrapped = ({
         validationMode="ValidateAndShow"
         {...other}
       />
-    </>
+    </SuggestionsProvider>
   );
 };
 

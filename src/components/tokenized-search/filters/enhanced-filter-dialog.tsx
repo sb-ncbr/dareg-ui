@@ -47,6 +47,7 @@ import TemplateSelectSSR from "@/components/select/template-select";
 import ProjectSelectSSR from "@/components/select/project-select";
 import { DoubleRangeCalendarPopover } from "@/components/time-picker/double-calendar-popover";
 import FormsWrapped from "@/components/forms/form-wraper/forms-wraped";
+import { SuggestionsProvider } from "@/components/forms/form-wraper/contexts/suggestions-context";
 
 import { useApiServiceGetApiV1Schemas } from "../../../../openapi/queries";
 import type { AutoFilterState } from "../utils/query-converter";
@@ -370,11 +371,10 @@ export function EnhancedFilterDialog({
                         </div>
                       ) : (
                         <div
-                          className={`transition-all duration-300 ease-out ${
-                            showSchemaFadeIn
+                          className={`transition-all duration-300 ease-out ${showSchemaFadeIn
                               ? "opacity-100 translate-y-0"
                               : "opacity-0 translate-y-4"
-                          }`}
+                            }`}
                         >
                           <Select
                             onValueChange={handleSchemaSelection}
@@ -397,18 +397,16 @@ export function EnhancedFilterDialog({
                       {/* Toggle between FormsWrapped and manual rendering */}
                       {selectedSchemaObj && (
                         <div
-                          className={`mt-4 space-y-4 transition-all duration-300 ease-out ${
-                            showFadeIn
+                          className={`mt-4 space-y-4 transition-all duration-300 ease-out ${showFadeIn
                               ? "opacity-100 translate-y-0"
                               : "opacity-0 translate-y-4"
-                          }`}
+                            }`}
                         >
                           <div
-                            className={`flex items-center space-x-4 transition-all duration-300 ease-out ${
-                              showFadeIn
+                            className={`flex items-center space-x-4 transition-all duration-300 ease-out ${showFadeIn
                                 ? "opacity-100 translate-y-0"
                                 : "opacity-0 translate-y-4"
-                            }`}
+                              }`}
                           >
                             <Label className="text-sm font-medium">
                               Metadata Input Method:
@@ -447,11 +445,10 @@ export function EnhancedFilterDialog({
 
                           {useFormsWrapped ? (
                             <div
-                              className={`border rounded-lg p-4 bg-white transition-all duration-300 ease-out ${
-                                showFadeIn
+                              className={`border rounded-lg p-4 bg-white transition-all duration-300 ease-out ${showFadeIn
                                   ? "opacity-100 translate-y-0"
                                   : "opacity-0 translate-y-4"
-                              }`}
+                                }`}
                             >
                               <div className="mb-4">
                                 <h4 className="text-sm font-medium mb-2">
@@ -464,15 +461,17 @@ export function EnhancedFilterDialog({
                               </div>
                               <div className="max-h-[60vh] overflow-y-auto pr-2">
                                 <div className="bg-white  rounded enhanced-filter-jsonforms">
-                                  <FormsWrapped
-                                    schema={selectedSchemaObj.schema as object}
-                                    uischema={
-                                      selectedSchemaObj.uischema as object
-                                    }
-                                    data={formsWrappedData}
-                                    setData={handleFormsWrappedDataChange}
-                                    setErrors={setFormsWrappedErrors}
-                                  />
+                                  <SuggestionsProvider enabled={true}>
+                                    <FormsWrapped
+                                      schema={selectedSchemaObj.schema as object}
+                                      uischema={
+                                        selectedSchemaObj.uischema as object
+                                      }
+                                      data={formsWrappedData}
+                                      setData={handleFormsWrappedDataChange}
+                                      setErrors={setFormsWrappedErrors}
+                                    />
+                                  </SuggestionsProvider>
                                 </div>
                               </div>
                               {Object.keys(formsWrappedErrors).length > 0 && (
@@ -490,11 +489,10 @@ export function EnhancedFilterDialog({
                             </div>
                           ) : (
                             <div
-                              className={`border rounded-lg p-4 bg-white transition-all duration-300 ease-out ${
-                                showFadeIn && showModeFadeIn
+                              className={`border rounded-lg p-4 bg-white transition-all duration-300 ease-out ${showFadeIn && showModeFadeIn
                                   ? "opacity-100 translate-y-0"
                                   : "opacity-0 translate-y-4"
-                              }`}
+                                }`}
                             >
                               <div className="mb-4">
                                 <h4 className="text-sm font-medium mb-2">
@@ -504,7 +502,7 @@ export function EnhancedFilterDialog({
                               {schemaMetadata && (
                                 <div className="max-h-[60vh] overflow-y-auto pr-2">
                                   {schemaMetadata.sections.length > 0 ||
-                                  schemaMetadata.flatFields.length > 0 ? (
+                                    schemaMetadata.flatFields.length > 0 ? (
                                     <Accordion
                                       type="multiple"
                                       className="w-full"
