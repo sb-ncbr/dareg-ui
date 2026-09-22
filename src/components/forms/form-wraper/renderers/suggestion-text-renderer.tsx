@@ -120,7 +120,7 @@ function SuggestionTextRenderer(props: ControlProps) {
 
     const fetchSuggestions = useCallback(
         async (query: string) => {
-            if (query.length < MIN_CHARS_FOR_SUGGESTIONS) {
+            if (!suggestionsEnabled || query.length < MIN_CHARS_FOR_SUGGESTIONS) {
                 setSuggestions([]);
                 setHasError(false);
                 return;
@@ -155,13 +155,23 @@ function SuggestionTextRenderer(props: ControlProps) {
                 setIsLoading(false);
             }
         },
-        [model, path, selectedSchemaId, contextSearchSuggestionsApi]
+        [
+            model,
+            path,
+            selectedSchemaId,
+            contextSearchSuggestionsApi,
+            suggestionsEnabled,
+        ]
     );
 
     useEffect(() => {
         let active = true;
 
-        if (debouncedValue.length >= MIN_CHARS_FOR_SUGGESTIONS && enabled !== false) {
+        if (
+            suggestionsEnabled &&
+            debouncedValue.length >= MIN_CHARS_FOR_SUGGESTIONS &&
+            enabled !== false
+        ) {
             fetchSuggestions(debouncedValue).then(() => {
                 if (!active) return;
             });
@@ -173,7 +183,7 @@ function SuggestionTextRenderer(props: ControlProps) {
         return () => {
             active = false;
         };
-    }, [debouncedValue, fetchSuggestions, enabled]);
+    }, [debouncedValue, fetchSuggestions, enabled, suggestionsEnabled]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;

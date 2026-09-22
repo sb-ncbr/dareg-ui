@@ -48,9 +48,16 @@ const DatasetDetails: React.FC = () => {
 
   const patchDataset = useApiServicePatchApiV1DatasetsById();
 
-  const { data: schemaData, isLoading: isSchemaLoading } =
+  const schemaId = dataset?.schema ?? "";
+  const {
+    data: schemaData,
+    isLoading: isSchemaLoading,
+    error: schemaError,
+  } =
     useApiServiceGetApiV1SchemasById({
-      id: dataset?.schema ?? "",
+      id: schemaId,
+    }, undefined, {
+      enabled: Boolean(schemaId),
     });
 
   const { data: projectData, isLoading: isProjectLoading } =
@@ -350,9 +357,19 @@ const DatasetDetails: React.FC = () => {
           />
 
           <div className="mt-4">
-            {isSchemaLoading ? (
+            {!schemaId ? (
+              <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                Metadata form unavailable: this dataset has no schema assigned.
+                Assign a schema to the dataset to edit its metadata.
+              </div>
+            ) : isSchemaLoading ? (
               <div>
                 <SkeletonTable></SkeletonTable>
+              </div>
+            ) : schemaError || !schemaData?.schema || !schemaData?.uischema ? (
+              <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                Metadata form unavailable: the dataset schema could not be
+                loaded.
               </div>
             ) : (
               renderMetadataFields()

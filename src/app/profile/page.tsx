@@ -70,7 +70,10 @@ const ProfilePage = () => {
             </div>
         )}
         <BoundingBox>
-          <div className="rounded-lg bg-white shadow flex-1" ref={tableRef}>
+          <div
+            className="flex-1 rounded-lg bg-card text-card-foreground shadow"
+            ref={tableRef}
+          >
             <Table>
               <TableBody>
                 <TableRow>

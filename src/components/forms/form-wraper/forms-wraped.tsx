@@ -107,7 +107,7 @@ const FormsWrapped = ({
         onChange={({ errors, data }) => {
           setData(data);
           if (setErrors) {
-            setErrors(errors);
+            setErrors(errors ?? []);
           }
         }}
         validationMode="ValidateAndShow"

@@ -23,11 +23,10 @@ const CreateDatasetPage = () => {
   const { id } = useParams();
 
   const [schema, setSchema] = useState<any | undefined>();
-  const [errors, setErrors] = useState<any>([]);
+  const [errors, setErrors] = useState<any[] | undefined>(undefined);
   const [datasetName, setDatasetName] = useState("");
   const [datasetDescription, setDatasetDescription] = useState("");
   const [formData, setFormData] = useState<any>({});
-  const [hasChanges, setHasChanges] = useState(false);
 
   const { data: collectionData, isLoading: collectionLoading } =
     useApiServiceGetApiV1ProjectsById({ id: id as string });
@@ -35,7 +34,17 @@ const CreateDatasetPage = () => {
   const { data: schemaData, isLoading: isSchemaLoading } =
     useApiServiceGetApiV1SchemasById({
       id: collectionData?.default_dataset_schema?.id as string,
+    }, undefined, {
+      enabled: Boolean(collectionData?.default_dataset_schema?.id),
     });
+
+  const canCreate = Boolean(
+    schema?.id &&
+      datasetName.trim() &&
+      datasetDescription.trim() &&
+      Array.isArray(errors) &&
+      errors.length === 0
+  );
 
   useEffect(() => {
     if (!isSchemaLoading && schemaData && !schema) {
@@ -44,22 +53,27 @@ const CreateDatasetPage = () => {
   }, [isSchemaLoading, schemaData, schema]);
 
   useEffect(() => {
-    if (
-      datasetName.trim() ||
-      datasetDescription.trim() ||
-      (formData && Object.keys(formData).length > 0)
-    ) {
-      setHasChanges(true);
-    } else {
-      setHasChanges(false);
-    }
-  }, [datasetName, datasetDescription, formData]);
+    setErrors(undefined);
+    setFormData({});
+  }, [schema?.id]);
 
   const createDataset = useApiServicePostApiV1DatasetsCreateDataset();
 
   const handleSave = async () => {
     if (!datasetName.trim()) {
       toast.error("Dataset name is required.");
+      return;
+    }
+    if (!datasetDescription.trim()) {
+      toast.error("Dataset description is required.");
+      return;
+    }
+    if (!schema?.id) {
+      toast.error("Please select a schema.");
+      return;
+    }
+    if (!Array.isArray(errors) || errors.length > 0) {
+      toast.error("Please complete all required metadata fields.");
       return;
     }
     try {
@@ -76,7 +90,6 @@ const CreateDatasetPage = () => {
       });
 
       toast.success("Dataset created successfully!");
-      setHasChanges(false);
     } catch (error: any) {
       toast.error("Failed to create dataset. Error: " + error.message);
     }
@@ -117,11 +130,18 @@ const CreateDatasetPage = () => {
           onChange={(e) => setDatasetDescription(e.target.value)}
         />
         <div className="py-8">
-          <TemplatesDropdown onSelect={setSchema} />
+          <TemplatesDropdown
+            selectedItem={schema?.id ?? null}
+            autoSelectFirst={
+              !collectionLoading && !isSchemaLoading && !schema?.id
+            }
+            onSelect={setSchema}
+          />
         </div>
         {schema != undefined ? (
           <div>
             <FormsWrapped
+              key={schema.id}
               setErrors={setErrors}
               schema={schema.schema as object}
               uischema={schema.uischema as object}
@@ -133,22 +153,20 @@ const CreateDatasetPage = () => {
           <TypographyP text="Please select a template to create a new dataset." />
         )}
 
-        {hasChanges && (
-          <div className="fixed bottom-4 right-4 flex space-x-4 z-50">
-            <Button
-              variant="default"
-              size="xl"
-              onClick={handleSave}
-              disabled={createDataset.isPending}
-            >
-              {createDataset.isPending ? (
-                <span className="animate-pulse ml-1">Creating...</span>
-              ) : (
-                "Create Dataset"
-              )}
-            </Button>
-          </div>
-        )}
+        <div className="fixed bottom-4 right-4 flex space-x-4 z-50">
+          <Button
+            variant="default"
+            size="xl"
+            onClick={handleSave}
+            disabled={!canCreate || createDataset.isPending}
+          >
+            {createDataset.isPending ? (
+              <span className="animate-pulse ml-1">Creating...</span>
+            ) : (
+              "Create Dataset"
+            )}
+          </Button>
+        </div>
       </BoundingBox>
       <ToastContainer />
     </main>

@@ -5,9 +5,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type TemplatesDropdownProps = {
   onSelect: (template: Schema) => void;
+  selectedItem?: string | null;
+  autoSelectFirst?: boolean;
 };
 
-const TemplatesDropdown = ({ onSelect }: TemplatesDropdownProps) => {
+const TemplatesDropdown = ({
+  onSelect,
+  selectedItem,
+  autoSelectFirst = false,
+}: TemplatesDropdownProps) => {
   const { data, isLoading, error } = useApiServiceGetApiV1Schemas();
 
   const fetchTemplates = () => ({
@@ -26,7 +32,9 @@ const TemplatesDropdown = ({ onSelect }: TemplatesDropdownProps) => {
       getItemLabel={(template) => (template as any).name}
       getItemId={(template) => (template as any).id}
       placeholder="Select a template"
+      selectedItem={selectedItem}
       onChange={onSelect}
+      autoSelectFirst={autoSelectFirst}
     />
   );
 };

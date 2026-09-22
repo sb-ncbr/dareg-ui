@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { RecentlyViewedItem } from "@/types/recently-viewed/recently-viewed-item";
 import { RecentlyViewedTile } from "./recently-viewed-tile";
 import {
@@ -63,8 +65,26 @@ function useRecentlyViewedTitleAndName(pathname: string): {
   return { typeTitle: "Recently Viewed" };
 }
 
+function RecentlyViewedItemTile({ item }: { item: RecentlyViewedItem }) {
+  const title = useRecentlyViewedTitleAndName(item.url);
+
+  return (
+    <RecentlyViewedTile
+      title={title.typeTitle}
+      detailName={title.detailName}
+      icon={iconMap[item.icon]}
+      url={item.url}
+    />
+  );
+}
+
 export function RecentlyViewedList() {
-  const items: RecentlyViewedItem[] = recentPagesService.getRecentPages();
+  const [items, setItems] = useState<RecentlyViewedItem[]>([]);
+
+  useEffect(() => {
+    setItems(recentPagesService.getRecentPages());
+  }, []);
+
   if (!items?.length)
     return (
       <div className="flex gap-4">
@@ -77,15 +97,8 @@ export function RecentlyViewedList() {
   return (
     <div className="flex flex-row gap-4 overflow-x-auto py-2">
       {items.map((item, idx) => {
-        const title = useRecentlyViewedTitleAndName(item.url);
         return (
-          <RecentlyViewedTile
-            key={idx}
-            title={title.typeTitle}
-            detailName={title.detailName}
-            icon={iconMap[item.icon]}
-            url={item.url}
-          />
+          <RecentlyViewedItemTile key={`${item.url}-${idx}`} item={item} />
         );
       })}
     </div>

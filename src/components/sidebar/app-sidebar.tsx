@@ -91,7 +91,7 @@ export function AppSidebar() {
 
   const handleDeleteSavedSearch = async (
     searchId: string,
-    event: React.MouseEvent
+    event: React.MouseEvent,
   ) => {
     event.stopPropagation(); // Prevent triggering the search click
     try {
@@ -228,7 +228,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Other Apps</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Link href="https://booking.ceitec.cz" passHref>
+            <Link href="https://sinfinity.ideaelan.com/muni" passHref>
               <SidebarMenuItem>
                 <div className="flex items-center space-x-4">
                   <CalendarClock />

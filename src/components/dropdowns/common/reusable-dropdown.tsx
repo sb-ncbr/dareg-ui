@@ -15,6 +15,7 @@ interface ReusableDropdownProps<T> {
   placeholder?: string;
   selectedItem?: string | null;
   onChange?: (item: T) => void;
+  autoSelectFirst?: boolean;
 }
 
 const ReusableDropdown = <T,>({
@@ -24,6 +25,7 @@ const ReusableDropdown = <T,>({
   placeholder = "Select an item",
   selectedItem: controlledSelectedItem,
   onChange,
+  autoSelectFirst = false,
 }: ReusableDropdownProps<T>) => {
   const { data, isLoading, error } = fetchData();
   const [uncontrolledSelectedItem, setUncontrolledSelectedItem] = useState<
@@ -37,13 +39,21 @@ const ReusableDropdown = <T,>({
       : uncontrolledSelectedItem;
 
   useEffect(() => {
-    if (data && data.length > 0 && !selectedItem) {
+    if (autoSelectFirst && data && data.length > 0 && !selectedItem) {
       const firstId = getItemId(data[0]);
       if (controlledSelectedItem === undefined) {
         setUncontrolledSelectedItem(firstId);
       }
+      onChange?.(data[0]);
     }
-  }, [data, selectedItem, getItemId, controlledSelectedItem]);
+  }, [
+    data,
+    selectedItem,
+    getItemId,
+    controlledSelectedItem,
+    autoSelectFirst,
+    onChange,
+  ]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading data.</div>;

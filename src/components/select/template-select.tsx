@@ -7,16 +7,20 @@ import { ReusableSelect } from "./common/reusable-select";
 type TemplateSelectSSRProps = {
   value?: string | null;
   onChange?: (schema: Schema) => void;
+  autoSelectFirst?: boolean;
 };
 
 export default function TemplateSelectSSR({
   value,
   onChange,
+  autoSelectFirst = false,
 }: TemplateSelectSSRProps) {
   const { data: templates, isLoading } = useApiServiceGetApiV1Schemas();
+
   if (isLoading || !templates) {
-    <Skeleton className="h-10 w-[200px]" />;
+    return <Skeleton className="h-10 w-[200px]" />;
   }
+
   return (
     <ReusableSelect<Schema>
       items={templates?.results ?? []}
@@ -25,6 +29,7 @@ export default function TemplateSelectSSR({
       placeholder="Select a template"
       value={value}
       onChange={onChange}
+      autoSelectFirst={autoSelectFirst}
     />
   );
 }

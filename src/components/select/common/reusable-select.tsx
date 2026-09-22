@@ -15,6 +15,7 @@ type ReusableSelectProps<T> = {
   placeholder?: string;
   value?: string | null;
   onChange?: (item: T) => void;
+  autoSelectFirst?: boolean;
 };
 
 export function ReusableSelect<T>({
@@ -24,6 +25,7 @@ export function ReusableSelect<T>({
   placeholder = "Select an item",
   value: controlledValue,
   onChange,
+  autoSelectFirst = false,
 }: ReusableSelectProps<T>) {
   const [uncontrolledValue, setUncontrolledValue] = React.useState<
     string | null
@@ -37,13 +39,14 @@ export function ReusableSelect<T>({
   const displayValue = selectedItem ? getItemLabel(selectedItem) : "";
 
   React.useEffect(() => {
-    if (items.length > 0 && !value) {
+    if (autoSelectFirst && items.length > 0 && !value) {
       const firstId = getItemId(items[0]);
       if (controlledValue === undefined) {
         setUncontrolledValue(firstId);
       }
+      onChange?.(items[0]);
     }
-  }, [items, value, controlledValue, getItemId]);
+  }, [items, value, controlledValue, getItemId, autoSelectFirst, onChange]);
 
   return (
     <Select

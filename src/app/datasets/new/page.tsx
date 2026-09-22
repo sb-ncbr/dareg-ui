@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { TypographyH2 } from "@/components/typography/typography-h2";
 import { TypographyH2Ghost } from "@/components/typography/typography-h2-ghost";
 import { TypographyP } from "@/components/typography/typography-p";
@@ -31,10 +31,10 @@ import { Label } from "@/components/ui/label";
 
 const CreateDatasetPage = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null
+    null,
   );
   const [schemaOverride, setSchemaOverride] = useState<any>();
-  const [errors, setErrors] = useState<any>([]);
+  const [errors, setErrors] = useState<any[] | undefined>(undefined);
   const [datasetName, setDatasetName] = useState("");
   const [datasetDescription, setDatasetDescription] = useState("");
   const [formData, setFormData] = useState<any>({});
@@ -44,25 +44,33 @@ const CreateDatasetPage = () => {
   const { data: allProjects, isLoading: isProjectsLoading } =
     useApiServiceGetApiV1Projects({});
   const { data: projectData } = useApiServiceGetApiV1ProjectsById(
-    selectedProjectId ? { id: selectedProjectId } : { id: "" }
+    selectedProjectId ? { id: selectedProjectId } : { id: "" },
   );
+  const defaultSchemaId = projectData?.default_dataset_schema?.id ?? "";
   const { data: schemaData } = useApiServiceGetApiV1SchemasById(
-    projectData?.default_dataset_schema?.id
-      ? { id: projectData.default_dataset_schema.id }
-      : { id: "" }
+    { id: defaultSchemaId },
+    undefined,
+    { enabled: Boolean(defaultSchemaId) },
   );
 
   const schema = useMemo(() => {
     return schemaOverride ?? schemaData;
   }, [schemaOverride, schemaData]);
 
-  const hasChanges = useMemo(() => {
-    return (
-      datasetName.trim() !== "" ||
-      datasetDescription.trim() !== "" ||
-      (formData && Object.keys(formData).length > 0)
-    );
-  }, [datasetName, datasetDescription, formData]);
+  useEffect(() => {
+    setErrors(undefined);
+    setFormData({});
+  }, [schema?.id]);
+
+  const metadataIsValid = Array.isArray(errors) && errors.length === 0;
+
+  const canCreate = Boolean(
+    selectedProjectId &&
+    schema?.id &&
+    datasetName.trim() &&
+    datasetDescription.trim() &&
+    metadataIsValid,
+  );
 
   const createDataset = useApiServicePostApiV1Datasets();
 
@@ -73,6 +81,18 @@ const CreateDatasetPage = () => {
     }
     if (!selectedProjectId) {
       toast.error("Please select a collection.");
+      return;
+    }
+    if (!schema?.id) {
+      toast.error("Please select a schema.");
+      return;
+    }
+    if (!datasetDescription.trim()) {
+      toast.error("Dataset description is required.");
+      return;
+    }
+    if (!metadataIsValid) {
+      toast.error("Please complete all required metadata fields.");
       return;
     }
 
@@ -153,7 +173,7 @@ const CreateDatasetPage = () => {
               <Label htmlFor="collection-select" className="mb-2 block">
                 Select Schema
               </Label>
-              <TemplateSelectSSR onChange={setSchemaOverride} />
+              <TemplateSelectSSR onChange={setSchemaOverride} autoSelectFirst />
             </div>
             <TextField
               label="Dataset Name"
@@ -173,6 +193,7 @@ const CreateDatasetPage = () => {
             {schema ? (
               <div className="mt-4">
                 <FormsWrapped
+                  key={schema.id}
                   setErrors={setErrors}
                   schema={schema.schema as object}
                   uischema={schema.uischema as object}
@@ -186,13 +207,13 @@ const CreateDatasetPage = () => {
           </>
         )}
 
-        {hasChanges && selectedProjectId && (
+        {selectedProjectId && (
           <div className="fixed bottom-4 right-4 flex space-x-4 z-50">
             <Button
               variant="default"
               size="xl"
               onClick={handleSave}
-              disabled={createDataset.isPending}
+              disabled={!canCreate || createDataset.isPending}
             >
               {createDataset.isPending ? (
                 <span className="animate-pulse ml-1">Creating...</span>
