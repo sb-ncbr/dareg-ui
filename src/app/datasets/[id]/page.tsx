@@ -10,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import {
   ChevronLeft,
   ClipboardCopy,
+  ExternalLink,
   FlaskConical,
   Settings,
   TestTubeDiagonal,
@@ -355,6 +356,19 @@ const DatasetDetails: React.FC = () => {
             margin="normal"
             disabled
           />
+          {dataset.onedata_url && (
+            <Button variant="outline" className="mt-2" asChild>
+              <a
+                href={dataset.onedata_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="If you are not logged in to Onedata, you may land in the space root after login. Click the button again to open the dataset folder."
+              >
+                <ExternalLink />
+                Open in Onedata
+              </a>
+            </Button>
+          )}
 
           <div className="mt-4">
             {!schemaId ? (

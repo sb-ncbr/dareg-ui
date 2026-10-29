@@ -18,6 +18,7 @@ import {
   Group,
   Instrument,
   Job,
+  OnedataLink,
   PatchedDataset,
   PatchedExperiment,
   PatchedFacility,
@@ -942,6 +943,37 @@ export const useApiServicePostApiV1Profile = <
   >({
     mutationFn: ({ requestBody }) =>
       ApiService.postApiV1Profile({ requestBody }) as unknown as Promise<TData>,
+    ...options,
+  });
+export const useApiServicePostApiV1ProfileOnedataLink = <
+  TData = Common.ApiServicePostApiV1ProfileOnedataLinkMutationResult,
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: Omit<
+    UseMutationOptions<
+      TData,
+      TError,
+      {
+        requestBody: OnedataLink;
+      },
+      TContext
+    >,
+    "mutationFn"
+  >,
+) =>
+  useMutation<
+    TData,
+    TError,
+    {
+      requestBody: OnedataLink;
+    },
+    TContext
+  >({
+    mutationFn: ({ requestBody }) =>
+      ApiService.postApiV1ProfileOnedataLink({
+        requestBody,
+      }) as unknown as Promise<TData>,
     ...options,
   });
 export const useApiServicePostApiV1Projects = <

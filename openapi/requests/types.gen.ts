@@ -40,6 +40,7 @@ export type DatasetResponse = {
     readonly dataset_schema: BaseModel;
     readonly modified_by: UserSerializerMinimal;
     readonly onedata_visit_id: string;
+    readonly onedata_url: string | null;
     readonly created: string;
     readonly modified: string;
     description: string;
@@ -140,6 +141,18 @@ export type Instrument = {
     method: string;
     readonly facility: FacilitySerializerMinimal;
     default_data_dir?: string;
+};
+
+export type OnedataLink = {
+    token: string;
+};
+
+export type OnedataLinkResponse = {
+    onedata_user_id: string;
+    joined_groups: Array<(string)>;
+    failed_groups: Array<{
+        [key: string]: unknown;
+    }>;
 };
 
 export type PaginatedDatasetResponseList = {
@@ -340,6 +353,7 @@ export type Profile = {
     readonly last_login: string;
     default_theme?: DefaultThemeEnum;
     default_lang?: DefaultLangEnum;
+    readonly onedata_user_id: string;
 };
 
 export type Project = {
@@ -841,6 +855,12 @@ export type PostApiV1ProfileData = {
 };
 
 export type PostApiV1ProfileResponse = Profile;
+
+export type PostApiV1ProfileOnedataLinkData = {
+    requestBody: OnedataLink;
+};
+
+export type PostApiV1ProfileOnedataLinkResponse = OnedataLinkResponse;
 
 export type GetApiV1ProfileByIdData = {
     /**

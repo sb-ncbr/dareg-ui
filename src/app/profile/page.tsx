@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast, ToastContainer } from "react-toastify";
 import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { TypographyH2 } from "@/components/typography/typography-h2";
-import { useApiServiceGetApiV1Profile } from "../../../openapi/queries";
+import {
+  useApiServiceGetApiV1Profile,
+  useApiServiceGetApiV1ProfileKey,
+  useApiServicePostApiV1ProfileOnedataLink,
+} from "../../../openapi/queries";
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Profile } from "../../../openapi/requests";
 import { DateFormater } from "@/components/date_formatter/date-formatter";
@@ -21,6 +28,29 @@ const ProfilePage = () => {
 
   // Move hooks to the top level before any early returns
   const tableRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  const [onedataToken, setOnedataToken] = useState("");
+
+  const onedataLink = useApiServicePostApiV1ProfileOnedataLink({
+    onSuccess: (data) => {
+      setOnedataToken("");
+      queryClient.invalidateQueries({
+        queryKey: [useApiServiceGetApiV1ProfileKey],
+      });
+      if (data.failed_groups.length > 0) {
+        toast.warning(
+          `Onedata account linked, but ${data.failed_groups.length} group(s) could not be joined. Please try again later.`
+        );
+      } else {
+        toast.success("Onedata access activated.");
+      }
+    },
+    onError: () => {
+      toast.error(
+        "Failed to activate Onedata access. Check that the token is valid and not expired."
+      );
+    },
+  });
 
   if (status === "loading") {
     return <p>Loading...</p>;
@@ -106,11 +136,43 @@ const ProfilePage = () => {
                     {user?.email || "N/A"}
                   </TableCell>
                 </TableRow>
+                <TableRow>
+                  <TableCell className={cellPadding}>Onedata account</TableCell>
+                  <TableCell className={cellPadding}>
+                    <div className="flex flex-col gap-2">
+                      <span>{profile?.onedata_user_id || "Not linked"}</span>
+                      <div className="flex gap-2">
+                        <Input
+                          type="password"
+                          autoComplete="off"
+                          placeholder="Short-lived Onedata access token"
+                          value={onedataToken}
+                          onChange={(e) => setOnedataToken(e.target.value)}
+                        />
+                        <Button
+                          disabled={!onedataToken.trim() || onedataLink.isPending}
+                          onClick={() =>
+                            onedataLink.mutate({
+                              requestBody: { token: onedataToken.trim() },
+                            })
+                          }
+                        >
+                          Activate Onedata access
+                        </Button>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        The token is used once and never stored. Activate again
+                        after you get access to new datasets.
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </div>
         </BoundingBox>
       </div>
+      <ToastContainer />
     </div>
   );
 };

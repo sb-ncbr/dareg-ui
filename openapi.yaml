@@ -1535,6 +1535,36 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/profile/onedata-link/:
+    post:
+      operationId: api_v1_profile_onedata_link_create
+      description: |-
+        Links the user's Onedata account using a short-lived Onedata access token.
+        In invite mode the token is also used to join the user's Onedata groups. The token is never stored.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnedataLink'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnedataLink'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnedataLink'
+        required: true
+      security:
+      - knoxApiToken: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnedataLinkResponse'
+          description: ''
   /api/v1/projects/:
     get:
       operationId: api_v1_projects_list
@@ -2421,6 +2451,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -2452,6 +2497,9 @@ components:
           maxLength: 50
         status:
           $ref: '#/components/schemas/Status464Enum'
+        onedata_acl_hash:
+          type: string
+          readOnly: true
         created_by:
           type: integer
           readOnly: true
@@ -2480,6 +2528,11 @@ components:
       - modified
       - modified_by
       - name
+      - onedata_acl_hash
+      - onedata_group_id
+      - onedata_sync_error
+      - onedata_sync_status
+      - onedata_synced_at
       - project
     DatasetResponse:
       type: object
@@ -2518,6 +2571,11 @@ components:
         onedata_visit_id:
           type: string
           readOnly: true
+        onedata_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
         created:
           type: string
           format: date-time
@@ -2526,6 +2584,17 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          maxLength: 64
+        onedata_sync_status:
+          $ref: '#/components/schemas/OnedataSyncStatusEnum'
+        onedata_sync_error:
+          type: string
+        onedata_synced_at:
+          type: string
+          format: date-time
+          nullable: true
         description:
           type: string
           maxLength: 500
@@ -2554,6 +2623,9 @@ components:
           maxLength: 50
         status:
           $ref: '#/components/schemas/Status464Enum'
+        onedata_acl_hash:
+          type: string
+          maxLength: 64
         schema:
           type: string
           format: uuid
@@ -2573,6 +2645,7 @@ components:
       - modified
       - modified_by
       - name
+      - onedata_url
       - onedata_visit_id
       - perms
       - project
@@ -2699,6 +2772,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -2725,6 +2813,13 @@ components:
           type: string
           format: uri
           maxLength: 200
+        onedata_staff_group_id:
+          type: string
+          readOnly: true
+        onedata_user_id:
+          type: string
+          readOnly: true
+          title: Onedata user ID of the token owner
         created_by:
           type: integer
           readOnly: true
@@ -2741,6 +2836,12 @@ components:
       - modified
       - modified_by
       - name
+      - onedata_group_id
+      - onedata_staff_group_id
+      - onedata_sync_error
+      - onedata_sync_status
+      - onedata_synced_at
+      - onedata_user_id
       - perms
       - shares
     FacilitySerializerMinimal:
@@ -2904,6 +3005,42 @@ components:
         * `debug` - DEBUG
         * `info` - INFO
         * `warning` - WARNING
+    OnedataLink:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    OnedataLinkResponse:
+      type: object
+      properties:
+        onedata_user_id:
+          type: string
+        joined_groups:
+          type: array
+          items:
+            type: string
+        failed_groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - failed_groups
+      - joined_groups
+      - onedata_user_id
+    OnedataSyncStatusEnum:
+      enum:
+      - pending
+      - ok
+      - error
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `ok` - Ok
+        * `error` - Error
     PaginatedDatasetResponseList:
       type: object
       properties:
@@ -3139,6 +3276,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -3170,6 +3322,9 @@ components:
           maxLength: 50
         status:
           $ref: '#/components/schemas/Status464Enum'
+        onedata_acl_hash:
+          type: string
+          readOnly: true
         created_by:
           type: integer
           readOnly: true
@@ -3257,6 +3412,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -3283,6 +3453,13 @@ components:
           type: string
           format: uri
           maxLength: 200
+        onedata_staff_group_id:
+          type: string
+          readOnly: true
+        onedata_user_id:
+          type: string
+          readOnly: true
+          title: Onedata user ID of the token owner
         created_by:
           type: integer
           readOnly: true
@@ -3427,6 +3604,9 @@ components:
           $ref: '#/components/schemas/DefaultThemeEnum'
         default_lang:
           $ref: '#/components/schemas/DefaultLangEnum'
+        onedata_user_id:
+          type: string
+          readOnly: true
     PatchedProject:
       type: object
       properties:
@@ -3442,6 +3622,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -3451,6 +3646,9 @@ components:
         onedata_space_id:
           type: string
           maxLength: 200
+        onedata_managers_group_id:
+          type: string
+          readOnly: true
         created_by:
           type: integer
           readOnly: true
@@ -3614,6 +3812,9 @@ components:
           $ref: '#/components/schemas/DefaultThemeEnum'
         default_lang:
           $ref: '#/components/schemas/DefaultLangEnum'
+        onedata_user_id:
+          type: string
+          readOnly: true
       required:
       - any_datasets
       - any_facilities
@@ -3622,6 +3823,7 @@ components:
       - avatar
       - created
       - last_login
+      - onedata_user_id
     Project:
       type: object
       properties:
@@ -3637,6 +3839,21 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          readOnly: true
+        onedata_sync_status:
+          allOf:
+          - $ref: '#/components/schemas/OnedataSyncStatusEnum'
+          readOnly: true
+        onedata_sync_error:
+          type: string
+          readOnly: true
+        onedata_synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         name:
           type: string
           maxLength: 200
@@ -3646,6 +3863,9 @@ components:
         onedata_space_id:
           type: string
           maxLength: 200
+        onedata_managers_group_id:
+          type: string
+          readOnly: true
         created_by:
           type: integer
           readOnly: true
@@ -3675,6 +3895,11 @@ components:
       - modified
       - modified_by
       - name
+      - onedata_group_id
+      - onedata_managers_group_id
+      - onedata_sync_error
+      - onedata_sync_status
+      - onedata_synced_at
     ProjectResponse:
       type: object
       properties:
@@ -3712,12 +3937,26 @@ components:
           type: string
           format: date-time
           readOnly: true
+        onedata_group_id:
+          type: string
+          maxLength: 64
+        onedata_sync_status:
+          $ref: '#/components/schemas/OnedataSyncStatusEnum'
+        onedata_sync_error:
+          type: string
+        onedata_synced_at:
+          type: string
+          format: date-time
+          nullable: true
         description:
           type: string
           maxLength: 500
         onedata_space_id:
           type: string
           maxLength: 200
+        onedata_managers_group_id:
+          type: string
+          maxLength: 64
         modified_by:
           type: integer
           nullable: true

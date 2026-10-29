@@ -162,6 +162,7 @@ export type ApiServicePostApiV1FacilitiesMutationResult = Awaited<ReturnType<typ
 export type ApiServicePostApiV1GroupsMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Groups>>;
 export type ApiServicePostApiV1InstrumentMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Instrument>>;
 export type ApiServicePostApiV1ProfileMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Profile>>;
+export type ApiServicePostApiV1ProfileOnedataLinkMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1ProfileOnedataLink>>;
 export type ApiServicePostApiV1ProjectsMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Projects>>;
 export type ApiServicePostApiV1SchemasMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1Schemas>>;
 export type ApiServicePostApiV1TempTokenByIdMutationResult = Awaited<ReturnType<typeof ApiService.postApiV1TempTokenById>>;
