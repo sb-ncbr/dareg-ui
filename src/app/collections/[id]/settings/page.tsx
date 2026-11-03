@@ -250,7 +250,6 @@ export default function CollectionSettingsPage() {
           <SkeletonTable />
         ) : (
           <DynamicDataTable
-            rowType="share"
             showSearch={false}
             data={shares}
             columns={columns}
