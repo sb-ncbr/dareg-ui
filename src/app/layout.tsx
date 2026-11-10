@@ -18,6 +18,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { MuiThemeProviderSync } from "@/utils/mui-theme-sync-provider";
 import { InterceptorInitializer } from "@/utils/interceptor-initializer";
 import { OnedataAutoLink } from "@/utils/onedata-auto-link";
+import { OnboardingGate } from "@/components/onboarding/onboarding-gate";
 import { RouteTracker } from "@/components/route-tracker/route-tracker";
 import Head from "next/head";
 import SearchBar from "@/components/tokenized-search/tokenized-search";
@@ -51,6 +52,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
   setupInterceptors();
 
   const isLoginPage = pathname === "/login";
+  // pages without the sidebar shell
+  const isBarePage = isLoginPage || pathname === "/onboarding";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -61,31 +64,33 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SessionProvider>
           <InterceptorInitializer />
           <QueryClientProvider client={queryClient}>
-            <OnedataAutoLink />
             <Suspense fallback={<Loading />}>
               <SearchProvider>
                 <JobsWorkflowsProvider>
                   <UserProfileProvider>
+                    <OnedataAutoLink />
                     <ThemeProvider
                       attribute="class"
                       defaultTheme="system"
                       enableSystem
                     >
                       <MuiThemeProviderSync>
-                        {isLoginPage ? (
-                          <main className="flex min-h-screen items-center justify-center">
-                            {children}
-                          </main>
-                        ) : (
-                          <SidebarProvider>
-                            <AppSidebar />
-                            <RouteTracker />
-                            <div className="flex flex-col min-h-screen flex-1">
-                              <SiteHeader></SiteHeader>
-                              <main className="flex-1 mx-8 my-8">{children}</main>
-                            </div>
-                          </SidebarProvider>
-                        )}
+                        <OnboardingGate>
+                          {isBarePage ? (
+                            <main className="flex min-h-screen items-center justify-center">
+                              {children}
+                            </main>
+                          ) : (
+                            <SidebarProvider>
+                              <AppSidebar />
+                              <RouteTracker />
+                              <div className="flex flex-col min-h-screen flex-1">
+                                <SiteHeader></SiteHeader>
+                                <main className="flex-1 mx-8 my-8">{children}</main>
+                              </div>
+                            </SidebarProvider>
+                          )}
+                        </OnboardingGate>
                         <TailwindIndicator />
                         <ToastContainer />
                       </MuiThemeProviderSync>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { setAccessToken } from "@/services/interceptors";
+import { useUserProfile } from "@/hooks/UserProfileContext";
 import {
   ONEDATA_SYNC_MUTATION_KEY,
   SyncOutcome,
@@ -26,24 +26,20 @@ function nextDelay(outcome: SyncOutcome): number | null {
  * Auto-link: keeps the user's Onedata group memberships in sync while DAREG is open
  * (also in a background tab). DAREG can join groups only with the user's own token,
  * which it sees only during API calls, so the UI polls. Silent, the profile page shows the status.
+ * Runs only for already linked users, linking happens on the onboarding page.
  */
 export function OnedataAutoLink() {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const { sync } = useOnedataSync();
   // not derived from `status`: update() flips it to "loading" on every tick, which would restart
   // the loop and call update() again in an endless loop; session data stays set while loading
   // and becomes null on logout
   const username = session?.user?.username;
-
-  // update() changes with every session change, the loop must not restart because of it
-  const updateRef = useRef(update);
-  useEffect(() => {
-    updateRef.current = update;
-  }, [update]);
+  const linked = !!useUserProfile()?.onedata_user_id;
 
   useEffect(() => {
-    if (!username) return;
+    if (!username || !linked) return;
     let stopped = false;
     let running = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -65,20 +61,15 @@ export function OnedataAutoLink() {
       lastTickAt = Date.now();
       clearTimeout(timer);
       try {
-        // refetching the session refreshes an expired access token (also in a background tab)
-        const fresh = await updateRef.current().catch(() => null);
-        if (stopped) return;
-        if (fresh?.accessToken && fresh.user?.username === username) {
-          setAccessToken(fresh.accessToken);
-          const outcome = await sync({ force: false });
-          if (stopped) return; // a late response for a previous user is ignored
-          const next = nextDelay(outcome);
-          if (next === null) {
-            stopped = true; // auto-link is disabled on the server
-            return;
-          }
-          delay = next;
+        // sync() refetches the session first, which refreshes an expired access token (also in a background tab)
+        const outcome = await sync({ force: false });
+        if (stopped) return; // a late response for a previous user is ignored
+        const next = nextDelay(outcome);
+        if (next === null) {
+          stopped = true; // auto-link is disabled on the server
+          return;
         }
+        delay = next;
         schedule();
       } finally {
         running = false;
@@ -101,7 +92,7 @@ export function OnedataAutoLink() {
       clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [username, queryClient, sync]);
+  }, [username, linked, queryClient, sync]);
 
   return null;
 }

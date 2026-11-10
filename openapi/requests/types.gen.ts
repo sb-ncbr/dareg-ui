@@ -158,6 +158,7 @@ export type Instrument = {
 
 export type OnedataSyncRequest = {
     force?: boolean;
+    dry_run?: boolean;
 };
 
 export type FailedGroup = {
@@ -174,7 +175,11 @@ export type OnedataSyncResponse = {
     joined_groups: Array<(string)>;
     failed_groups: Array<FailedGroup>;
     error: string | null;
+    reason: ReasonEnum | null;
+    found_onedata_user_id: string;
 };
+
+export type ReasonEnum = 'auto_link_disabled' | 'not_oidc' | 'busy' | 'no_onedata_account' | 'onedata_unavailable';
 
 export type PaginatedDatasetResponseList = {
     count?: number;
@@ -322,6 +327,10 @@ export type PatchedProfile = {
     readonly onedata_last_sync_at?: string | null;
     readonly onedata_last_sync_error?: string;
     readonly onedata_auto_link_enabled?: boolean;
+    readonly onedata_required?: boolean;
+    readonly onedata_linked_at?: string | null;
+    readonly is_superuser?: boolean;
+    readonly onedata_access_allowed?: boolean;
 };
 
 export type PatchedProject = {
@@ -382,6 +391,10 @@ export type Profile = {
     readonly onedata_last_sync_at: string | null;
     readonly onedata_last_sync_error: string;
     readonly onedata_auto_link_enabled: boolean;
+    readonly onedata_required: boolean;
+    readonly onedata_linked_at: string | null;
+    readonly is_superuser: boolean;
+    readonly onedata_access_allowed: boolean;
 };
 
 export type Project = {

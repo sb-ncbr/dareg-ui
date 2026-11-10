@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { getSession } from "next-auth/react";
+import { pendingForever, redirectIfOnedataNotLinked } from "@/services/interceptors";
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
@@ -41,6 +42,9 @@ class ApiClient {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error) => {
+        if (redirectIfOnedataNotLinked(error.response?.status, error.response?.data)) {
+          return pendingForever();
+        }
         if (error.response?.status === 401) {
           console.warn("Unauthorized request");
           // Could redirect to login here

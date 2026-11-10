@@ -3074,10 +3074,16 @@ components:
 #      - failed_groups
 #      - joined_groups
 #      - onedata_user_id
+    NullEnum:
+      enum:
+      - null
     OnedataSyncRequest:
       type: object
       properties:
         force:
+          type: boolean
+          default: false
+        dry_run:
           type: boolean
           default: false
     FailedGroup:
@@ -3116,14 +3122,23 @@ components:
         error:
           type: string
           nullable: true
+        reason:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        found_onedata_user_id:
+          type: string
       required:
       - enabled
       - error
       - failed_groups
+      - found_onedata_user_id
       - joined_groups
       - onedata_last_sync_at
       - onedata_last_sync_error
       - onedata_user_id
+      - reason
       - skipped
     OnedataSyncStatusEnum:
       enum:
@@ -3712,6 +3727,20 @@ components:
         onedata_auto_link_enabled:
           type: boolean
           readOnly: true
+        onedata_required:
+          type: boolean
+          readOnly: true
+        onedata_linked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_superuser:
+          type: boolean
+          readOnly: true
+        onedata_access_allowed:
+          type: boolean
+          readOnly: true
     PatchedProject:
       type: object
       properties:
@@ -3931,6 +3960,20 @@ components:
         onedata_auto_link_enabled:
           type: boolean
           readOnly: true
+        onedata_required:
+          type: boolean
+          readOnly: true
+        onedata_linked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_superuser:
+          type: boolean
+          readOnly: true
+        onedata_access_allowed:
+          type: boolean
+          readOnly: true
       required:
       - any_datasets
       - any_facilities
@@ -3938,10 +3981,14 @@ components:
       - app_version
       - avatar
       - created
+      - is_superuser
       - last_login
+      - onedata_access_allowed
       - onedata_auto_link_enabled
       - onedata_last_sync_at
       - onedata_last_sync_error
+      - onedata_linked_at
+      - onedata_required
       - onedata_user_id
     Project:
       type: object
@@ -4096,6 +4143,20 @@ components:
       - perms
       - project_schema
       - shares
+    ReasonEnum:
+      enum:
+      - auto_link_disabled
+      - not_oidc
+      - busy
+      - no_onedata_account
+      - onedata_unavailable
+      type: string
+      description: |-
+        * `auto_link_disabled` - auto_link_disabled
+        * `not_oidc` - not_oidc
+        * `busy` - busy
+        * `no_onedata_account` - no_onedata_account
+        * `onedata_unavailable` - onedata_unavailable
     Reservation:
       type: object
       properties:
