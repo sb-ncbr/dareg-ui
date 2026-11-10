@@ -84,8 +84,11 @@ import type {
   GetApiV1ProfileResponse,
   PostApiV1ProfileData,
   PostApiV1ProfileResponse,
-  PostApiV1ProfileOnedataLinkData,
-  PostApiV1ProfileOnedataLinkResponse,
+  // INVITE-MODE (disabled, replaced by auto-link)
+  // PostApiV1ProfileOnedataLinkData,
+  // PostApiV1ProfileOnedataLinkResponse,
+  PostApiV1ProfileOnedataSyncData,
+  PostApiV1ProfileOnedataSyncResponse,
   GetApiV1ProfileByIdData,
   GetApiV1ProfileByIdResponse,
   PutApiV1ProfileByIdData,
@@ -956,20 +959,40 @@ export class ApiService {
     });
   }
 
+  // INVITE-MODE (disabled, replaced by auto-link)
+  // /**
+  //  * Links the user's Onedata account using a short-lived Onedata access token.
+  //  * In invite mode the token is also used to join the user's Onedata groups. The token is never stored.
+  //  * @param data The data for the request.
+  //  * @param data.requestBody
+  //  * @returns OnedataLinkResponse
+  //  * @throws ApiError
+  //  */
+  // public static postApiV1ProfileOnedataLink(
+  //   data: PostApiV1ProfileOnedataLinkData,
+  // ): CancelablePromise<PostApiV1ProfileOnedataLinkResponse> {
+  //   return __request(OpenAPI, {
+  //     method: "POST",
+  //     url: "/api/v1/profile/onedata-link/",
+  //     body: data.requestBody,
+  //     mediaType: "application/json",
+  //   });
+  // }
+
   /**
-   * Links the user's Onedata account using a short-lived Onedata access token.
-   * In invite mode the token is also used to join the user's Onedata groups. The token is never stored.
+   * Auto-link: links the user's Onedata account using their e-infra OIDC access token
+   * and joins the user's Onedata groups (invite mode). The token is never stored or logged.
    * @param data The data for the request.
    * @param data.requestBody
-   * @returns OnedataLinkResponse
+   * @returns OnedataSyncResponse
    * @throws ApiError
    */
-  public static postApiV1ProfileOnedataLink(
-    data: PostApiV1ProfileOnedataLinkData,
-  ): CancelablePromise<PostApiV1ProfileOnedataLinkResponse> {
+  public static postApiV1ProfileOnedataSync(
+    data: PostApiV1ProfileOnedataSyncData = {},
+  ): CancelablePromise<PostApiV1ProfileOnedataSyncResponse> {
     return __request(OpenAPI, {
       method: "POST",
-      url: "/api/v1/profile/onedata-link/",
+      url: "/api/v1/profile/onedata-sync/",
       body: data.requestBody,
       mediaType: "application/json",
     });

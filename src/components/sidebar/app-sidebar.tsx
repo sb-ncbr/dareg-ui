@@ -25,13 +25,14 @@ import {
   Trash2,
   Workflow,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TypographySidebar } from "../typography/typography-sidebar";
 import Link from "next/link";
 import Image from "next/image";
 import daregLogo from "../../../public/dareg-logo.png";
 import { useUserProfile } from "@/hooks/UserProfileContext";
+import { useLogout } from "@/hooks/use-logout";
 import { SavedSearchesAccordion } from "../saved-searches/saved-searches-accordion";
 import {
   Collapsible,
@@ -48,11 +49,8 @@ import { TypographyPGhost } from "../typography/typography-p-ghost";
 import { TypographyP } from "../typography/typography-p";
 import { TypographySmall } from "../typography/typography-small";
 
-const handleLogout = () => {
-  signOut({ callbackUrl: "/login" });
-};
-
 export function AppSidebar() {
+  const handleLogout = useLogout();
   const router = useRouter();
   const profile = useUserProfile();
   const year = new Date().getFullYear();

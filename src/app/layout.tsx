@@ -17,6 +17,7 @@ import { setupInterceptors } from "@/services/interceptors";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { MuiThemeProviderSync } from "@/utils/mui-theme-sync-provider";
 import { InterceptorInitializer } from "@/utils/interceptor-initializer";
+import { OnedataAutoLink } from "@/utils/onedata-auto-link";
 import { RouteTracker } from "@/components/route-tracker/route-tracker";
 import Head from "next/head";
 import SearchBar from "@/components/tokenized-search/tokenized-search";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SessionProvider>
           <InterceptorInitializer />
           <QueryClientProvider client={queryClient}>
+            <OnedataAutoLink />
             <Suspense fallback={<Loading />}>
               <SearchProvider>
                 <JobsWorkflowsProvider>

@@ -1535,26 +1535,56 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/profile/onedata-link/:
+# INVITE-MODE (disabled, replaced by auto-link)
+#  /api/v1/profile/onedata-link/:
+#    post:
+#      operationId: api_v1_profile_onedata_link_create
+#      description: |-
+#        Links the user's Onedata account using a short-lived Onedata access token.
+#        In invite mode the token is also used to join the user's Onedata groups. The token is never stored.
+#      tags:
+#      - api
+#      requestBody:
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/OnedataLink'
+#          application/x-www-form-urlencoded:
+#            schema:
+#              $ref: '#/components/schemas/OnedataLink'
+#          multipart/form-data:
+#            schema:
+#              $ref: '#/components/schemas/OnedataLink'
+#        required: true
+#      security:
+#      - knoxApiToken: []
+#      - cookieAuth: []
+#      responses:
+#        '200':
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/OnedataLinkResponse'
+#          description: ''
+  /api/v1/profile/onedata-sync/:
     post:
-      operationId: api_v1_profile_onedata_link_create
+      operationId: api_v1_profile_onedata_sync_create
       description: |-
-        Links the user's Onedata account using a short-lived Onedata access token.
-        In invite mode the token is also used to join the user's Onedata groups. The token is never stored.
+        Auto-link: links the user's Onedata account using their e-infra OIDC access token
+        and joins the user's Onedata groups (invite mode). The token is never stored or logged.
       tags:
       - api
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OnedataLink'
+              $ref: '#/components/schemas/OnedataSyncRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OnedataLink'
+              $ref: '#/components/schemas/OnedataSyncRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OnedataLink'
-        required: true
+              $ref: '#/components/schemas/OnedataSyncRequest'
       security:
       - knoxApiToken: []
       - cookieAuth: []
@@ -1563,7 +1593,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OnedataLinkResponse'
+                $ref: '#/components/schemas/OnedataSyncResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnedataSyncResponse'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnedataSyncResponse'
           description: ''
   /api/v1/projects/:
     get:
@@ -3005,18 +3047,63 @@ components:
         * `debug` - DEBUG
         * `info` - INFO
         * `warning` - WARNING
-    OnedataLink:
+# INVITE-MODE (disabled, replaced by auto-link)
+#    OnedataLink:
+#      type: object
+#      properties:
+#        token:
+#          type: string
+#          writeOnly: true
+#      required:
+#      - token
+#    OnedataLinkResponse:
+#      type: object
+#      properties:
+#        onedata_user_id:
+#          type: string
+#        joined_groups:
+#          type: array
+#          items:
+#            type: string
+#        failed_groups:
+#          type: array
+#          items:
+#            type: object
+#            additionalProperties: {}
+#      required:
+#      - failed_groups
+#      - joined_groups
+#      - onedata_user_id
+    OnedataSyncRequest:
       type: object
       properties:
-        token:
+        force:
+          type: boolean
+          default: false
+    FailedGroup:
+      type: object
+      properties:
+        group_id:
           type: string
-          writeOnly: true
+        error:
+          type: string
       required:
-      - token
-    OnedataLinkResponse:
+      - error
+      - group_id
+    OnedataSyncResponse:
       type: object
       properties:
+        enabled:
+          type: boolean
+        skipped:
+          type: boolean
         onedata_user_id:
+          type: string
+        onedata_last_sync_at:
+          type: string
+          format: date-time
+          nullable: true
+        onedata_last_sync_error:
           type: string
         joined_groups:
           type: array
@@ -3025,12 +3112,19 @@ components:
         failed_groups:
           type: array
           items:
-            type: object
-            additionalProperties: {}
+            $ref: '#/components/schemas/FailedGroup'
+        error:
+          type: string
+          nullable: true
       required:
+      - enabled
+      - error
       - failed_groups
       - joined_groups
+      - onedata_last_sync_at
+      - onedata_last_sync_error
       - onedata_user_id
+      - skipped
     OnedataSyncStatusEnum:
       enum:
       - pending
@@ -3607,6 +3701,17 @@ components:
         onedata_user_id:
           type: string
           readOnly: true
+        onedata_last_sync_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        onedata_last_sync_error:
+          type: string
+          readOnly: true
+        onedata_auto_link_enabled:
+          type: boolean
+          readOnly: true
     PatchedProject:
       type: object
       properties:
@@ -3815,6 +3920,17 @@ components:
         onedata_user_id:
           type: string
           readOnly: true
+        onedata_last_sync_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        onedata_last_sync_error:
+          type: string
+          readOnly: true
+        onedata_auto_link_enabled:
+          type: boolean
+          readOnly: true
       required:
       - any_datasets
       - any_facilities
@@ -3823,6 +3939,9 @@ components:
       - avatar
       - created
       - last_login
+      - onedata_auto_link_enabled
+      - onedata_last_sync_at
+      - onedata_last_sync_error
       - onedata_user_id
     Project:
       type: object

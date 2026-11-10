@@ -18,7 +18,9 @@ import {
   Group,
   Instrument,
   Job,
-  OnedataLink,
+  // INVITE-MODE (disabled, replaced by auto-link)
+  // OnedataLink,
+  OnedataSyncRequest,
   PatchedDataset,
   PatchedExperiment,
   PatchedFacility,
@@ -945,8 +947,40 @@ export const useApiServicePostApiV1Profile = <
       ApiService.postApiV1Profile({ requestBody }) as unknown as Promise<TData>,
     ...options,
   });
-export const useApiServicePostApiV1ProfileOnedataLink = <
-  TData = Common.ApiServicePostApiV1ProfileOnedataLinkMutationResult,
+// INVITE-MODE (disabled, replaced by auto-link)
+// export const useApiServicePostApiV1ProfileOnedataLink = <
+//   TData = Common.ApiServicePostApiV1ProfileOnedataLinkMutationResult,
+//   TError = unknown,
+//   TContext = unknown,
+// >(
+//   options?: Omit<
+//     UseMutationOptions<
+//       TData,
+//       TError,
+//       {
+//         requestBody: OnedataLink;
+//       },
+//       TContext
+//     >,
+//     "mutationFn"
+//   >,
+// ) =>
+//   useMutation<
+//     TData,
+//     TError,
+//     {
+//       requestBody: OnedataLink;
+//     },
+//     TContext
+//   >({
+//     mutationFn: ({ requestBody }) =>
+//       ApiService.postApiV1ProfileOnedataLink({
+//         requestBody,
+//       }) as unknown as Promise<TData>,
+//     ...options,
+//   });
+export const useApiServicePostApiV1ProfileOnedataSync = <
+  TData = Common.ApiServicePostApiV1ProfileOnedataSyncMutationResult,
   TError = unknown,
   TContext = unknown,
 >(
@@ -955,7 +989,7 @@ export const useApiServicePostApiV1ProfileOnedataLink = <
       TData,
       TError,
       {
-        requestBody: OnedataLink;
+        requestBody?: OnedataSyncRequest;
       },
       TContext
     >,
@@ -966,12 +1000,12 @@ export const useApiServicePostApiV1ProfileOnedataLink = <
     TData,
     TError,
     {
-      requestBody: OnedataLink;
+      requestBody?: OnedataSyncRequest;
     },
     TContext
   >({
     mutationFn: ({ requestBody }) =>
-      ApiService.postApiV1ProfileOnedataLink({
+      ApiService.postApiV1ProfileOnedataSync({
         requestBody,
       }) as unknown as Promise<TData>,
     ...options,

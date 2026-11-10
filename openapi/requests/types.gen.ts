@@ -143,16 +143,37 @@ export type Instrument = {
     default_data_dir?: string;
 };
 
-export type OnedataLink = {
-    token: string;
+// INVITE-MODE (disabled, replaced by auto-link)
+// export type OnedataLink = {
+//     token: string;
+// };
+
+// export type OnedataLinkResponse = {
+//     onedata_user_id: string;
+//     joined_groups: Array<(string)>;
+//     failed_groups: Array<{
+//         [key: string]: unknown;
+//     }>;
+// };
+
+export type OnedataSyncRequest = {
+    force?: boolean;
 };
 
-export type OnedataLinkResponse = {
+export type FailedGroup = {
+    group_id: string;
+    error: string;
+};
+
+export type OnedataSyncResponse = {
+    enabled: boolean;
+    skipped: boolean;
     onedata_user_id: string;
+    onedata_last_sync_at: string | null;
+    onedata_last_sync_error: string;
     joined_groups: Array<(string)>;
-    failed_groups: Array<{
-        [key: string]: unknown;
-    }>;
+    failed_groups: Array<FailedGroup>;
+    error: string | null;
 };
 
 export type PaginatedDatasetResponseList = {
@@ -297,6 +318,10 @@ export type PatchedProfile = {
     readonly last_login?: string;
     default_theme?: DefaultThemeEnum;
     default_lang?: DefaultLangEnum;
+    readonly onedata_user_id?: string;
+    readonly onedata_last_sync_at?: string | null;
+    readonly onedata_last_sync_error?: string;
+    readonly onedata_auto_link_enabled?: boolean;
 };
 
 export type PatchedProject = {
@@ -354,6 +379,9 @@ export type Profile = {
     default_theme?: DefaultThemeEnum;
     default_lang?: DefaultLangEnum;
     readonly onedata_user_id: string;
+    readonly onedata_last_sync_at: string | null;
+    readonly onedata_last_sync_error: string;
+    readonly onedata_auto_link_enabled: boolean;
 };
 
 export type Project = {
@@ -856,11 +884,18 @@ export type PostApiV1ProfileData = {
 
 export type PostApiV1ProfileResponse = Profile;
 
-export type PostApiV1ProfileOnedataLinkData = {
-    requestBody: OnedataLink;
+// INVITE-MODE (disabled, replaced by auto-link)
+// export type PostApiV1ProfileOnedataLinkData = {
+//     requestBody: OnedataLink;
+// };
+
+// export type PostApiV1ProfileOnedataLinkResponse = OnedataLinkResponse;
+
+export type PostApiV1ProfileOnedataSyncData = {
+    requestBody?: OnedataSyncRequest;
 };
 
-export type PostApiV1ProfileOnedataLinkResponse = OnedataLinkResponse;
+export type PostApiV1ProfileOnedataSyncResponse = OnedataSyncResponse;
 
 export type GetApiV1ProfileByIdData = {
     /**
