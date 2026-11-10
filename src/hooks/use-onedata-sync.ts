@@ -69,6 +69,11 @@ export function useOnedataSync() {
       if (outcome.kind === "response" && !dryRun) {
         // the status lives on the profile, update every cached profile page without refetching
         const { onedata_user_id, onedata_last_sync_at, onedata_last_sync_error } = outcome.body;
+        // read before the patch below overwrites the cached id
+        const cachedIds = queryClient
+          .getQueriesData<PaginatedProfileList>({ queryKey: [useApiServiceGetApiV1ProfileKey] })
+          .flatMap(([, data]) => data?.results?.map((profile) => profile.onedata_user_id) ?? []);
+        const idChanged = cachedIds.length === 0 || cachedIds.some((id) => id !== onedata_user_id);
         queryClient.setQueriesData<PaginatedProfileList>(
           { queryKey: [useApiServiceGetApiV1ProfileKey] },
           (data) =>
@@ -82,7 +87,9 @@ export function useOnedataSync() {
               })),
             }
         );
-        if (outcome.status === 200) {
+        // a new link changes fields the response lacks (onedata_access_allowed, onedata_linked_at);
+        // an unchanged id (the every-minute poll) needs no refetch of the expensive profile
+        if (outcome.status === 200 && idChanged) {
           await queryClient.invalidateQueries({ queryKey: [useApiServiceGetApiV1ProfileKey] });
         }
       }

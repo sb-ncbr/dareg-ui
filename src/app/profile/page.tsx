@@ -102,7 +102,9 @@ const ProfilePage = () => {
     }
   };
 
-  if (status === "loading") {
+  // update() (token refresh before every Onedata sync) sets status to "loading" but keeps the session,
+  // the page must stay as it is then; the sync patches only the Onedata fields of the cached profile
+  if (status === "loading" && !session) {
     return <p>Loading...</p>;
   }
 
